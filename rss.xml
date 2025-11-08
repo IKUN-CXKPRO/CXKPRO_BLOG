@@ -1,0 +1,546 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>CXKPRO_BLOG</title><description>主页</description><link>https://ikun-cxkpro.top/</link><language>zh_CN</language><item><title>实战：使用Astro搭建个人博客</title><link>https://ikun-cxkpro.top/posts/%E5%AE%9E%E6%88%98%E4%BD%BF%E7%94%A8astro%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/</link><guid isPermaLink="true">https://ikun-cxkpro.top/posts/%E5%AE%9E%E6%88%98%E4%BD%BF%E7%94%A8astro%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/</guid><pubDate>Sun, 02 Nov 2025 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;前言&lt;/h2&gt;
+&lt;p&gt;这篇文章是我用 Astro 重构个人博客的经验总结。
+内容分为以下几部分：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&quot;#%E4%B8%BA%E4%BB%80%E4%B9%88%E6%83%B3%E8%A6%81%E9%87%8D%E6%9E%84%E5%8D%9A%E5%AE%A2&quot;&gt;为什么想要重构博客&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%80%89%E6%8B%A9%E4%BA%86astro&quot;&gt;为什么选择了astro&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#%E5%8D%9A%E5%AE%A2%E8%BF%81%E7%A7%BB%E8%BF%87%E7%A8%8B&quot;&gt;博客迁移过程&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;#astro%E7%9A%84%E4%BC%98%E7%BC%BA%E7%82%B9&quot;&gt;Astro 的优缺点&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;如果你也有类似的需求，希望这篇文章对你有帮助。&lt;/p&gt;
+&lt;h2&gt;为什么想要重构博客&lt;/h2&gt;
+&lt;p&gt;zibll的界面确实很好看。配置完了之后也特别好用，但是各种配置完就是一直优化不好访问速度&lt;/p&gt;
+&lt;p&gt;主要原因还是因为优化不好，而且优化很麻烦，且必须加cdn速度才能上来。&lt;/p&gt;
+&lt;p&gt;第二个就是续费不起cdn，用cf的cdn速度特别慢,甚至有些地方无法访问。&lt;/p&gt;
+&lt;p&gt;还有一个原因是希望了解下时下流行的 Island 架构，并且借助这次重构，尝试找到比较便捷的高性能内容站点解决方案。&lt;/p&gt;
+&lt;h2&gt;为什么选择了Astro&lt;/h2&gt;
+&lt;p&gt;关注 Astro 其实有段时间了，但由于当时的网站还很稳定，所以并没有怎么去研究&lt;/p&gt;
+&lt;p&gt;最近QQ群里有不少人用 Astro 改写了自己的博客或者是其它类型的内容站点，风评很好。看了官方文档之后，确实和我之前理解的不同，Astro 会更专注在内容站点，而 Next.js 更偏向于构建 Web APP。&lt;/p&gt;
+&lt;p&gt;尝试了跑了一个 demo 之后，发现上手特别简单，技术栈很熟悉。&lt;/p&gt;
+&lt;p&gt;默认支持 Markdown 和 MDX 的渲染，挺不错的。但是由于之前的博客使用的是wordpress，而且我之前压根没写过md，所以想试试使用Astro来重构博客，看看效果怎么样，结果就是 特别好。&lt;/p&gt;
+&lt;p&gt;接下来 说干就干。&lt;/p&gt;
+&lt;h2&gt;博客迁移过程&lt;/h2&gt;
+&lt;h3&gt;搭建Astro&lt;/h3&gt;
+&lt;p&gt;首先：新建个文件夹。
+这里我是直接使用了&lt;a href=&quot;https://github.com/saicaca/fuwari&quot;&gt;Fuwari&lt;/a&gt;主题&lt;br /&gt;
+::github{repo=&quot;saicaca/fuwari&quot;}&lt;/p&gt;
+&lt;p&gt;直接把项目源代码给fork一下，解压到你的项目文件夹&lt;br /&gt;
+然后在项目文件夹下运行&lt;code&gt;pnpm install&lt;/code&gt;和&lt;code&gt;pnpm add sharp&lt;/code&gt;，安装一下依赖。&lt;br /&gt;
+然后就可以食用了。
+&lt;img src=&quot;./images/%E5%AE%9E%E6%88%98%EF%BC%9A%E4%BD%BF%E7%94%A8Astro%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/Fuwari-demo.png&quot; alt=&quot;Fuwari-demo&quot; /&gt;&lt;/p&gt;
+&lt;h3&gt;配置Astro网站设置&lt;/h3&gt;
+&lt;p&gt;这个挺简单的，在&lt;code&gt;src/config.js&lt;/code&gt;文件中，修改一下网站的相关信息就行了。&lt;br /&gt;
+配置文件的结构，我拿manus简单画了下结构图，如下：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;配置文件
+ |- siteConfig (网站配置)
+ |   |- title (网站标题)
+ |   |- subtitle (网站副标题)
+ |   |- lang (语言)
+ |   |- themeColor (主题颜色)
+ |   |   |- hue (色相)
+ |   |   &apos;- fixed (是否固定)
+ |   |- banner (顶部横幅)
+ |   |   |- enable (是否启用)
+ |   |   |- src (图片路径)
+ |   |   |- position (图片位置)
+ |   |   &apos;- credit (图片署名)
+ |   |       |- enable (是否显示署名)
+ |   |       |- text (署名文字)
+ |   |       &apos;- url (署名链接)
+ |   |- toc (文章目录)
+ |   |   |- enable (是否启用)
+ |   |   &apos;- depth (显示深度)
+ |   &apos;- favicon (网站图标)
+ |
+ |- navBarConfig (导航栏配置)
+ |   &apos;- links (链接列表)
+ |       |- (预设链接: Home, Archive, About)
+ |       &apos;- (自定义链接)
+ |           |- name (链接名称)
+ |           |- url (链接地址)
+ |           &apos;- external (是否为外部链接)
+ |
+ |- profileConfig (个人资料配置)
+ |   |- avatar (头像路径)
+ |   |- name (昵称)
+ |   |- bio (个人简介)
+ |   &apos;- links (社交链接列表)
+ |       |- name (平台名称)
+ |       |- icon (图标代码)
+ |       &apos;- url (个人主页链接)
+ |
+ |- licenseConfig (许可证配置)
+ |   |- enable (是否启用)
+ |   |- name (许可证名称)
+ |   &apos;- url (许可证链接)
+ |
+ &apos;- expressiveCodeConfig (代码高亮配置)
+     &apos;- theme (代码高亮主题)
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;这里放一下我的配置文件，仅供参考：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;/*
+
+./src/config.ts
+最后修改:2025/11/2 16:27
+
+*/
+import type {
+	ExpressiveCodeConfig,
+	LicenseConfig,
+	NavBarConfig,
+	ProfileConfig,
+	SiteConfig,
+} from &quot;./types/config&quot;;
+import { LinkPreset } from &quot;./types/config&quot;;
+
+export const siteConfig: SiteConfig = {
+	title: &quot;CXKPRO_BLOG&quot;,
+	subtitle: &quot;主页&quot;,
+	lang: &quot;zh_CN&quot;, // 语言代码, 例如 &apos;en&apos;, &apos;zh_CN&apos;, &apos;ja&apos; 等
+	themeColor: {
+		hue: 250, // 主题色的默认色相，范围从 0 到 360。例如 red: 0, teal: 200, cyan: 250, pink: 345
+		fixed: false, // 对访问者隐藏主题颜色选择器
+	},
+	banner: {
+		enable: true,
+		src: &quot;assets/images/banner.png&quot;, // 相对于 /src 目录。如果以 &apos;/&apos; 开头，则相对于 /public 目录
+		position: &quot;top&quot;, // 相当于 object-position，仅支持 &apos;top&apos;, &apos;center&apos;, &apos;bottom&apos;。默认为 &apos;center&apos;
+		credit: {
+			enable: true, // 显示横幅图片的署名文本
+			text: &quot;Windows Insider Program 11th Anniversary&quot;, // 要显示的署名文本
+			url: &quot;https://www.microsoft.com/zh-cn/windowsinsider/articles/celebrating-11-years-together&quot;, // (可选) 指向原始艺术作品或艺术家页面的 URL 链接
+		},
+	},
+	toc: {
+		enable: true, // 在文章右侧显示目录
+		depth: 2, // 目录中显示的最大标题深度，范围从 1 到 3
+	},
+	favicon: [
+		// 将此数组留空以使用默认的 favicon
+		// {
+		//   src: &apos;/favicon/icon.png&apos;,    // favicon 的路径，相对于 /public 目录
+		//   theme: &apos;light&apos;,              // (可选) &apos;light&apos; 或 &apos;dark&apos;，仅在您为亮色和暗色模式设置了不同的 favicon 时使用
+		//   sizes: &apos;32x32&apos;,              // (可选) favicon 的尺寸，仅在您有不同尺寸的 favicon 时设置
+		// }
+	],
+};
+
+export const navBarConfig: NavBarConfig = {
+	links: [
+		LinkPreset.Home,
+		LinkPreset.Archive,
+		LinkPreset.About,
+		// {
+		// 	name: &quot;GitHub&quot;,
+		// 	url: &quot;https://github.com/saicaca/fuwari&quot;, // 内部链接不应包含基础路径 ，因为它会自动添加
+		// 	external: true, // 显示外部链接图标，并将在新标签页中打开
+		// },
+	],
+};
+
+export const profileConfig: ProfileConfig = {
+	avatar: &quot;assets/images/CXKPRO.png&quot;, // 相对于 /src 目录。如果以 &apos;/&apos; 开头，则相对于 /public 目录
+	name: &quot;IKUN_CXKPRO&quot;,
+	bio: &quot;这里该写什么?&quot;,
+	links: [
+		// {
+		// 	name: &quot;Twitter&quot;,
+		// 	icon: &quot;fa6-brands:twitter&quot;, // 访问 https://icones.js.org/ 获取图标代码
+		// 	// 如果某个图标集未被包含 ，您需要手动安装
+		// 	// `pnpm add @iconify-json/&amp;lt;icon-set-name&amp;gt;`
+		// 	url: &quot;https://twitter.com&quot;,
+		// },
+		{
+			name: &quot;GitHub&quot;,
+			icon: &quot;fa6-brands:github&quot;,
+			url: &quot;https://github.com/IKUN-CXKPRO&quot;,
+		},
+		{
+			name: &quot;QQ&quot;,
+			icon: &quot;fa6-brands:qq&quot;,
+			url: &quot;https://wpa.qq.com/msgrd?v=3&amp;amp;uin=3078517671&amp;amp;site=qq&amp;amp;menu=yes&quot;,
+		},
+	],
+};
+
+export const licenseConfig: LicenseConfig = {
+	enable: true,
+	name: &quot;CC BY-NC-SA 4.0&quot;,
+	url: &quot;https://creativecommons.org/licenses/by-nc-sa/4.0/&quot;,
+};
+
+export const expressiveCodeConfig: ExpressiveCodeConfig = {
+	// 注意：某些样式（例如背景颜色 ）已被覆盖，请参阅 astro.config.mjs 文件。
+	// 请选择一个暗色主题，因为本博客主题目前仅支持暗色背景
+	theme: &quot;github-dark&quot;,
+};
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;文章的位置：&lt;code&gt;/src/content/posts&lt;/code&gt;&lt;br /&gt;
+about页面: &lt;code&gt;/src/content/spec/about.md&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;简单设置一下就能用了。
+&lt;img src=&quot;./images/%E5%AE%9E%E6%88%98%EF%BC%9A%E4%BD%BF%E7%94%A8Astro%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/CXKPRO_BLOG-01.png&quot; alt=&quot;主页&quot; /&gt;&lt;br /&gt;
+&lt;img src=&quot;./images/%E5%AE%9E%E6%88%98%EF%BC%9A%E4%BD%BF%E7%94%A8Astro%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/CXKPRO_BLOG-02.png&quot; alt=&quot;打开文章后的界面&quot; /&gt;&lt;br /&gt;
+&lt;img src=&quot;./images/%E5%AE%9E%E6%88%98%EF%BC%9A%E4%BD%BF%E7%94%A8Astro%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/CXKPRO_BLOG-03.png&quot; alt=&quot;关于界面&quot; /&gt;&lt;/p&gt;
+&lt;h3&gt;迁移文章&lt;/h3&gt;
+&lt;p&gt;简单搜索了一下，看起来很简单。
+&lt;img src=&quot;./images/%E5%AE%9E%E6%88%98%EF%BC%9A%E4%BD%BF%E7%94%A8Astro%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/wp%20to%20astro(1-bing).png&quot; alt=&quot;&quot; /&gt;&lt;br /&gt;
+点进去看了下：
+&lt;img src=&quot;./images/%E5%AE%9E%E6%88%98%EF%BC%9A%E4%BD%BF%E7%94%A8Astro%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/wp%20to%20astro(2-word).png&quot; alt=&quot;&quot; /&gt;&lt;br /&gt;
+好的。看不懂。&lt;/p&gt;
+&lt;p&gt;于是，我又搜索了一下html转MarkDown的相关内容，结果没有。找不到，只有md转html。。。
+所以我还是选择了手动迁移的方式。&lt;/p&gt;
+&lt;p&gt;大概搞了1天左右，把部分文章先给补档上去了。
+&amp;lt;details&amp;gt; &amp;lt;summary&amp;gt;期间遇到的申金问题&amp;lt;/summary&amp;gt;
+1.旧站挂了。
+2.数据库连接完之后发现图片全部无法访问。
+3.因为忘记了紧急登录地址而无法登录。连登录界面都不给我进。。
+&amp;lt;/details&amp;gt;&lt;/p&gt;
+&lt;h2&gt;Astro的优缺点&lt;/h2&gt;
+&lt;p&gt;预先说明：Astro 框架默认依赖是很少的，TailwindCSS 等能力是 Astro Paper 这个主题内置的，非必需。&lt;/p&gt;
+&lt;h3&gt;优点&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;开箱即用，常见的 RSS、Sitemap 等能力都很容易集成&lt;/li&gt;
+&lt;li&gt;默认支持 SSG，没有 JavaScript 依赖，页面加载和渲染非常快&lt;/li&gt;
+&lt;li&gt;类型安全，Markdown 文件的 frontmatter 可以用 Schema 来约束，背后是基于 Zod 的类型校验&lt;/li&gt;
+&lt;li&gt;支持集成 Typescript、React、TailwindCSS 等常见技术栈，定制起来更顺手&lt;/li&gt;
+&lt;li&gt;.astro 页面有点像 Vue 的单页面模版，可以很简单的实现数据的获取和转换，并且可以通过 JSX 的方式互相引用&lt;/li&gt;
+&lt;li&gt;绝大部分功能逻辑都由自己掌控，相较于 Hexo 主题的黑盒逻辑，定制更容易&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3&gt;缺点&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;构建会比之前略慢，但基于自动的流程，影响可以忽略不计&lt;/li&gt;
+&lt;li&gt;没发现页面模版的能力&lt;/li&gt;
+&lt;li&gt;TailwindCSS 和其中的的 Typography 插件的代码写起来可读性很差&lt;/li&gt;
+&lt;li&gt;没了自动生成永久 slug 的能力，需要自己写一个具有语义的名称，但 url 可读性好一些&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;最重要的收获：基于 Astro 框架，能够快速上线、高性能内容站点，并且用很低的成本持续管理内容。&lt;/p&gt;
+</content:encoded></item><item><title>如何降级你的小米手环、手表</title><link>https://ikun-cxkpro.top/posts/%E5%A6%82%E4%BD%95%E9%99%8D%E7%BA%A7%E4%BD%A0%E7%9A%84%E5%B0%8F%E7%B1%B3%E6%89%8B%E7%8E%AF%E6%89%8B%E8%A1%A8/</link><guid isPermaLink="true">https://ikun-cxkpro.top/posts/%E5%A6%82%E4%BD%95%E9%99%8D%E7%BA%A7%E4%BD%A0%E7%9A%84%E5%B0%8F%E7%B1%B3%E6%89%8B%E7%8E%AF%E6%89%8B%E8%A1%A8/</guid><description>如何降级你的小米手环、手表</description><pubDate>Fri, 31 Oct 2025 00:00:00 GMT</pubDate><content:encoded>&lt;h3&gt;如何降级你的小米手环、手表&lt;/h3&gt;
+&lt;h4&gt;所需工具：&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;Notify For Xiaomi预览版【无ROOT设备可用】&lt;/li&gt;
+&lt;li&gt;AstroBox【无ROOT设备、苹果手机、电脑可用】【推荐】&lt;/li&gt;
+&lt;li&gt;表盘自定义工具【无ROOT设备可用】【备选】&lt;/li&gt;
+&lt;li&gt;一台小米手环/手表&lt;/li&gt;
+&lt;li&gt;想要刷写的系统固件&lt;/li&gt;
+&lt;li&gt;一个有脑子、动手能力强的人&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;提示：&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;本教程以小米手环9nfc做示例。&lt;/li&gt;
+&lt;li&gt;此教程仅做固件教程及固件分享，刷写失败等导致死机变砖等后果，教程作者、本教程出现的所有资源的作者（包括但不限于：教程作者，模块作者，固件存档作者）、云盘厂商等不负任何责任！&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4&gt;教程：&lt;/h4&gt;
+&lt;p&gt;从下方链接下载并安装Notify For Xiaomi 预览版&lt;/p&gt;
+&lt;p&gt;获取AuthKey：AuthKey是连接小米手环的一个密钥，需要AuthKey才可以进行下面的操作。&lt;/p&gt;
+&lt;h5&gt;使用表盘自定义工具获取AuthKey&lt;/h5&gt;
+&lt;p&gt;安装表盘自定义工具并打开，选择设备，选择你的设备&lt;/p&gt;
+&lt;p&gt;选择工具→AuthKey读取工具，然后点进去，如果提示登录请按照里面的提示进行登录。&lt;/p&gt;
+&lt;p&gt;进去之后，按照里面的教程提取log，然后划到最下面，点击读取。&lt;/p&gt;
+&lt;p&gt;读取完成之后，把你的设备的AuthKey复制下来。&lt;/p&gt;
+&lt;h5&gt;使用AstroBox获取AuthKey&lt;/h5&gt;
+&lt;p&gt;安装并打开AstroBox，点击设置→同步设备，登录你的小米账号。会提示绑定设备同步成功。&lt;/p&gt;
+&lt;p&gt;然后点击设备→连接设备→选择你的设备，把你的AuthKey复制下来。&lt;/p&gt;
+&lt;h5&gt;使用Notify For Xiaomi刷写&lt;/h5&gt;
+&lt;p&gt;打开Notify For Xiaomi 预览版，并允许所需的权限。并点击配对，然后选择你的设备（这里以小米手环9做示例）&lt;/p&gt;
+&lt;p&gt;继续，然后填入你刚才复制的AuthKey。&lt;/p&gt;
+&lt;p&gt;连接之后，手环点击连接新设备，然后在Notify For Xiaomi预览版中重新连接，以确保连接状态正常。&lt;/p&gt;
+&lt;p&gt;手环：设置→系统操作→连接新手机&lt;/p&gt;
+&lt;p&gt;Notify For Xiaomi：点击主页→点击左上角三个横线→点击你设备旁边的蓝牙图标（个人资料下面）&lt;/p&gt;
+&lt;p&gt;接下来可以去下载相关固件，并开始刷入固件。&lt;/p&gt;
+&lt;p&gt;第一步：点击设备→升级固件&lt;/p&gt;
+&lt;p&gt;第二步：选择需要刷入的固件，直接刷入然后等待即可&lt;/p&gt;
+&lt;h5&gt;使用AstroBox刷写&lt;/h5&gt;
+&lt;p&gt;注意：这需要你的设备支持蓝牙才可以正常使用，并且推荐使用安卓以外平台的 AstroBox，安卓的固件传输稳定性较差。&lt;/p&gt;
+&lt;p&gt;第一步：安装AstroBox，打开&lt;a href=&quot;https://astrobox.online/&quot;&gt;https://astrobox.online/&lt;/a&gt; 点击下载，选择你的系统，然后下载安装。&lt;/p&gt;
+&lt;p&gt;第二步：刷写固件（下面使用Windows11系统做演示）&lt;/p&gt;
+&lt;p&gt;安装完成后，打开AstroBox&lt;/p&gt;
+&lt;p&gt;首先点击设置→同步设备&lt;/p&gt;
+&lt;p&gt;然后登录你的小米账号以同步&lt;/p&gt;
+&lt;p&gt;如果出现这个提示，点击确定&lt;/p&gt;
+&lt;p&gt;跳转到浏览器后，按照提示登录，登录成功之后会显示ok，&lt;/p&gt;
+&lt;p&gt;然后返回到AstroBox，会自动登录，如果一直卡在登录，退出界面然后重新登录一次即可&lt;/p&gt;
+&lt;p&gt;设备同步成功后，&lt;/p&gt;
+&lt;p&gt;在手环的设置点击系统操作→连接新手机&lt;/p&gt;
+&lt;p&gt;然后在电脑AstroBox上点击设备→连接设备&lt;/p&gt;
+&lt;p&gt;选择你的手环，然后连接即可。&lt;/p&gt;
+&lt;p&gt;然后点击设置→发包间隔，调到10ms&lt;/p&gt;
+&lt;p&gt;返回到设备，点击安装固件，选择你下载的固件&lt;/p&gt;
+&lt;p&gt;选择完成后，点击队列，在安装队列里面点击箭头，即可开始刷写。&lt;/p&gt;
+</content:encoded></item><item><title>IP查询接口分享</title><link>https://ikun-cxkpro.top/posts/ip%E6%9F%A5%E8%AF%A2%E6%8E%A5%E5%8F%A3%E5%88%86%E4%BA%AB/</link><guid isPermaLink="true">https://ikun-cxkpro.top/posts/ip%E6%9F%A5%E8%AF%A2%E6%8E%A5%E5%8F%A3%E5%88%86%E4%BA%AB/</guid><description>IP查询接口分享</description><pubDate>Fri, 31 Oct 2025 00:00:00 GMT</pubDate><content:encoded>&lt;h3&gt;阿里云&lt;/h3&gt;
+&lt;p&gt;阿里云&lt;code&gt;ipip.net&lt;/code&gt;提供的 IP 查询接口&lt;/p&gt;
+&lt;p&gt;接口地址：&lt;a href=&quot;https://api.myip.la/cn?json&quot;&gt;https://api.myip.la/cn?json&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;请求示例&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;curl https://api.myip.la/cn?json
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;响应结果&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;StatusCode        : 200
+StatusDescription : OK
+Content           : {&quot;ip&quot;:&quot;103.219.192.54&quot;,&quot;location&quot;:{&quot;city&quot;:&quot;&quot;,&quot;country_code&quot;:&quot;HK&quot;,&quot;country_name&quot;:&quot;ä¸­å½&quot;,&quot;latitude&quot;
+                    :&quot;22.396428&quot;,&quot;longitude&quot;:&quot;114.109497&quot;,&quot;province&quot;:&quot;é¦æ¸¯&quot;}}
+RawContent        : HTTP/1.1 200 OK
+                    Connection: keep-alive
+                    Keep-Alive: timeout=20
+                    Access-Control-Allow-Origin: *
+                    Access-Control-Allow-Methods: GET, POST, OPTIONS
+                    Access-Control-Allow-Headers: DNT,X-Mx-ReqToken,Keep-...
+Forms             : {}
+Headers           : {[Connection, keep-alive], [Keep-Alive, timeout=20], [Access-Control-Allow-Origin, *], [Access-Cont
+                    rol-Allow-Methods, GET, POST, OPTIONS]...}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        : mshtml.HTMLDocumentClass
+RawContentLength  : 158
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;详细文档：&lt;a href=&quot;https://www.myip.la/&quot;&gt;https://www.myip.la/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;中国大陆用户推荐使用：&lt;a href=&quot;https://www.ipip.net/myip.html&quot;&gt;https://myip.ipip.net&lt;/a&gt;&lt;/p&gt;
+&lt;h3&gt;Moieo Api IP 查询接口&lt;/h3&gt;
+&lt;p&gt;接口地址：POST &lt;a href=&quot;https://api.moieo.cn/ip/114.114.114.114&quot;&gt;https://api.moieo.cn/ip/114.114.114.114&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;请求头:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;名称&lt;/th&gt;
+&lt;th&gt;注释&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;timestamp&lt;/td&gt;
+&lt;td&gt;时间戳(ms)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;请求示例&lt;/p&gt;
+&lt;p&gt;例如 IP 为：114.114.114.114&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;curl -XPOST -H &quot;timestamp: $(date +%s%3N)&quot; https://api.moieo.cn/ip/114.114.114.114
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;响应结果&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;{
+  &quot;code&quot;: 200,
+  &quot;msg&quot;: &quot;success&quot;,
+  &quot;data&quot;: {
+    &quot;ip&quot;: &quot;114.114.114.114&quot;,
+    &quot;ip_number&quot;: 1920103026,
+    &quot;location&quot;: &quot;江苏省南京市&quot;,
+    &quot;net_service&quot;: &quot;南京信风网络科技有限公司GreatbitDNS服务器&quot;
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;数据来源于&lt;code&gt;纯真网络&lt;/code&gt;开源数据库&lt;/p&gt;
+</content:encoded></item><item><title>Debian 双栈网络时设置 IPv4 优先</title><link>https://ikun-cxkpro.top/posts/debian-%E5%8F%8C%E6%A0%88%E7%BD%91%E7%BB%9C%E6%97%B6%E8%AE%BE%E7%BD%AE-ipv4-%E4%BC%98%E5%85%88/</link><guid isPermaLink="true">https://ikun-cxkpro.top/posts/debian-%E5%8F%8C%E6%A0%88%E7%BD%91%E7%BB%9C%E6%97%B6%E8%AE%BE%E7%BD%AE-ipv4-%E4%BC%98%E5%85%88/</guid><description>本文理论上适合任何 Linux 系统，其他系统未经测试，请自行测试使用。</description><pubDate>Sun, 26 Oct 2025 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;前言&lt;/h2&gt;
+&lt;p&gt;双协议栈技术就是指在一台设备上同时启用 IPv4 协议栈和 IPv6 协议栈，这样就可以同时使用 IPv4 和 IPv6 的网络。&lt;/p&gt;
+&lt;p&gt;所有现代化的操作系统和浏览器均会以 IPv6 优先，只有 IPv6 无法访问的时候才会尝试访问 IPv4，某些特定的应用和场景下，我们并不想要 IPv6 优先，这时候就需要修改一些配置文件让 IPv4 优先。&lt;/p&gt;
+&lt;h2&gt;修改 /etc/gai.conf&lt;/h2&gt;
+&lt;p&gt;在 Debian 等 Linux 系统下，有一个 &lt;code&gt;/etc/gai.conf&lt;/code&gt; 文件，用于系统的 &lt;code&gt;getaddrinfo&lt;/code&gt; 调用，默认情况下，它会使用 IPv6 优先，如果您安装了 &lt;code&gt;curl&lt;/code&gt; 并且本地支持 IPv6，那么可以使用 &lt;code&gt;curl ip.sb&lt;/code&gt; 测试：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;ikun_cxkpro@CXKPRO-PC-debian:~$ curl ip.sb&lt;br /&gt;
+2001:db8::2&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;效果等同于 &lt;code&gt;curl ip.sb -6&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;如果你不想使用 IPv6 优先，可以在这个文件中找到：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;#precedence ::ffff:0:0/96  100&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;取消注释，修改为：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;precedence ::ffff:0:0/96  100&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;一句话命令：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;sed -i &apos;s/#precedence ::ffff:0:0/96  100/precedence ::ffff:0:0/96  100/&apos; /etc/gai.conf&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;此时再使用 curl ip.sb 测试：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;ikun_cxkpro@CXKPRO-PC-debian:~$ curl ip.sb&lt;br /&gt;
+114.51.4.191&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;效果等同于 curl ip.sb -4&lt;/p&gt;
+&lt;p&gt;有时候又会需要强制 IPv6 优先 (怎么有些系统和用户那么奇怪？)，因为目前 IANA 分配的公网 IPv6 还未进行到 &lt;code&gt;3000:0000::/4&lt;/code&gt;，所以我们只要把这段之前的 IPv6 加到优先级列表即可，加入这两行 &lt;code&gt;label&lt;/code&gt; 的优先级：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;label 2002::/16    1&lt;br /&gt;
+label 2001:0::/32   1&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2&gt;禁用 IPv6&lt;/h2&gt;
+&lt;p&gt;有一些极端情况下，我们可能需要禁止系统的 IPv6 功能，这时候就需要修改 &lt;code&gt;/etc/sysctl.conf&lt;/code&gt; 文件，首先找到你的网卡名称，这里以 &lt;code&gt;eth0&lt;/code&gt; 为例，然后加入如下内容：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;net.ipv6.conf.all.autoconf = 0&lt;br /&gt;
+net.ipv6.conf.default.autoconf = 0&lt;br /&gt;
+net.ipv6.conf.all.accept_ra = 0&lt;br /&gt;
+net.ipv6.conf.default.accept_ra = 0&lt;br /&gt;
+net.ipv6.conf.all.disable_ipv6 = 1&lt;br /&gt;
+net.ipv6.conf.default.disable_ipv6 = 1&lt;br /&gt;
+net.ipv6.conf.lo.disable_ipv6 = 1&lt;br /&gt;
+net.ipv6.conf.eth0.disable_ipv6 = 1&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;如果需要其他网卡则更改或添加 &lt;code&gt;net.ipv6.conf.eth0.disable_ipv6 = 1&lt;/code&gt; 即可。&lt;/p&gt;
+&lt;p&gt;一句话命令:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;cat &amp;gt;&amp;gt; /etc/sysctl.conf &amp;lt;&amp;lt; EOF&lt;br /&gt;
+net.ipv6.conf.all.autoconf = 0&lt;br /&gt;
+net.ipv6.conf.default.autoconf = 0&lt;br /&gt;
+net.ipv6.conf.all.accept_ra = 0&lt;br /&gt;
+net.ipv6.conf.default.accept_ra = 0&lt;br /&gt;
+net.ipv6.conf.all.disable_ipv6 = 1&lt;br /&gt;
+net.ipv6.conf.default.disable_ipv6 = 1&lt;br /&gt;
+net.ipv6.conf.lo.disable_ipv6 = 1&lt;br /&gt;
+net.ipv6.conf.eth0.disable_ipv6 = 1&lt;br /&gt;
+EOF&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;注意 cat 命令后的 &amp;gt;&amp;gt; 即为添加文件内容，如果使用 &amp;gt; 则是覆盖文件内容。&lt;/p&gt;
+&lt;p&gt;然后使用 sysctl -p 来重新加载配置文件，此时查看 ip a 就可以发现 IPv6 已经被禁止了。&lt;/p&gt;
+&lt;h2&gt;其他系统和软件&lt;/h2&gt;
+&lt;p&gt;Windows下请参考&lt;a href=&quot;https://superuser.com/questions/436574/ipv4-vs-ipv6-priority-in-windows-7&quot;&gt;这篇回答&lt;/a&gt;
+Firefox 下打开 &lt;code&gt;about:config&lt;/code&gt; 然后把 &lt;code&gt;network.dns.disableIPv6&lt;/code&gt; 改成 &lt;code&gt;true&lt;/code&gt; 即可禁止 Firefox 请求 IPv6&lt;/p&gt;
+</content:encoded></item><item><title>跳过Win11的OOBE强制登录微软账户（支持25H2）</title><link>https://ikun-cxkpro.top/posts/%E8%B7%B3%E8%BF%87win11%E7%9A%84oobe%E5%BC%BA%E5%88%B6%E7%99%BB%E5%BD%95%E5%BE%AE%E8%BD%AF%E8%B4%A6%E6%88%B7/</link><guid isPermaLink="true">https://ikun-cxkpro.top/posts/%E8%B7%B3%E8%BF%87win11%E7%9A%84oobe%E5%BC%BA%E5%88%B6%E7%99%BB%E5%BD%95%E5%BE%AE%E8%BD%AF%E8%B4%A6%E6%88%B7/</guid><description>跳过Win11的OOBE强制登录微软账户（支持25H2）</description><pubDate>Sun, 26 Oct 2025 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;前言&lt;/h2&gt;
+&lt;p&gt;随着Windows 11的到来，微软在OOBE中强制要求用户登录微软账户，这很不方便。&lt;br /&gt;
+这篇文章将介绍如何跳过OOBE强制登录微软账户。&lt;/p&gt;
+&lt;h3&gt;适用于旧版Windows11的方法&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;在登录微软账号的页面上，用户名写&lt;code&gt;admin&lt;/code&gt;，密码随便写，后续创建本地账户即可。&lt;/li&gt;
+&lt;li&gt;在区域设置页按键盘上的&lt;code&gt;Shift+F10&lt;/code&gt;，打开cmd，输入 &lt;code&gt;start ms-cxh:localonly&lt;/code&gt; 回车，会弹出一个窗口，允许您创建一个本地账户。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3&gt;适用于新版Windows11的方法&lt;/h3&gt;
+&lt;p&gt;在推送 Win11 25H2/24H2 （Build 26220.6772/26120.6772）版本更新后，上面的方法已经失效。&lt;br /&gt;
+但截至目前依旧有很多方法可强制绕过微软账户登录。&lt;/p&gt;
+&lt;h4&gt;使用注册表键 BypassNRO&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;在区域设置页按键盘上的&lt;code&gt;Shift+F10&lt;/code&gt;，输入：&lt;code&gt;reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE /v BypassNRO /t REG_DWORD /d 1 /f&lt;/code&gt;并回车&lt;/li&gt;
+&lt;li&gt;断开互联网，输入&lt;code&gt;shutdown /r /t 0&lt;/code&gt;重启&lt;/li&gt;
+&lt;li&gt;重启后按提示选区域、键盘，点 &lt;code&gt;我没有互联网→继续使用有限设置&lt;/code&gt;，后续创建本地账户即可。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4&gt;运行 JavaScript 函数跳过 OOBE&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;按 &lt;code&gt;Ctrl+Shift+J&lt;/code&gt; 打开开发者控制台，输入&lt;code&gt;WinJS.Application.restart(&quot;ms-cxh://LOCALONLY&quot;)&lt;/code&gt;回车&lt;/li&gt;
+&lt;li&gt;按 &lt;code&gt;Esc&lt;/code&gt; 或点击屏幕关闭控制台，直接创建本地账户，完成隐私设置后进入桌面。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4&gt;禁用 OOBE 在线账户界面&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;Shift+F10&lt;/code&gt; 打开cmd，输入&lt;code&gt;reg add HKLM\Software\Microsoft\Windows\CurrentVersion\OOBE /v HideOnlineAccountScreens /t REG_DWORD /d 1 /f&lt;/code&gt;回车&lt;/li&gt;
+&lt;li&gt;关闭控制台并重启，按提示选区域、键盘，直接创建本地账户即可。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4&gt;Win11 专业版或企业版的 “加入域”&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;用 Win11 安装盘启动，按提示选语言、键盘，点 &lt;code&gt;安装 Windows 11&lt;/code&gt;，选 &lt;code&gt;我没有产品密钥&lt;/code&gt; 并&lt;code&gt;删除目标分区&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;安装后 OOBE 阶段，选 &lt;code&gt;为工作或学校设置→登录选项→改为加入域&lt;/code&gt;，直接创建本地账户。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4&gt;用 Rufus 制作启动盘&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;下载 &lt;code&gt;Rufus&lt;/code&gt;并打开，选择 Win11 ISO 文件和 USB 盘，勾选 &lt;code&gt;移除在线微软账户要求&lt;/code&gt;+&lt;code&gt;创建带有用户名的本地账户&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;用制作好的 U 盘启动安装，OOBE 阶段会自动跳过微软账户步骤，直接用预设本地账户进入系统。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4&gt;创建无人值守文件（autounattend.xml）&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;打开&lt;a href=&quot;https://schneegans.de/windows/unattend-generator/&quot;&gt;Generate autounattend.xml files for Windows 10/11&lt;/a&gt; 网站，选择语言、Win11 版本，勾选 &lt;code&gt;让 Windows 创建本地账户&lt;/code&gt; 并填写账户信息，下载 &lt;code&gt;autounattend.xml&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;用微软媒体创建工具制作 Win11 安装盘，将 &lt;code&gt;autounattend.xml&lt;/code&gt; 复制到 U 盘根目录，启动安装后会自动用本地账户完成配置。&lt;/li&gt;
+&lt;/ol&gt;
+</content:encoded></item><item><title>解决 Debian 12 微信客户端无法打开的问题</title><link>https://ikun-cxkpro.top/posts/%E8%A7%A3%E5%86%B3-debian-12-%E5%BE%AE%E4%BF%A1%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%97%A0%E6%B3%95%E6%89%93%E5%BC%80%E7%9A%84%E9%97%AE%E9%A2%98/</link><guid isPermaLink="true">https://ikun-cxkpro.top/posts/%E8%A7%A3%E5%86%B3-debian-12-%E5%BE%AE%E4%BF%A1%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%97%A0%E6%B3%95%E6%89%93%E5%BC%80%E7%9A%84%E9%97%AE%E9%A2%98/</guid><description>解决 Debian 12 微信客户端无法打开的问题(旧站备份)</description><pubDate>Wed, 09 Jul 2025 00:00:00 GMT</pubDate><content:encoded>&lt;h3&gt;微信版本？&lt;/h3&gt;
+&lt;p&gt;本文以微信linux 4.0.1.11 amd64为例（其他版本估计也差不多）&lt;/p&gt;
+&lt;h3&gt;什么问题？&lt;/h3&gt;
+&lt;p&gt;打开微信之后转了一会圈之后直接闪退，无法正常启动。&lt;/p&gt;
+&lt;h3&gt;找出问题&lt;/h3&gt;
+&lt;p&gt;1.先找到微信安装在哪里&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;ikun_cxkpro@CXKPRO-PC-debian:~$ whereis wechat&lt;br /&gt;
+wechat: /usr/bin/wechat&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;2.试试在命令行启动微信&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;ikun_cxkpro@CXKPRO-PC-debian:~$ /usr/bin/wechat&lt;br /&gt;
+/usr/bin/wechat: error while loading shared libraries: libatomic.so.1: cannot open shared object file: No such file or directory&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;可以看到，这里报了一个错误：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;/usr/bin/wechat: error while loading shared libraries: libatomic.so.1: cannot open shared object file: No such file or directory&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这是因为这个微信linux客户端需要libatomic.so.1，但是系统上并没有这个文件，所以这个微信linux客户端无法正常启动。&lt;/p&gt;
+&lt;h3&gt;解决问题&lt;/h3&gt;
+&lt;h4&gt;安装libatomic.so.1库&lt;/h4&gt;
+&lt;p&gt;libatomic.so.1 通常由 libatomic1 软件包提供。可以运行以下命令安装：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;sudo apt install libatomic1&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3&gt;再次启动微信&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;ikun_cxkpro@CXKPRO-PC-debian:~$ /usr/bin/wechat&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;可以看到，微信已经正常启动了，&lt;/p&gt;
+&lt;p&gt;问题成功解决。&lt;/p&gt;
+&lt;p&gt;希望此教程对于Debian12用户有所帮助。&lt;/p&gt;
+</content:encoded></item><item><title>沙雕刷屏器 V2.0</title><link>https://ikun-cxkpro.top/posts/%E6%B2%99%E9%9B%95%E5%88%B7%E5%B1%8F%E5%99%A8-v20/</link><guid isPermaLink="true">https://ikun-cxkpro.top/posts/%E6%B2%99%E9%9B%95%E5%88%B7%E5%B1%8F%E5%99%A8-v20/</guid><description>沙雕刷屏器 V2.0</description><pubDate>Tue, 25 Jun 2024 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;开发日期:2020-09-27 | 发布日期:2020-09-27 | 最新版本:V2.1 稳定版 | 更新日期:2024-06-25&lt;br /&gt;
+编写者:SDINI | 更新状态:&amp;lt;font color=&quot;red&quot;&amp;gt;停更&amp;lt;/font&amp;gt;&lt;/p&gt;
+&lt;h2&gt;软件简介&lt;/h2&gt;
+&lt;p&gt;本应用于2020年09月27日由SDINI编写制作，时隔4年，本应用第一次真正意义上的发布，本应用首个版本源代码已经丢失，此版本为2021年完工的版本  具体时间忘了。知道此程序的应该也是SDINI的老粉丝了，此程序兼容Skype、Teams、Telegram、WeChat、QQ等常见通讯应用，理论上只要支持Ctrl+V粘贴、Enter发送 的应用程序均可使用本刷屏器。&lt;/p&gt;
+&lt;h2&gt;软件属性&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;类型&lt;br /&gt;
+应用程序、实用工具&lt;/li&gt;
+&lt;li&gt;可能导致的问题&lt;br /&gt;
+导致计算机死机&lt;/li&gt;
+&lt;li&gt;配置要求&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;配置要求&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;处理器（必要）&lt;/strong&gt;&lt;br /&gt;
+基于x86 的 32位 或 64位 处理器 (若您的系统自带 x86 或 x86_64 转译器，可忽略本条)&lt;br /&gt;
+核心总数大于或等于1，单核主频高于1GHZ&lt;br /&gt;
+处理器总数大于或等于1&lt;/li&gt;
+&lt;li&gt;**内存 (必要)&lt;br /&gt;
+**可用内存大于或等于256MB&lt;br /&gt;
+推荐可用内存大于512MB&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;存储 (必要&lt;/strong&gt;)&lt;br /&gt;
+2MB 或 更高 的可用空间&lt;br /&gt;
+SSD 或 HDD 均可使用&lt;br /&gt;
+只读/可写 均可&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;人体学输入设备 (可选&lt;/strong&gt;)&lt;br /&gt;
+推荐:光标设备 (如鼠标、轨迹球等) 大于或等于1&lt;br /&gt;
+推荐:键盘 (任意格式，包含字母以及数字) 大于或等于1&lt;br /&gt;
+可使用RDP或VNC等应用程序远程控制方式不使用人体学输入设备使用本应用&lt;br /&gt;
+但可能需要包含以太网卡硬件才可实现此功能&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;网卡 (可选)&lt;br /&gt;
+若您要使用软件(如:RDP)远程控制本程序，您可能需要使用物理网卡将设备连接至网络&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;操作系统版本要求(满足以下任何一项均可):&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;PC操作系统：&lt;br /&gt;
+Microsoft Windows 2000&amp;lt;mark&amp;gt;(全版本)&amp;lt;/mark&amp;gt;&lt;br /&gt;
+Microsoft Windows XP&amp;lt;mark&amp;gt; (全版本)&amp;lt;/mark&amp;gt;&lt;br /&gt;
+Microsoft Windows Vista&amp;lt;mark&amp;gt;(全版本)&amp;lt;/mark&amp;gt;&lt;br /&gt;
+Microsoft Windows 7 &amp;lt;mark&amp;gt;(全版本)&amp;lt;/mark&amp;gt;&lt;br /&gt;
+Microsoft Windows 8&lt;br /&gt;
+Microsoft Windows 8.1&lt;br /&gt;
+Microsoft Windows 10&amp;lt;mark&amp;gt;(全版本)&amp;lt;/mark&amp;gt;&lt;br /&gt;
+Microsoft Windows 11&amp;lt;mark&amp;gt;(全版本) &amp;lt;/mark&amp;gt;
+Microsoft Windows 12 &amp;lt;mark&amp;gt;(全版本)&amp;lt;/mark&amp;gt;&lt;/li&gt;
+&lt;li&gt;SERVER操作系统&lt;br /&gt;
+Microsoft Windows Server 2003&amp;lt;mark&amp;gt; (全版本)&amp;lt;/mark&amp;gt;&lt;br /&gt;
+Microsoft Windows Server 2008&lt;br /&gt;
+Microsoft Windows Server 2008 R2&lt;br /&gt;
+Microsoft Windows Server 2012&lt;br /&gt;
+Microsoft Windows Server 2012 R2&lt;br /&gt;
+Microsoft Windows Server 2016&lt;br /&gt;
+Microsoft Windows Server 2019&lt;br /&gt;
+Microsoft Windows Server 2022&lt;br /&gt;
+Microsoft Windows Server 2025&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;&lt;strong&gt;操作系统环境要求:&lt;/strong&gt;&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;系统已安装GUI图形化&lt;/li&gt;
+&lt;li&gt;系统已安装VC++2005运行库&amp;lt;mark&amp;gt; (较高系统版本自带)&amp;lt;/mark&amp;gt;&lt;/li&gt;
+&lt;li&gt;系统已安装 中文(简体)语言包 且已将 “非 Unicode 程序所使用的当前语言” 修改为”中文(简体，中国)”&lt;/li&gt;
+&lt;li&gt;系统未经过第三方篡改 (在修改过的操作系统中本程序可能无法正常运行)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;PS:&lt;/p&gt;
+&lt;p&gt;仅支持基于NT4.X及以上内核版本的操作系统，且仅推荐在官方原版 Microsoft Windows 使用本程序&lt;br /&gt;
+部分第三方NT系统可能同样具备兼容本程序运行环境的要求，但在&amp;lt;font color=&quot;red&quot;&amp;gt;未经列出的系统版本中使用本程序所造成的一切后果自负&amp;lt;/font&amp;gt; (如:可能导致的系统崩溃、死机、蓝屏等)&lt;/p&gt;
+&lt;h2&gt;许可条款：&lt;/h2&gt;
+&lt;p&gt;严禁使用本程序进行任何有意或无意打扰他人的行为&lt;br /&gt;
+使用本程序所带来的一切后果作者将不承担任何责任&lt;br /&gt;
+&lt;strong&gt;下载即代表您同意此条款。&lt;/strong&gt;&lt;/p&gt;
+&lt;h2&gt;下载&lt;/h2&gt;
+&lt;p&gt;『来自123云盘VIP会员IKUN_CXKPRO的分享』沙雕刷屏器
+链接：https://www.123865.com/s/41h7Vv-oLEY3?pwd=I0KT#
+提取码：I0KT&lt;/p&gt;
+</content:encoded></item></channel></rss>

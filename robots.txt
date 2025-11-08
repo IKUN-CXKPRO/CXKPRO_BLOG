@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /_astro/
+
+Sitemap: https://ikun-cxkpro.top/sitemap-index.xml
