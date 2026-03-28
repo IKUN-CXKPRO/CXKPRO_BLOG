@@ -1,0 +1,116 @@
+---
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { Icon } from "astro-icon/components";
+---
+
+<MainGridLayout title="小米穿戴设备解锁" description="使用 MAC 地址和序列号 (SN) 生成解锁码。">
+  <div class="onload-animation">
+    <div class="card-base rounded-[var(--radius-large)] p-8 mb-6">
+      <div class="text-center">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-[var(--primary)] rounded-2xl mb-4">
+          <Icon name="material-symbols:lock-open" class="text-white text-3xl" />
+        </div>
+        <h1 class="text-3xl font-bold text-[var(--primary)] mb-3">Xiaomi-Wearable-Unlock</h1>
+        <p class="text-75 max-w-2xl mx-auto">解锁你的小米穿戴设备。</p>
+      </div>
+    </div>
+
+    <div class="card-base rounded-[var(--radius-large)] p-8 mb-6">
+      <div class="text-center">
+        <h2 class="text-xl font-bold text-90 mb-4 flex items-center">
+        <Icon name="material-symbols:help" class="mr-2 text-[var(--primary)]" />
+        如何使用
+      </h2>
+        <p class="text-75 max-w-2xl mx-auto">在忘记密码的说明页点击上下上下上上下下进入</p>
+      </div>
+    </div>
+    
+    <div class="card-base rounded-[var(--radius-large)] p-6 mb-6">
+      <h2 class="text-xl font-bold text-90 mb-4 flex items-center">
+        <Icon name="material-symbols:info" class="mr-2 text-[var(--primary)]" />
+        设备信息
+      </h2>
+      <div class="space-y-4">
+        <div>
+          <label for="mac" class="block text-sm font-medium text-90 mb-1">
+            MAC 地址
+          </label>
+          <input
+            id="mac"
+            type="text"
+            placeholder="eg：AA:BB:CC:DD:EE:FF"
+            class="w-full px-4 py-2 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg text-90 focus:outline-none focus:border-[var(--primary)] transition-colors"
+          />
+        </div>
+        <div>
+          <label for="sn" class="block text-sm font-medium text-90 mb-1">
+            序列号 (SN)
+          </label>
+          <input
+            id="sn"
+            type="text"
+            placeholder="eg：ABC123456789"
+            class="w-full px-4 py-2 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg text-90 focus:outline-none focus:border-[var(--primary)] transition-colors"
+          />
+        </div>
+        <button
+          id="generate-btn"
+          class="px-5 py-2.5 bg-[var(--primary)] text-white rounded-lg hover:opacity-80 transition-all duration-200 font-medium text-sm whitespace-nowrap"
+        >
+          生成解锁码
+        </button>
+      </div>
+    </div>
+
+    <div class="card-base rounded-[var(--radius-large)] p-6">
+      <h2 class="text-xl font-bold text-90 mb-4 flex items-center">
+        <Icon name="material-symbols:password" class="mr-2 text-[var(--primary)]" />
+        解锁码
+      </h2>
+      <div class="bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg p-4 min-h-[120px]">
+        <pre
+          id="output-area"
+          class="text-75 text-lg font-mono whitespace-pre-wrap break-words"
+        ></pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('generate-btn')?.addEventListener('click', async () => {
+      const macInput = document.getElementById('mac');
+      const snInput = document.getElementById('sn');
+      const outputArea = document.getElementById('output-area');
+
+      let mac = macInput?.value || '';
+      let sn = snInput?.value || '';
+
+      let cleanMac = mac.replace(/:/g, '').trim().toUpperCase();
+      let cleanSn = sn.trim();
+
+      if (!cleanMac || !cleanSn) {
+        outputArea.textContent = '请输入有效的 MAC 地址和SN。';
+        return;
+      }
+
+      let input = cleanMac + cleanSn + "XIAOMI";
+
+      try {
+        const enc = new TextEncoder();
+        const data = enc.encode(input);
+        const hashBuf = await crypto.subtle.digest('SHA-256', data);
+        const hash = new Uint8Array(hashBuf);
+
+        let code = '';
+        for (let i = 0; i < 10; i++) {
+          code += (hash[i] % 10).toString();
+        }
+
+        outputArea.textContent = code;
+      } catch (err) {
+        console.error('Error generating code:', err);
+        outputArea.textContent = '计算失败，请重试。';
+      }
+    });
+  </script>
+</MainGridLayout>

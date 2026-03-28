@@ -1,0 +1,53 @@
+{
+  "name": "oddmisc",
+  "version": "1.1.5",
+  "description": "杂七杂八奇怪小工具 npm 包",
+  "homepage": "https://github.com/yCENzh/oddmisc#readme",
+  "bugs": {
+    "url": "https://github.com/yCENzh/oddmisc/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yCENzh/oddmisc.git"
+  },
+  "author": "yCENzh",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublishOnly": "pnpm build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "umami",
+    "analytics",
+    "statistics",
+    "web-analytics",
+    "visitor-tracking",
+    "utilities",
+    "tools"
+  ],
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  }
+}
