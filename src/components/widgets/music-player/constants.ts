@@ -18,8 +18,8 @@ export const LOCAL_PLAYLIST: Song[] = [
 		id: 2,
 		title: "Try",
 		artist: "派伟俊&周杰伦",
-		cover: "assets/music/cover/Try - 派伟俊&周杰伦.jpg.webp",
-		url: "assets/music/music/Try - 派伟俊&周杰伦.mp3",
+		cover: "assets/music/cover/Try - 派伟俊 周杰伦.jpg.webp",
+		url: "assets/music/music/Try - 派伟俊 周杰伦.mp3",
 		duration: 0,
 	},
 	{
