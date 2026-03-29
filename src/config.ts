@@ -319,10 +319,10 @@ export const expressiveCodeConfig: ExpressiveCodeConfig = {
 
 // Comment
 export const commentConfig: CommentConfig = {
-	enable: false,
+	enable: false, // 启用评论功能。当设置为 false 时，评论组件将不会显示在文章区域。
 	twikoo: {
 		envId: "https://twikoo.vercel.app",
-		lang: "zh-cn",
+		lang: "zh-cn", // 设置 Twikoo 评论系统语言为zh-cn
 	},
 };
 
@@ -344,15 +344,24 @@ export const announcementConfig: AnnouncementConfig = {
 	},
 };
 
-// MusicPlayer
+// 音乐播放器,mode: "meting"
+// export const musicPlayerConfig: MusicPlayerConfig = {
+// 	enable: true,
+// 	mode: "meting",
+// 	meting_api: "https://www.bilibili.uno/api?server=:server&type=:type&id=:id&auth=:auth&r=:r",
+// 	id: "17470364673",
+// 	server: "netease",
+// 	type: "playlist",
+// 	showFloatingPlayer: true
+// };
+
+
+// 音乐播放器,mode: "local"
+//local歌单配置文件: /src/components/widgets/music-player/constants.ts
 export const musicPlayerConfig: MusicPlayerConfig = {
 	enable: true,
-	mode: "meting",
-	meting_api:
-		"https://www.bilibili.uno/api?server=:server&type=:type&id=:id&auth=:auth&r=:r",
-	id: "17470364673",
-	server: "netease",
-	type: "playlist",
+	mode: "local",
+	showFloatingPlayer: true, // 是否显示悬浮播放器入口
 };
 
 // Footer
