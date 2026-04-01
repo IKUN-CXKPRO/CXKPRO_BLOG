@@ -1,0 +1,399 @@
+---
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { Icon } from "astro-icon/components";
+---
+
+<MainGridLayout title="小米运动健康AuthKey提取器" description="从日志 ZIP 文件中提取小米穿戴设备的 AuthKey。">
+  <div class="onload-animation space-y-6">
+    
+    <!-- 头部介绍卡片 -->
+    <div class="card-base rounded-[var(--radius-large)] p-8 mb-6">
+      <div class="text-center">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-[var(--primary)] rounded-2xl mb-4">
+          <Icon name="material-symbols:key" class="text-white text-3xl" />
+        </div>
+        <h1 class="text-3xl font-bold text-[var(--primary)] mb-3">AuthKey提取器</h1>
+        <p class="text-75 max-w-2xl mx-auto">从安卓小米运动健康APP日志中提取设备连接所需的 AuthKey。</p>
+      </div>
+    </div>
+
+    <!-- 使用说明卡片 -->
+    <div class="card-base rounded-[var(--radius-large)] p-8 mb-6">
+      <div class="text-center">
+        <h2 class="text-xl font-bold text-90 mb-4 flex items-center justify-center">
+          <Icon name="material-symbols:help" class="mr-2 text-[var(--primary)]" />
+          如何获取日志
+        </h2>
+        <ol class="text-75 max-w-2xl mx-auto text-left space-y-2 list-decimal list-inside bg-[var(--card-bg)] p-4 rounded-lg">
+          <li>打开小米运动健康 APP</li>
+          <li>点击右下角"我的" -> 滑动到最下方选择"关于"</li>
+          <li>连续点击关于页面上方的logo，直到弹出日志保存提示</li>
+          <li>在文件管理器中找到 <code class="bg-[var(--line-divider)] px-1 rounded">Download/wearablelog/****.zip</code></li>
+          <li>上传文件</li>
+        </ol>
+      </div>
+    </div>
+    
+    <!-- 上传区域卡片 -->
+    <div class="card-base rounded-[var(--radius-large)] p-6 mb-6">
+      <h2 class="text-xl font-bold text-90 mb-4 flex items-center">
+        <Icon name="material-symbols:upload-file" class="mr-2 text-[var(--primary)]" />
+        上传日志文件
+      </h2>
+      
+      <div 
+        id="uploadArea"
+        class="border-2 border-dashed border-[var(--line-divider)] rounded-lg p-8 text-center cursor-pointer transition-colors hover:border-[var(--primary)] hover:bg-[var(--card-bg)]"
+      >
+        <p class="text-75 text-90">点击选择或拖拽日志 ZIP 文件到此处</p>
+        <p class="text-75 text-90">提示：本网页仅支持提取安卓端小米运动健康APP的log</p>
+        <input type="file" id="zipFileInput" accept=".zip" class="hidden">
+      </div>
+      
+      <div id="fileInfo" class="hidden mt-4 p-3 bg-[var(--card-bg)] rounded-lg text-sm text-90">
+        <strong>已选择文件:</strong> <span id="fileName" class="text-[var(--primary)]"></span>
+      </div>
+    </div>
+
+    <!-- 结果展示区域 -->
+    <div class="card-base rounded-[var(--radius-large)] p-6">
+      <h2 class="text-xl font-bold text-90 mb-4 flex items-center">
+        <Icon name="material-symbols:password" class="mr-2 text-[var(--primary)]" />
+        提取结果
+      </h2>
+      <div id="resultContainer" class="space-y-4">
+        <div class="text-75 text-center text-gray-500 py-8">
+          请上传 ZIP 文件以开始提取...
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <style>
+    .drag-over {
+      border-color: var(--primary) !important;
+      background-color: var(--card-bg) !important;
+    }
+    .copyable-text {
+      text-decoration: underline;
+      cursor: pointer;
+      color: var(--primary);
+      font-weight: 500;
+      transition: opacity 0.2s;
+    }
+    .copyable-text:hover {
+      opacity: 0.8;
+    }
+    .copy-success-message {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background-color: var(--card-bg);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: var(--radius-large);
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      font-family: inherit;
+      font-size: 14px;
+      animation: fadeIn 0.3s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+
+  <script>
+    const JSZip = (await import('jszip')).default; //在客户端 script 内部动态导入 JSZip
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const zipFileInput = document.getElementById('zipFileInput');
+      const uploadArea = document.getElementById('uploadArea');
+      const resultContainer = document.getElementById('resultContainer');
+      const fileInfo = document.getElementById('fileInfo');
+      const fileNameSpan = document.getElementById('fileName');
+      
+      let currentZip = null;
+      let selectedLogFile = null;
+      
+      uploadArea.addEventListener('click', () => zipFileInput.click());
+      zipFileInput.addEventListener('change', () => handleFileSelect());
+      
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }, false);
+      });
+      
+      ['dragenter', 'dragover'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, () => uploadArea.classList.add('drag-over'), false);
+      });
+      
+      ['dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, () => uploadArea.classList.remove('drag-over'), false);
+      });
+      
+      uploadArea.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          const file = files[0];
+          if (file.name.toLowerCase().endsWith('.zip')) {
+            handleFileSelect(file);
+          } else {
+            showError('请选择 .zip 格式的文件');
+          }
+        }
+      }, false);
+      
+      function handleFileSelect(droppedFile = null) {
+        const file = droppedFile || (zipFileInput.files && zipFileInput.files[0]);
+        if (file) {
+          fileNameSpan.textContent = file.name;
+          fileInfo.classList.remove('hidden');
+          loadAndExtract(file);
+        }
+      }
+      
+      async function loadAndExtract(file) {
+        try {
+          resultContainer.innerHTML = '<div class="text-center text-75 text-gray-500 py-4">正在加载 ZIP 文件...</div>';
+          
+          const arrayBuffer = await file.arrayBuffer();
+          currentZip = await JSZip.loadAsync(arrayBuffer);
+          
+          let mainLogFile = null;
+          for (const fileName in currentZip.files) {
+            if (fileName.toLowerCase().includes('xiaomifit.main.log')) {
+              mainLogFile = fileName;
+              break;
+            }
+          }
+          
+          if (mainLogFile) {
+            selectedLogFile = mainLogFile;
+            resultContainer.innerHTML = `<div class="text-center text-75 text-[var(--primary)] py-4">✓ 已找到日志文件，正在解析...</div>`;
+            await extractData();
+          } else {
+            const logFiles = Object.keys(currentZip.files).filter(f => 
+              f.toLowerCase().endsWith('.log') && !currentZip.files[f].dir
+            );
+            
+            if (logFiles.length > 0) {
+              selectedLogFile = logFiles[0];
+              resultContainer.innerHTML = `<div class="text-center text-75 text-[var(--primary)] py-4">⚠ 未找到主日志，尝试使用: ${selectedLogFile}</div>`;
+              await extractData();
+            } else {
+              showError('ZIP 文件中未找到任何 .log 日志文件');
+            }
+          }
+        } catch (error) {
+          console.error('ZIP 处理错误:', error);
+          showError(`解析失败: ${error.message || error}`);
+        }
+      }
+      
+      async function extractData() {
+        if (!currentZip || !selectedLogFile) {
+          showError('请先选择一个日志文件');
+          return;
+        }
+        
+        resultContainer.innerHTML = '<div class="text-center text-75 text-gray-500 py-4">正在处理日志文件...</div>';
+        
+        try {
+          const logFile = currentZip.file(selectedLogFile);
+          if (!logFile) throw new Error(`无法找到文件: ${selectedLogFile}`);
+          
+          const content = await logFile.async('text');
+          const results = parseLogContent(content);
+          
+          if (results.length > 0) {
+            displayResult(results, selectedLogFile);
+          } else {
+            const altResults = parseAlternativeFormat(content);
+            if (altResults.length > 0) {
+              displayResult(altResults, selectedLogFile);
+            } else {
+              showError(`在日志文件 "${selectedLogFile}" 中未找到 productName 或 token 信息`);
+            }
+          }
+        } catch (error) {
+          console.error('处理文件时出错:', error);
+          showError(`处理文件时出错: ${error.message}`);
+        }
+      }
+      
+      function parseLogContent(content) {
+        const results = [];
+        const jsonLineRegex = /({[^{}]*"productName"[^{}]*"token"[^{}]*})|({[^{}]*"token"[^{}]*"productName"[^{}]*})/g;
+        let match;
+        
+        while ((match = jsonLineRegex.exec(content)) !== null) {
+          try {
+            const jsonObj = JSON.parse(match[0]);
+            if (jsonObj.productName || jsonObj.token) {
+              const exists = results.some(item => 
+                item.productName === jsonObj.productName && 
+                item.token === jsonObj.token
+              );
+              if (!exists) {
+                results.push({
+                  productName: jsonObj.productName || null,
+                  token: jsonObj.token || null
+                });
+              }
+            }
+          } catch (e) {}
+        }
+        return results;
+      }
+      
+      function parseAlternativeFormat(content) {
+        const results = [];
+        const productNameRegex = /["']?productName["']?\s*[=:]\s*["']([^"']+)["']/g;
+        const tokenRegex = /["']?token["']?\s*[=:]\s*["']([^"']+)["']/g;
+        
+        const productNames = [], tokens = [];
+        let m;
+        productNameRegex.lastIndex = 0;
+        while ((m = productNameRegex.exec(content)) !== null) productNames.push(m[1]);
+        tokenRegex.lastIndex = 0;
+        while ((m = tokenRegex.exec(content)) !== null) tokens.push(m[1]);
+        
+        const maxLen = Math.max(productNames.length, tokens.length);
+        for (let i = 0; i < maxLen; i++) {
+          const pn = productNames[i] || null, tk = tokens[i] || null;
+          const exists = results.some(r => r.productName === pn && r.token === tk);
+          if (!exists && (pn || tk)) results.push({ productName: pn, token: tk });
+        }
+        return results;
+      }
+      
+      function displayResult(results, fileName) {
+        resultContainer.innerHTML = '';
+        
+        const successCard = document.createElement('div');
+        successCard.className = 'card-base rounded-[var(--radius-large)] p-5 bg-[var(--card-bg)] border border-[var(--line-divider)]';
+        
+        const cardHeader = document.createElement('div');
+        cardHeader.className = 'flex items-center mb-4 pb-3 border-b border-[var(--line-divider)]';
+        const checkIconSvg = `<svg class="w-6 h-6 text-[var(--primary)] mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+        
+        cardHeader.innerHTML = `
+          ${checkIconSvg}
+          <div>
+            <h3 class="text-lg font-bold text-90">提取成功</h3>
+            <p class="text-75 text-gray-500">来源文件: <span class="text-[var(--primary)] font-mono">${fileName}</span></p>
+          </div>
+        `;
+        successCard.appendChild(cardHeader);
+        
+        const resultList = document.createElement('div');
+        resultList.className = 'space-y-3';
+        
+        if (results.length === 0) {
+          resultList.innerHTML = '<p class="text-75 text-gray-500 text-center py-4">未找到匹配的数据</p>';
+        } else {
+          results.forEach((result, index) => {
+            if (!result.productName && !result.token) return;
+            
+            const itemCard = document.createElement('div');
+            itemCard.className = 'rounded-lg bg-[var(--card-bg)] border border-[var(--line-divider)] p-4';
+            
+            const itemTitle = document.createElement('div');
+            itemTitle.className = 'flex items-center text-sm font-medium text-90 mb-3';
+            itemTitle.innerHTML = `
+              <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[var(--primary)] text-white text-xs mr-2">${index + 1}</span>
+              设备记录
+            `;
+            itemCard.appendChild(itemTitle);
+            
+            if (result.productName) {
+              const nameRow = document.createElement('div');
+              nameRow.className = 'flex items-start py-2 border-b border-[var(--line-divider)] last:border-0';
+              nameRow.innerHTML = `
+                <span class="text-75 text-gray-500 w-20 flex-shrink-0">产品名称</span>
+                <span class="text-90 font-mono text-sm break-all">${result.productName}</span>
+              `;
+              itemCard.appendChild(nameRow);
+            }
+            
+            if (result.token) {
+              const tokenRow = document.createElement('div');
+              tokenRow.className = 'flex items-start py-2';
+              // 转义 token 以防 XSS
+              const safeToken = result.token.replace(/'/g, "\\'"); 
+              tokenRow.innerHTML = `
+                <span class="text-75 text-gray-500 w-20 flex-shrink-0">AuthKey</span>
+                <div class="flex-1 flex items-center gap-2">
+                  <span class="copyable-text font-mono text-sm break-all flex-1" title="点击复制">${result.token}</span>
+                  <button class="px-3 py-1.5 text-xs font-medium text-[var(--primary)] bg-[var(--primary)]/10 rounded-lg hover:bg-[var(--primary)]/20 transition-colors whitespace-nowrap" onclick="window.copyToClipboard('${safeToken}')">
+                    复制
+                  </button>
+                </div>
+              `;
+              itemCard.appendChild(tokenRow);
+            }
+            
+            resultList.appendChild(itemCard);
+          });
+        }
+        
+        successCard.appendChild(resultList);
+        resultContainer.appendChild(successCard);
+      }
+
+      function showError(message) {
+        const errorIconSvg = `<svg class="w-6 h-6 text-red-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+        resultContainer.innerHTML = `
+          <div class="card-base rounded-[var(--radius-large)] p-5 bg-[var(--card-bg)] border border-[var(--line-divider)]">
+            <div class="flex items-center">
+              ${errorIconSvg}
+              <div>
+                <h3 class="text-lg font-bold text-90">提取失败</h3>
+                <p class="text-75 text-gray-500 mt-1">${message}</p>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // 挂载到 window 以便 onclick 调用
+      window.copyToClipboard = function(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text).then(() => showMessage('✓ 已复制到剪贴板')).catch(fallbackCopy);
+        } else {
+          fallbackCopy();
+        }
+        function fallbackCopy() {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.cssText = 'position:fixed;opacity:0;';
+          document.body.appendChild(ta);
+          ta.select();
+          try {
+            document.execCommand('copy');
+            showMessage('✓ 已复制到剪贴板');
+          } catch {
+            showMessage('复制失败，请手动复制');
+          }
+          document.body.removeChild(ta);
+        }
+      };
+
+      function showMessage(msg) {
+        const existing = document.querySelector('.copy-success-message');
+        if (existing) existing.remove();
+        const el = document.createElement('div');
+        el.className = 'copy-success-message';
+        el.textContent = msg;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 2000);
+      }
+    });
+  </script>
+</MainGridLayout>

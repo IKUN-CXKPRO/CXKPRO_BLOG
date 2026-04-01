@@ -239,6 +239,11 @@ export const navBarConfig: NavBarConfig = {
 			icon: "material-symbols:more-horiz",
 			children: [
 				{
+					name: "小米运动健康AuthKey提取器",
+					url: "/miwear-auth/",
+					icon: "material-symbols:work",
+				},
+				{
 					name: "小米穿戴设备解锁码计算",
 					url: "/Xiaomi-Wearable-Unlock/",
 					icon: "material-symbols:work",
