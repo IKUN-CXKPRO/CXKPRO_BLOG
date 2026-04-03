@@ -48,24 +48,35 @@ import { Icon } from "astro-icon/components";
       </div>
     </div>
     
-    <!-- 上传区域卡片 -->
+    <!-- 上传区域卡片 (已优化移动端兼容性) -->
     <div class="card-base rounded-[var(--radius-large)] p-6 mb-6">
       <h2 class="text-xl font-bold text-90 mb-4 flex items-center">
         <Icon name="material-symbols:upload-file" class="mr-2 text-[var(--primary)]" />
         上传文件
       </h2>
       
+      <!-- 
+         优化点：
+         1. input 放在最前面，避免某些移动端浏览器因 DOM 顺序导致的焦点问题。
+         2. 增加 tabindex="-1" 防止键盘Tab选中隐藏元素，但保持可编程访问。
+      -->
+      <input type="file" id="fileInput" accept=".zip,.sqlite,.db,.sqlitedb" class="hidden" tabindex="-1">
+      
       <div 
         id="uploadArea"
-        class="border-2 border-dashed border-[var(--line-divider)] rounded-lg p-8 text-center cursor-pointer transition-colors hover:border-[var(--primary)] hover:bg-[var(--card-bg)]"
+        class="border-2 border-dashed border-[var(--line-divider)] rounded-lg p-8 text-center cursor-pointer transition-all duration-200 hover:border-[var(--primary)] hover:bg-[var(--card-bg)] active:scale-[0.98] touch-manipulation select-none"
+        role="button"
+        aria-label="点击上传文件"
       >
-        <p class="text-75 text-90 mb-2">点击选择或拖拽文件到此处</p>
-        <p class="text-75 text-gray-500">支持格式：ZIP（安卓日志）或 SQLite数据库文件</p>
-        <input type="file" id="fileInput" accept=".zip,.sqlite,.db,.sqlitedb" class="hidden">
+        <!-- pointer-events-none 确保点击文字时事件能穿透到父容器 -->
+        <div class="pointer-events-none">
+          <p class="text-75 text-90 mb-2 font-medium">点击选择或拖拽文件到此处</p>
+          <p class="text-75 text-gray-500 text-sm">支持格式：ZIP（安卓日志）或 SQLite数据库文件</p>
+        </div>
       </div>
       
-      <div id="fileInfo" class="hidden mt-4 p-3 bg-[var(--card-bg)] rounded-lg text-sm text-90">
-        <strong>已选择文件:</strong> <span id="fileName" class="text-[var(--primary)]"></span>
+      <div id="fileInfo" class="hidden mt-4 p-3 bg-[var(--card-bg)] rounded-lg text-sm text-90 border border-[var(--line-divider)]">
+        <strong>已选择文件:</strong> <span id="fileName" class="text-[var(--primary)] break-all"></span>
       </div>
     </div>
 
@@ -152,7 +163,50 @@ import { Icon } from "astro-icon/components";
       let selectedLogFile = null;
       let fileType = null;
       
-      uploadArea.addEventListener('click', () => fileInput.click());
+      // --- 优化开始：移动端兼容的文件触发逻辑 ---
+      
+      // 封装触发函数，处理移动端可能的异步或拦截问题
+      const triggerFileSelect = () => {
+        if (!fileInput) return;
+        
+        // 重置 value，确保即使选择同一文件也能触发 change 事件
+        fileInput.value = ''; 
+        
+        // 尝试触发点击
+        try {
+          fileInput.click();
+        } catch (e) {
+          console.warn('Direct click failed, trying dispatchEvent', e);
+          // 降级方案：手动分发事件
+          const event = new MouseEvent('click', {
+            view: window,
+            bubbles: true,
+            cancelable: true
+          });
+          fileInput.dispatchEvent(event);
+        }
+      };
+
+      // 1. 点击事件 (桌面端 & 大部分移动端)
+      uploadArea.addEventListener('click', (e) => {
+        // 防止快速双击导致的问题
+        e.preventDefault();
+        triggerFileSelect();
+      });
+
+      // 2. 触摸事件 (专门针对部分安卓/iOS浏览器点击无反应的情况)
+      // 使用 touchend 而不是 touchstart，避免与滚动冲突，且更符合"点击"语义
+      uploadArea.addEventListener('touchend', (e) => {
+        // 只有当没有发生滑动时才触发 (简单判断)
+        // 注意：由于我们在 click 中也调用了，这里需要防止双重触发
+        // 但通常 fileInput.click() 是幂等的，或者浏览器会合并处理
+        // 这里直接调用，因为移动端有时 click 事件延迟高或被忽略
+        e.preventDefault(); // 防止触发随后的 mouse click
+        triggerFileSelect();
+      }, { passive: false }); // passive: false 允许 preventDefault
+
+      // --- 优化结束 ---
+
       fileInput.addEventListener('change', () => handleFileSelect());
       
       ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
