@@ -73,6 +73,7 @@
 		"sanitize-html": "^2.17.1",
 		"satori": "^0.19.2",
 		"sharp": "^0.34.5",
+		"sql.js": "^1.14.1",
 		"stylus": "^0.64.0",
 		"svelte": "^5.53.6",
 		"tailwindcss": "^4.0.0",

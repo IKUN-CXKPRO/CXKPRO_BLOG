@@ -17,6 +17,11 @@ import remarkDirective from "remark-directive";
 import remarkMath from "remark-math";
 import remarkSectionize from "remark-sectionize";
 
+// 🔑 新增导入：用于复制 WASM 文件
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { siteConfig } from "./src/config.ts";
 import { pluginCustomCopyButton } from "./src/plugins/expressive-code/custom-copy-button.js";
 import { pluginLanguageBadge } from "./src/plugins/expressive-code/language-badge.ts";
@@ -38,6 +43,9 @@ export default defineConfig({
 
 	output: "static",
 
+	// 🔑 新增：确保 public 目录被正确识别（默认就是 'public'）
+	publicDir: "public",
+
 	integrations: [
 		umami({
 			shareUrl: false,
@@ -46,18 +54,16 @@ export default defineConfig({
 			theme: false,
 			animationClass: "transition-swup-",
 			containers: ["main"],
-			smoothScrolling: false, // 禁用平滑滚动以提升性能，避免与锚点导航冲突
+			smoothScrolling: false,
 			cache: true,
-			preload: false, // 禁用预加载以提升性能
+			preload: false,
 			accessibility: true,
 			updateHead: process.env.NODE_ENV === "production",
 			updateBodyClass: false,
 			globalInstance: true,
-			// 滚动相关配置优化
 			resolveUrl: (url) => url,
 			animateHistoryBrowsing: false,
 			skipPopStateHandling: (event) => {
-				// 跳过锚点链接的处理，让浏览器原生处理
 				return (
 					event.state &&
 					event.state.url &&
@@ -178,15 +184,23 @@ export default defineConfig({
 	vite: {
 		plugins: [tailwindcss()],
 		build: {
-			// 静态资源处理优化，防止小图片转 base64 导致 HTML 体积过大
+			// 静态资源处理优化
 			assetsInlineLimit: 4096,
-			// CSS 代码分割
 			cssCodeSplit: true,
 			cssMinify: "esbuild",
-			// 内联小型 CSS 文件以减少网络请求
 			inlineStylesheets: "auto",
-			// 生产环境移除 console 和 debugger
 			minify: "esbuild",
+			
+			// 🔑 新增：Vite 5+ 支持 build.copy 复制静态文件
+			// 将 sql.js 的 WASM 文件复制到构建输出目录
+			copy: [
+				{
+					src: "node_modules/sql.js/dist/sql-wasm.wasm",
+					dest: ".",
+					rename: "sql-wasm.wasm"
+				}
+			],
+			
 			rollupOptions: {
 				onwarn(warning, warn) {
 					if (
@@ -210,5 +224,40 @@ export default defineConfig({
 					? ["console", "debugger"]
 					: [],
 		},
+		
+		// 🔑 新增：开发服务器也提供 WASM 文件
+		// 通过配置 server.fs.allow 确保能访问 node_modules
+		server: {
+			fs: {
+				allow: [".."]
+			}
+		}
+	},
+	
+	// 🔑 新增：构建前自动复制 WASM 文件（兼容所有 Vite 版本）
+	// 作为 build.copy 的备用方案，确保万无一失
+	onBuildStart: () => {
+		const __dirname = path.dirname(fileURLToPath(import.meta.url));
+		const wasmSrc = path.join(__dirname, "node_modules/sql.js/dist/sql-wasm.wasm");
+		const wasmDest = path.join(__dirname, "public/sql-wasm.wasm");
+		
+		// 确保 public 目录存在
+		const publicDir = path.join(__dirname, "public");
+		if (!fs.existsSync(publicDir)) {
+			fs.mkdirSync(publicDir, { recursive: true });
+		}
+		
+		// 复制 WASM 文件（如果源文件存在且目标不存在或不同）
+		if (fs.existsSync(wasmSrc)) {
+			const srcStat = fs.statSync(wasmSrc);
+			const destExists = fs.existsSync(wasmDest);
+			
+			if (!destExists || fs.statSync(wasmDest).mtimeMs < srcStat.mtimeMs) {
+				fs.copyFileSync(wasmSrc, wasmDest);
+				console.log("✓ sql-wasm.wasm 已复制到 public 目录");
+			}
+		} else {
+			console.warn("⚠ 未找到 sql-wasm.wasm，请确保已安装 sql.js: pnpm add sql.js");
+		}
 	},
 });

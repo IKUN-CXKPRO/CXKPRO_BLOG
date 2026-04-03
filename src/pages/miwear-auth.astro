@@ -3,7 +3,7 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { Icon } from "astro-icon/components";
 ---
 
-<MainGridLayout title="小米运动健康AuthKey提取器" description="从日志 ZIP 文件中提取小米穿戴设备的 AuthKey。">
+<MainGridLayout title="小米运动健康AuthKey提取器" description="从安卓日志或iOS数据库中提取小米穿戴设备的 AuthKey。">
   <div class="onload-animation space-y-6">
     
     <!-- 头部介绍卡片 -->
@@ -13,23 +13,37 @@ import { Icon } from "astro-icon/components";
           <Icon name="material-symbols:key" class="text-white text-3xl" />
         </div>
         <h1 class="text-3xl font-bold text-[var(--primary)] mb-3">AuthKey提取器</h1>
-        <p class="text-75 max-w-2xl mx-auto">从安卓小米运动健康APP日志中提取设备连接所需的 AuthKey。</p>
+        <p class="text-75 max-w-2xl mx-auto">支持从安卓日志ZIP或iOS数据库文件中提取设备连接所需的 AuthKey。</p>
       </div>
     </div>
 
-    <!-- 使用说明卡片 -->
+    <!-- 使用说明卡片 - 安卓 -->
     <div class="card-base rounded-[var(--radius-large)] p-8 mb-6">
       <div class="text-center">
         <h2 class="text-xl font-bold text-90 mb-4 flex items-center justify-center">
-          <Icon name="material-symbols:help" class="mr-2 text-[var(--primary)]" />
-          如何获取日志
+          <Icon name="material-symbols:android" class="mr-2 text-[var(--primary)]" />
+          安卓端提取方法
         </h2>
         <ol class="text-75 max-w-2xl mx-auto text-left space-y-2 list-decimal list-inside bg-[var(--card-bg)] p-4 rounded-lg">
           <li>打开小米运动健康 APP</li>
           <li>点击右下角"我的" -> 滑动到最下方选择"关于"</li>
           <li>连续点击关于页面上方的logo，直到弹出日志保存提示</li>
           <li>在文件管理器中找到 <code class="bg-[var(--line-divider)] px-1 rounded">Download/wearablelog/****.zip</code></li>
-          <li>上传文件</li>
+          <li>上传该ZIP文件</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- 使用说明卡片 - iOS -->
+    <div class="card-base rounded-[var(--radius-large)] p-8 mb-6">
+      <div class="text-center">
+        <h2 class="text-xl font-bold text-90 mb-4 flex items-center justify-center">
+          <Icon name="material-symbols:phone-iphone" class="mr-2 text-[var(--primary)]" />
+          iOS端提取方法
+        </h2>
+        <ol class="text-75 max-w-2xl mx-auto text-left space-y-2 list-decimal list-inside bg-[var(--card-bg)] p-4 rounded-lg">
+          <li></li>
+          <li>系统会自动查找 <span class="text-[var(--primary)] font-mono">encrypt_key</span> 或序列号附近的AuthKey</li>
         </ol>
       </div>
     </div>
@@ -38,16 +52,16 @@ import { Icon } from "astro-icon/components";
     <div class="card-base rounded-[var(--radius-large)] p-6 mb-6">
       <h2 class="text-xl font-bold text-90 mb-4 flex items-center">
         <Icon name="material-symbols:upload-file" class="mr-2 text-[var(--primary)]" />
-        上传日志文件
+        上传文件
       </h2>
       
       <div 
         id="uploadArea"
         class="border-2 border-dashed border-[var(--line-divider)] rounded-lg p-8 text-center cursor-pointer transition-colors hover:border-[var(--primary)] hover:bg-[var(--card-bg)]"
       >
-        <p class="text-75 text-90">点击选择或拖拽日志 ZIP 文件到此处</p>
-        <p class="text-75 text-90">提示：本网页仅支持提取安卓端小米运动健康APP的log</p>
-        <input type="file" id="zipFileInput" accept=".zip" class="hidden">
+        <p class="text-75 text-90 mb-2">点击选择或拖拽文件到此处</p>
+        <p class="text-75 text-gray-500">支持格式：ZIP（安卓日志）或 SQLite数据库文件</p>
+        <input type="file" id="fileInput" accept=".zip,.sqlite,.db,.sqlitedb" class="hidden">
       </div>
       
       <div id="fileInfo" class="hidden mt-4 p-3 bg-[var(--card-bg)] rounded-lg text-sm text-90">
@@ -63,7 +77,7 @@ import { Icon } from "astro-icon/components";
       </h2>
       <div id="resultContainer" class="space-y-4">
         <div class="text-75 text-center text-gray-500 py-8">
-          请上传 ZIP 文件以开始提取...
+          请上传文件以开始提取...
         </div>
       </div>
     </div>
@@ -104,13 +118,31 @@ import { Icon } from "astro-icon/components";
       from { opacity: 0; transform: translateY(-10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    .debug-section {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .debug-card {
+      background: var(--card-bg);
+      border: 1px solid var(--line-divider);
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+    .debug-card pre {
+      font-family: ui-monospace, monospace;
+      font-size: 0.75rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: var(--text-color);
+    }
   </style>
 
   <script>
-    const JSZip = (await import('jszip')).default; //在客户端 script 内部动态导入 JSZip
+    const JSZip = (await import('jszip')).default;
 
     document.addEventListener('DOMContentLoaded', function() {
-      const zipFileInput = document.getElementById('zipFileInput');
+      const fileInput = document.getElementById('fileInput');
       const uploadArea = document.getElementById('uploadArea');
       const resultContainer = document.getElementById('resultContainer');
       const fileInfo = document.getElementById('fileInfo');
@@ -118,9 +150,10 @@ import { Icon } from "astro-icon/components";
       
       let currentZip = null;
       let selectedLogFile = null;
+      let fileType = null;
       
-      uploadArea.addEventListener('click', () => zipFileInput.click());
-      zipFileInput.addEventListener('change', () => handleFileSelect());
+      uploadArea.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', () => handleFileSelect());
       
       ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         uploadArea.addEventListener(eventName, (e) => {
@@ -141,21 +174,240 @@ import { Icon } from "astro-icon/components";
         const files = e.dataTransfer.files;
         if (files.length > 0) {
           const file = files[0];
-          if (file.name.toLowerCase().endsWith('.zip')) {
+          if (isValidFileType(file)) {
             handleFileSelect(file);
           } else {
-            showError('请选择 .zip 格式的文件');
+            showError('请选择 .zip 或 .sqlite/.db 格式的文件');
           }
         }
       }, false);
       
+      function isValidFileType(file) {
+        const name = file.name.toLowerCase();
+        return name.endsWith('.zip') || name.endsWith('.sqlite') || name.endsWith('.db') || name.endsWith('.sqlitedb');
+      }
+      
       function handleFileSelect(droppedFile = null) {
-        const file = droppedFile || (zipFileInput.files && zipFileInput.files[0]);
+        const file = droppedFile || (fileInput.files && fileInput.files[0]);
         if (file) {
           fileNameSpan.textContent = file.name;
           fileInfo.classList.remove('hidden');
-          loadAndExtract(file);
+          
+          if (file.name.toLowerCase().endsWith('.zip')) {
+            fileType = 'android-log';
+            loadAndExtract(file);
+          } else {
+            fileType = 'ios-sqlite';
+            extractFromSQLite(file);
+          }
         }
+      }
+      
+      async function extractFromSQLite(file) {
+        try {
+          resultContainer.innerHTML = '<div class="text-center text-75 text-gray-500 py-4">正在加载 SQLite 数据库...</div>';
+          
+          const sqlJsModule = await import('sql.js');
+          const initSqlJs = sqlJsModule.default;
+          
+          const SQL = await initSqlJs({
+            locateFile: (file) => {
+              if (file === 'sql-wasm.wasm' || file === 'sql-wasm-browser.wasm') {
+                return '../sql-wasm-browser.wasm';
+              }
+              return file;
+            }
+          });
+          
+          const arrayBuffer = await file.arrayBuffer();
+          const uint8Array = new Uint8Array(arrayBuffer);
+          const db = new SQL.Database(uint8Array);
+          
+          const results = [];
+          let allDebugInfo = [];
+          
+          // 方法1：查找包含 encrypt_key 的表
+          try {
+            const tables = db.exec("SELECT name FROM sqlite_master WHERE type='table'");
+            if (tables.length > 0) {
+              for (const tableRow of tables[0].values) {
+                const tableName = tableRow[0];
+                try {
+                  const stmt = db.prepare(`SELECT * FROM "${tableName}"`);
+                  while (stmt.step()) {
+                    const row = stmt.get();
+                    const rowData = JSON.stringify(row);
+                    
+                    if (rowData.includes('encrypt_key') || rowData.includes('auth_key') || rowData.includes('authkey')) {
+                      const extracted = parseSQLiteRow(row, stmt.getColumnNames());
+                      if (extracted) {
+                        results.push(extracted);
+                      }
+                    }
+                  }
+                  stmt.free();
+                } catch (e) {}
+              }
+            }
+          } catch (e) {
+            console.error('查询表失败:', e);
+          }
+          
+          // 方法2：在二进制数据中直接搜索
+          if (results.length === 0) {
+            const textContent = await file.text();
+            const parseResult = parseSQLiteBinaryContent(textContent);
+            allDebugInfo = parseResult.debugInfo;
+            
+            if (parseResult.results && parseResult.results.length > 0) {
+              results.push(...parseResult.results);
+            }
+          }
+          
+          db.close();
+          
+          if (results.length > 0) {
+            displayResult(results, file.name, 'iOS SQLite', allDebugInfo);
+          } else if (allDebugInfo.length > 0) {
+            displayDebugInfo(allDebugInfo, file.name);
+          } else {
+            showError('未在数据库中找到 encrypt_key、AuthKey 或相关关键字');
+          }
+        } catch (error) {
+          console.error('SQLite 处理错误:', error);
+          if (error.message.includes('wasm') || error.message.includes('fetch')) {
+            showError('WASM 文件加载失败，请确保 public/sql-wasm-browser.wasm 存在');
+          } else {
+            showError(`解析失败: ${error.message || error}`);
+          }
+        }
+      }
+      
+      function parseSQLiteBinaryContent(content) {
+        const results = [];
+        const debugInfo = [];
+        
+        // 查找所有包含 encrypt_key 的位置
+        const encryptKeyRegex = /encrypt_key["\s:=]+([0-9a-fA-F]+)/gi;
+        let match;
+        
+        while ((match = encryptKeyRegex.exec(content)) !== null) {
+          const key = match[1];
+          const fullMatch = match[0];
+          const contextStart = Math.max(0, match.index - 500);
+          const contextEnd = Math.min(content.length, match.index + 500);
+          const context = content.substring(contextStart, contextEnd);
+          
+          const serialMatch = context.match(/(?:serial|sn|device_id|mac)["\s:=]+([A-Za-z0-9:]{10,})/i);
+          const authKeyMatches = [...context.matchAll(/(?:authkey|encrypt_key|token)["\s:=]+([0-9a-fA-F]{16,})/gi)];
+          
+          const debugEntry = {
+            position: match.index,
+            fullMatch: fullMatch,
+            key: key,
+            serial: serialMatch ? serialMatch[1] : null,
+            authKeys: authKeyMatches.map(m => m[1]),
+            context: context,
+            rawContext: context.replace(/[^\x20-\x7E]/g, '')
+          };
+          debugInfo.push(debugEntry);
+          
+          results.push({
+            productName: serialMatch ? serialMatch[1] : 'Unknown Device',
+            token: key,
+            source: 'encrypt_key',
+            debug: debugEntry
+          });
+        }
+        
+        // 查找序列号附近的 authkey
+        const serialRegex = /(?:serial|sn|device_id|mac)["\s:=]+([A-Za-z0-9:]{10,})/gi;
+        while ((match = serialRegex.exec(content)) !== null) {
+          const serial = match[1];
+          const contextStart = Math.max(0, match.index - 500);
+          const contextEnd = Math.min(content.length, match.index + 500);
+          const context = content.substring(contextStart, contextEnd);
+          
+          const authKeyMatch = context.match(/(?:authkey|encrypt_key|token)["\s:=]+([0-9a-fA-F]{16,})/i);
+          
+          if (authKeyMatch) {
+            const exists = results.some(r => r.productName === serial);
+            if (!exists) {
+              const debugEntry = {
+                position: match.index,
+                serial: serial,
+                authKey: authKeyMatch[1],
+                context: context,
+                rawContext: context.replace(/[^\x20-\x7E]/g, '')
+              };
+              debugInfo.push(debugEntry);
+              
+              results.push({
+                productName: serial,
+                token: authKeyMatch[1],
+                source: 'serial_context',
+                debug: debugEntry
+              });
+            }
+          }
+        }
+        
+        // 即使没有找到标准格式，也返回所有包含关键字的原始数据
+        if (results.length === 0 && debugInfo.length === 0) {
+          const keywords = ['encrypt_key', 'authkey', 'auth_key', 'token', 'device_id', 'serial', 'mac', 'ble_key'];
+          
+          for (const keyword of keywords) {
+            const regex = new RegExp(keyword, 'gi');
+            while ((match = regex.exec(content)) !== null) {
+              const contextStart = Math.max(0, match.index - 300);
+              const contextEnd = Math.min(content.length, match.index + 300);
+              const context = content.substring(contextStart, contextEnd);
+              
+              debugInfo.push({
+                position: match.index,
+                keyword: keyword,
+                context: context,
+                rawContext: context.replace(/[^\x20-\x7E]/g, '').substring(0, 500)
+              });
+            }
+          }
+        }
+        
+        return { results, debugInfo };
+      }
+      
+      function parseSQLiteRow(row, columns) {
+        const result = { productName: null, token: null };
+        
+        for (let i = 0; i < columns.length; i++) {
+          const colName = columns[i].toLowerCase();
+          const value = row[i];
+          
+          if (colName.includes('encrypt_key') || colName.includes('auth_key') || colName.includes('authkey')) {
+            if (value && typeof value === 'string' && value.length > 16) {
+              result.token = value;
+            }
+          }
+          
+          if (colName.includes('serial') || colName.includes('device_id') || colName.includes('mac')) {
+            if (value) {
+              result.productName = String(value);
+            }
+          }
+          
+          if (typeof value === 'string') {
+            if (value.includes('encrypt_key') || value.length > 32) {
+              if (!result.token && /^[0-9a-fA-F]{32,}$/.test(value)) {
+                result.token = value;
+              }
+            }
+          }
+        }
+        
+        if (result.token || result.productName) {
+          return result;
+        }
+        return null;
       }
       
       async function loadAndExtract(file) {
@@ -212,11 +464,11 @@ import { Icon } from "astro-icon/components";
           const results = parseLogContent(content);
           
           if (results.length > 0) {
-            displayResult(results, selectedLogFile);
+            displayResult(results, selectedLogFile, 'Android Log');
           } else {
             const altResults = parseAlternativeFormat(content);
             if (altResults.length > 0) {
-              displayResult(altResults, selectedLogFile);
+              displayResult(altResults, selectedLogFile, 'Android Log');
             } else {
               showError(`在日志文件 "${selectedLogFile}" 中未找到 productName 或 token 信息`);
             }
@@ -273,7 +525,7 @@ import { Icon } from "astro-icon/components";
         return results;
       }
       
-      function displayResult(results, fileName) {
+      function displayResult(results, fileName, sourceType, debugInfo = []) {
         resultContainer.innerHTML = '';
         
         const successCard = document.createElement('div');
@@ -287,7 +539,7 @@ import { Icon } from "astro-icon/components";
           ${checkIconSvg}
           <div>
             <h3 class="text-lg font-bold text-90">提取成功</h3>
-            <p class="text-75 text-gray-500">来源文件: <span class="text-[var(--primary)] font-mono">${fileName}</span></p>
+            <p class="text-75 text-gray-500">来源: <span class="text-[var(--primary)]">${sourceType}</span> | 文件: <span class="font-mono text-sm">${fileName}</span></p>
           </div>
         `;
         successCard.appendChild(cardHeader);
@@ -295,56 +547,200 @@ import { Icon } from "astro-icon/components";
         const resultList = document.createElement('div');
         resultList.className = 'space-y-3';
         
-        if (results.length === 0) {
-          resultList.innerHTML = '<p class="text-75 text-gray-500 text-center py-4">未找到匹配的数据</p>';
-        } else {
-          results.forEach((result, index) => {
-            if (!result.productName && !result.token) return;
-            
-            const itemCard = document.createElement('div');
-            itemCard.className = 'rounded-lg bg-[var(--card-bg)] border border-[var(--line-divider)] p-4';
-            
-            const itemTitle = document.createElement('div');
-            itemTitle.className = 'flex items-center text-sm font-medium text-90 mb-3';
-            itemTitle.innerHTML = `
-              <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[var(--primary)] text-white text-xs mr-2">${index + 1}</span>
-              设备记录
+        results.forEach((result, index) => {
+          if (!result.productName && !result.token) return;
+          
+          const itemCard = document.createElement('div');
+          itemCard.className = 'rounded-lg bg-[var(--card-bg)] border border-[var(--line-divider)] p-4';
+          
+          const itemTitle = document.createElement('div');
+          itemTitle.className = 'flex items-center text-sm font-medium text-90 mb-3';
+          itemTitle.innerHTML = `
+            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[var(--primary)] text-white text-xs mr-2">${index + 1}</span>
+            设备记录 ${result.source ? `(${result.source})` : ''}
+          `;
+          itemCard.appendChild(itemTitle);
+          
+          if (result.productName) {
+            const nameRow = document.createElement('div');
+            nameRow.className = 'flex items-start py-2 border-b border-[var(--line-divider)] last:border-0';
+            nameRow.innerHTML = `
+              <span class="text-75 text-gray-500 w-20 flex-shrink-0">设备信息</span>
+              <span class="text-90 font-mono text-sm break-all">${result.productName}</span>
             `;
-            itemCard.appendChild(itemTitle);
-            
-            if (result.productName) {
-              const nameRow = document.createElement('div');
-              nameRow.className = 'flex items-start py-2 border-b border-[var(--line-divider)] last:border-0';
-              nameRow.innerHTML = `
-                <span class="text-75 text-gray-500 w-20 flex-shrink-0">产品名称</span>
-                <span class="text-90 font-mono text-sm break-all">${result.productName}</span>
-              `;
-              itemCard.appendChild(nameRow);
-            }
-            
-            if (result.token) {
-              const tokenRow = document.createElement('div');
-              tokenRow.className = 'flex items-start py-2';
-              // 转义 token 以防 XSS
-              const safeToken = result.token.replace(/'/g, "\\'"); 
-              tokenRow.innerHTML = `
-                <span class="text-75 text-gray-500 w-20 flex-shrink-0">AuthKey</span>
-                <div class="flex-1 flex items-center gap-2">
-                  <span class="copyable-text font-mono text-sm break-all flex-1" title="点击复制">${result.token}</span>
-                  <button class="px-3 py-1.5 text-xs font-medium text-[var(--primary)] bg-[var(--primary)]/10 rounded-lg hover:bg-[var(--primary)]/20 transition-colors whitespace-nowrap" onclick="window.copyToClipboard('${safeToken}')">
-                    复制
-                  </button>
-                </div>
-              `;
-              itemCard.appendChild(tokenRow);
-            }
-            
-            resultList.appendChild(itemCard);
-          });
-        }
+            itemCard.appendChild(nameRow);
+          }
+          
+          if (result.token) {
+            const tokenRow = document.createElement('div');
+            tokenRow.className = 'flex items-start py-2';
+            const safeToken = result.token.replace(/'/g, "\\'"); 
+            tokenRow.innerHTML = `
+              <span class="text-75 text-gray-500 w-20 flex-shrink-0">AuthKey</span>
+              <div class="flex-1 flex items-center gap-2">
+                <span class="copyable-text font-mono text-sm break-all flex-1" title="点击复制">${result.token}</span>
+                <button class="px-3 py-1.5 text-xs font-medium text-[var(--primary)] bg-[var(--primary)]/10 rounded-lg hover:bg-[var(--primary)]/20 transition-colors whitespace-nowrap" onclick="window.copyToClipboard('${safeToken}')">
+                  复制
+                </button>
+              </div>
+            `;
+            itemCard.appendChild(tokenRow);
+          }
+          
+          resultList.appendChild(itemCard);
+        });
         
         successCard.appendChild(resultList);
         resultContainer.appendChild(successCard);
+        
+        // 如果有调试信息，显示可折叠的原始数据
+        if (debugInfo && debugInfo.length > 0) {
+          const debugSection = document.createElement('div');
+          debugSection.className = 'mt-6 pt-4 border-t border-[var(--line-divider)]';
+          
+          const toggleBtn = document.createElement('button');
+          toggleBtn.className = 'text-sm text-gray-500 hover:text-[var(--primary)] underline flex items-center';
+          toggleBtn.innerHTML = `
+            <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            显示原始数据 (${debugInfo.length} 处匹配)
+          `;
+          
+          const debugContent = document.createElement('div');
+          debugContent.className = 'hidden mt-3 debug-section';
+          debugContent.id = `debug-info-${Date.now()}`;
+          
+          debugInfo.slice(0, 10).forEach((info, idx) => {
+            const debugCard = document.createElement('div');
+            debugCard.className = 'debug-card';
+            
+            let headerHtml = `<div class="text-xs text-gray-500 mb-2 flex items-center">
+              <span class="inline-flex items-center justify-center w-4 h-4 rounded bg-[var(--primary)] text-white text-[10px] mr-2">${idx + 1}</span>
+              位置: ${info.position}
+            `;
+            
+            if (info.keyword) headerHtml += ` | 关键字: <span class="font-mono">${info.keyword}</span>`;
+            if (info.serial) headerHtml += ` | 序列号: <span class="font-mono">${info.serial}</span>`;
+            if (info.key) headerHtml += ` | Key: <span class="font-mono">${info.key.substring(0, 20)}...</span>`;
+            
+            headerHtml += '</div>';
+            
+            const rawText = info.rawContext || info.context.replace(/[^\x20-\x7E]/g, '');
+            
+            debugCard.innerHTML = `
+              ${headerHtml}
+              <pre class="text-gray-600">${escapeHtml(rawText)}</pre>
+              ${info.authKeys && info.authKeys.length > 0 ? `
+                <div class="mt-2 pt-2 border-t border-[var(--line-divider)]">
+                  <div class="text-xs text-gray-500 mb-1">找到的 AuthKeys:</div>
+                  ${info.authKeys.map((key, i) => `
+                    <div class="flex items-center gap-2 mt-1">
+                      <code class="flex-1 text-xs bg-[var(--card-bg)] px-2 py-1 rounded font-mono">${key}</code>
+                      <button onclick="window.copyToClipboard('${key}')" class="px-2 py-1 text-xs bg-[var(--primary)] text-white rounded hover:opacity-80">复制</button>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
+            `;
+            
+            debugContent.appendChild(debugCard);
+          });
+          
+          if (debugInfo.length > 10) {
+            const moreNote = document.createElement('p');
+            moreNote.className = 'text-xs text-gray-400 mt-2 text-center';
+            moreNote.textContent = `... 还有 ${debugInfo.length - 10} 条匹配，请检查控制台日志`;
+            debugContent.appendChild(moreNote);
+          }
+          
+          toggleBtn.addEventListener('click', () => {
+            debugContent.classList.toggle('hidden');
+            toggleBtn.innerHTML = debugContent.classList.contains('hidden') 
+              ? `<svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> 显示原始数据 (${debugInfo.length} 处匹配)`
+              : `<svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg> 隐藏原始数据`;
+          });
+          
+          debugSection.appendChild(toggleBtn);
+          debugSection.appendChild(debugContent);
+          resultContainer.appendChild(debugSection);
+        }
+      }
+
+      function displayDebugInfo(debugInfo, fileName) {
+        resultContainer.innerHTML = '';
+        
+        const warningCard = document.createElement('div');
+        warningCard.className = 'card-base rounded-[var(--radius-large)] p-5 bg-yellow-50 border border-yellow-300';
+        
+        const warningHeader = document.createElement('div');
+        warningHeader.className = 'flex items-center mb-4 pb-3 border-b border-yellow-200';
+        const warningIconSvg = `<svg class="w-6 h-6 text-yellow-600 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>`;
+        
+        warningHeader.innerHTML = `
+          ${warningIconSvg}
+          <div>
+            <h3 class="text-lg font-bold text-yellow-800">找到相关关键字，但无法自动解析</h3>
+            <p class="text-sm text-yellow-700">文件: <span class="font-mono">${fileName}</span> | 找到 ${debugInfo.length} 处匹配</p>
+          </div>
+        `;
+        warningCard.appendChild(warningHeader);
+        
+        const matchesList = document.createElement('div');
+        matchesList.className = 'space-y-3 debug-section';
+        
+        debugInfo.forEach((info, index) => {
+          const matchCard = document.createElement('div');
+          matchCard.className = 'rounded-lg bg-white border border-yellow-200 p-4';
+          
+          let headerHtml = `<div class="flex items-center mb-2">
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-yellow-500 text-white text-xs mr-2">${index + 1}</span>
+            <span class="text-sm font-mono text-yellow-800">位置: ${info.position}</span>
+          </div>`;
+          
+          if (info.keyword) {
+            headerHtml += `<div class="text-sm text-yellow-700 mb-2">关键字: <span class="font-mono font-bold">${info.keyword}</span></div>`;
+          }
+          
+          if (info.serial) {
+            headerHtml += `<div class="text-sm text-yellow-700 mb-2">序列号: <span class="font-mono">${info.serial}</span></div>`;
+          }
+          
+          if (info.key) {
+            headerHtml += `<div class="text-sm text-yellow-700 mb-2">Key: <span class="font-mono">${info.key.substring(0, 50)}${info.key.length > 50 ? '...' : ''}</span></div>`;
+          }
+          
+          const rawText = info.rawContext || info.context.replace(/[^\x20-\x7E]/g, '');
+          
+          matchCard.innerHTML = `
+            ${headerHtml}
+            <div class="mt-3">
+              <div class="text-xs text-gray-500 mb-1">原始数据（可打印字符）:</div>
+              <pre class="p-3 bg-gray-50 rounded border border-gray-200 font-mono text-xs break-all text-gray-700 max-h-[200px] overflow-y-auto">${escapeHtml(rawText)}</pre>
+            </div>
+            ${info.authKeys && info.authKeys.length > 0 ? `
+              <div class="mt-2 pt-2 border-t border-yellow-200">
+                <div class="text-xs text-gray-500 mb-1">找到的 AuthKeys:</div>
+                ${info.authKeys.map((key, i) => `
+                  <div class="flex items-center gap-2 mt-1">
+                    <code class="flex-1 text-xs bg-blue-50 px-2 py-1 rounded font-mono">${key}</code>
+                    <button onclick="window.copyToClipboard('${key}')" class="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">复制</button>
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+          `;
+          
+          matchesList.appendChild(matchCard);
+        });
+        
+        warningCard.appendChild(matchesList);
+        resultContainer.appendChild(warningCard);
+      }
+
+      function escapeHtml(text) {
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return text.replace(/[&<>"']/g, m => map[m]);
       }
 
       function showError(message) {
@@ -362,7 +758,6 @@ import { Icon } from "astro-icon/components";
         `;
       }
 
-      // 挂载到 window 以便 onclick 调用
       window.copyToClipboard = function(text) {
         if (navigator.clipboard && window.isSecureContext) {
           navigator.clipboard.writeText(text).then(() => showMessage('✓ 已复制到剪贴板')).catch(fallbackCopy);
