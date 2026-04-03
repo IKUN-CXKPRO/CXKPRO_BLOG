@@ -42,7 +42,7 @@ import { Icon } from "astro-icon/components";
           iOS端提取方法
         </h2>
         <ol class="text-75 max-w-2xl mx-auto text-left space-y-2 list-decimal list-inside bg-[var(--card-bg)] p-4 rounded-lg">
-          <li></li>
+          <li>打开系统自带的"文件"app，浏览我的iPhone，找到小米运动健康文件夹，按路径找到文件 \MHWCahe\6284670\VirtualDevice_registerList\manifest.sqlite</li>
           <li>系统会自动查找 <span class="text-[var(--primary)] font-mono">encrypt_key</span> 或序列号附近的AuthKey</li>
         </ol>
       </div>
@@ -681,6 +681,7 @@ import { Icon } from "astro-icon/components";
           ${warningIconSvg}
           <div>
             <h3 class="text-lg font-bold text-yellow-800">找到相关关键字，但无法自动解析</h3>
+            <h3 class="text-lg font-bold text-yellow-800">测试功能 仅供参考。</h3>
             <p class="text-sm text-yellow-700">文件: <span class="font-mono">${fileName}</span> | 找到 ${debugInfo.length} 处匹配</p>
           </div>
         `;

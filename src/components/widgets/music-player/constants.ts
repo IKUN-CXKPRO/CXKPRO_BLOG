@@ -8,10 +8,10 @@ export const LOCAL_PLAYLIST: Song[] = [
 
 	{
 		id: 1,
-		title: "We Are The World",
-		artist: "U.S.A. For Africa",
-		cover: "assets/music/cover/We Are The World - U.S.A. For Africa.jpg.webp",
-		url: "assets/music/music/We Are The World - U.S.A. For Africa.mp3",
+		title: "驫麤～とりぷるばか～ (骉麤～三倍的笨蛋～)",
+		artist: "初音未来 (初音ミク)",
+		cover: "assets/music/cover/驫麤～とりぷるばか～(骉麤～三倍的笨蛋～) - 初音未来 (初音ミク).jpg.webp",
+		url: "assets/music/music/驫麤～とりぷるばか～ (骉麤～三倍的笨蛋～)- 初音未来 (初音ミク).mp3",
 		duration: 0,
 	},
 	{
@@ -24,10 +24,10 @@ export const LOCAL_PLAYLIST: Song[] = [
 	},
 	{
 		id: 3,
-		title: "驫麤～とりぷるばか～ (骉麤～三倍的笨蛋～)",
-		artist: "初音未来 (初音ミク)",
-		cover: "assets/music/cover/驫麤～とりぷるばか～(骉麤～三倍的笨蛋～) - 初音未来 (初音ミク).jpg.webp",
-		url: "assets/music/music/驫麤～とりぷるばか～ (骉麤～三倍的笨蛋～)- 初音未来 (初音ミク).mp3",
+		title: "We Are The World",
+		artist: "U.S.A. For Africa",
+		cover: "assets/music/cover/We Are The World - U.S.A. For Africa.jpg.webp",
+		url: "assets/music/music/We Are The World - U.S.A. For Africa.mp3",
 		duration: 0,
 	},
 	{
