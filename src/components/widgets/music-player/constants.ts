@@ -16,18 +16,18 @@ export const LOCAL_PLAYLIST: Song[] = [
 	},
 	{
 		id: 2,
-		title: "Try",
-		artist: "派伟俊&周杰伦",
-		cover: "assets/music/cover/Try - 派伟俊 周杰伦.jpg.webp",
-		url: "assets/music/music/Try - 派伟俊 周杰伦.mp3",
-		duration: 0,
-	},
-	{
-		id: 3,
 		title: "We Are The World",
 		artist: "U.S.A. For Africa",
 		cover: "assets/music/cover/We Are The World - U.S.A. For Africa.jpg.webp",
 		url: "assets/music/music/We Are The World - U.S.A. For Africa.mp3",
+		duration: 0,
+	},
+	{
+		id: 3,
+		title: "Try",
+		artist: "派伟俊&周杰伦",
+		cover: "assets/music/cover/Try - 派伟俊 周杰伦.jpg.webp",
+		url: "assets/music/music/Try - 派伟俊 周杰伦.mp3",
 		duration: 0,
 	},
 	{
