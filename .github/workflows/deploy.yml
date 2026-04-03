@@ -22,7 +22,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'pnpm' # 启用 pnpm 依赖缓存，加速构建
 
       # 3. 【核心修复】使用 npm 全局安装 pnpm
