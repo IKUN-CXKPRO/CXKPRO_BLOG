@@ -5,7 +5,7 @@ on:
     branches:
       - main
 
-# 赋予 Actions 写入仓库的权限
+# 关键：赋予 Actions 写入仓库的权限
 permissions:
   contents: write
 
@@ -18,28 +18,36 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. 设置 Node.js 环境
+      # 2. 设置 Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm' # 启用 npm 缓存加速
+          cache: 'pnpm' # 启用 pnpm 缓存
 
-      # 3. 安装依赖 (关键：加上 --legacy-peer-deps 解决冲突)
+      # 3. 【核心】安装 pnpm 工具
+      # 你的项目强制要求 pnpm，所以必须显式安装它
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9 # 建议使用大版本号，或根据本地 pnpm -v 的结果填写
+
+      # 4. 安装依赖
+      # --frozen-lockfile 确保 CI 环境与本地 lock 文件完全一致
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps
+        run: pnpm install --frozen-lockfile
 
-      # 4. 构建项目
+      # 5. 构建项目
       - name: Build project
-        run: npm run build
+        run: pnpm run build
 
-      # 5. 部署到 dist 分支
+      # 6. 部署到 dist 分支
       - name: Deploy to dist branch
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist       # 你的构建输出目录
-          destination_dir: .        # 推送到分支根目录
-          keep_files: false         # 每次部署前清空旧文件
-          branch: dist              # 目标分支
+          publish_dir: ./dist
+          destination_dir: .
+          keep_files: false
+          branch: dist
           commit_message: 'Deploy: ${{ github.sha }}'
