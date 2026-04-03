@@ -17,42 +17,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. 设置 Node.js (这里只负责装 Node 和配置缓存策略)
+      # 2. 设置 Node.js 环境
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'pnpm' 
+          cache: 'npm'
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 8 
-          # 如果不确定版本，可以写 version: latest，但建议和本地保持一致 (如 8 或 9)
-
-      # 3. 获取 pnpm 存储路径并配置缓存 (加速构建)
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      # 4. 安装依赖
+      # 3. 安装依赖
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm install
 
-      # 5. 构建项目
+      # 4. 构建项目
       - name: Build project
-        run: pnpm run build
+        run: npm run build
 
-      # 6. 部署到 dist 分支
+      # 5. 部署到 dist 分支
       - name: Deploy to dist branch
         uses: peaceiris/actions-gh-pages@v4
         with:
