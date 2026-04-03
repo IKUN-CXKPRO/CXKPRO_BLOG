@@ -43,7 +43,8 @@ import { Icon } from "astro-icon/components";
         </h2>
         <ol class="text-75 max-w-2xl mx-auto text-left space-y-2 list-decimal list-inside bg-[var(--card-bg)] p-4 rounded-lg">
           <li>打开系统自带的"文件"app，浏览我的iPhone，找到小米运动健康文件夹，按路径找到文件 \MHWCahe\6284670\VirtualDevice_registerList\manifest.sqlite</li>
-          <li>在encrypt_key找到peripheral_id，后面的16位字符就是AuthKey</li>
+          <li>上传sqlite文件</li>
+          <li>自行寻找：在encrypt_key找到peripheral_id，后面的16位字符就是AuthKey</li>
         </ol>
       </div>
     </div>
@@ -55,11 +56,6 @@ import { Icon } from "astro-icon/components";
         上传文件
       </h2>
       
-      <!-- 
-         优化点：
-         1. input 放在最前面，避免某些移动端浏览器因 DOM 顺序导致的焦点问题。
-         2. 增加 tabindex="-1" 防止键盘Tab选中隐藏元素，但保持可编程访问。
-      -->
       <input type="file" id="fileInput" accept=".zip,.sqlite,.db,.sqlitedb" class="absolute opacity-0 pointer-events-none" tabindex="-1" aria-hidden="true">
       
       <div 
@@ -146,7 +142,7 @@ import { Icon } from "astro-icon/components";
       to { opacity: 1; transform: translateY(0); }
     }
     .debug-section {
-      max-height: 400px;
+      max-height: 560px;
       overflow-y: auto;
     }
     .debug-card {
@@ -187,15 +183,11 @@ import { Icon } from "astro-icon/components";
       const triggerFileSelect = () => {
         if (!fileInput) return;
         
-        // 重置 value，确保即使选择同一文件也能触发 change 事件
         fileInput.value = ''; 
         
-        // 尝试触发点击
         try {
           fileInput.click();
         } catch (e) {
-          console.warn('Direct click failed, trying dispatchEvent', e);
-          // 降级方案：手动分发事件
           const event = new MouseEvent('click', {
             view: window,
             bubbles: true,
@@ -205,29 +197,18 @@ import { Icon } from "astro-icon/components";
         }
       };
 
-      // 1. 点击事件 (桌面端 & 大部分移动端)
       uploadArea.addEventListener('click', (e) => {
-        // 防止快速双击导致的问题
         e.preventDefault();
         triggerFileSelect();
       });
 
-      // 2. 触摸事件 (专门针对部分安卓/iOS浏览器点击无反应的情况)
-      // 使用 touchend 而不是 touchstart，避免与滚动冲突，且更符合"点击"语义
       uploadArea.addEventListener('touchend', (e) => {
-        // 只有当没有发生滑动时才触发 (简单判断)
-        // 注意：由于我们在 click 中也调用了，这里需要防止双重触发
-        // 但通常 fileInput.click() 是幂等的，或者浏览器会合并处理
-        // 这里直接调用，因为移动端有时 click 事件延迟高或被忽略
-        e.preventDefault(); // 防止触发随后的 mouse click
+        e.preventDefault();
         triggerFileSelect();
-      }, { passive: false }); // passive: false 允许 preventDefault
+      }, { passive: false });
 
-      // 3. 兜底按钮（移动端点击卡片无效时使用）
       if (fallbackFileBtn) {
         fallbackFileBtn.addEventListener('click', (e) => {
-          // 兜底按钮自带 input 覆盖层会直接弹出文件选择器
-          // 这里仍保留触发逻辑，兼容部分浏览器不响应 overlay 的情况
           if (e.target === fallbackFileInput) return;
           e.preventDefault();
           triggerFileSelect();
@@ -344,7 +325,6 @@ import { Icon } from "astro-icon/components";
             console.error('查询表失败:', e);
           }
           
-          // 方法2：在二进制数据中直接搜索
           if (results.length === 0) {
             const textContent = await file.text();
             const parseResult = parseSQLiteBinaryContent(textContent);
@@ -379,73 +359,41 @@ import { Icon } from "astro-icon/components";
         const debugInfo = [];
         
         // 查找所有包含 encrypt_key 的位置
-        const encryptKeyRegex = /encrypt_key["\s:=]+([0-9a-fA-F]+)/gi;
+        const encryptKeyRegex = /encrypt_key[_"\s:=]+([A-Za-z0-9._:\/\-]+)(?=[\s"']|$)/gi;
         let match;
         
         while ((match = encryptKeyRegex.exec(content)) !== null) {
-          const key = match[1];
+          const key = sanitizeEncryptKey(match[1]);
           const fullMatch = match[0];
           const contextStart = Math.max(0, match.index - 500);
           const contextEnd = Math.min(content.length, match.index + 500);
           const context = content.substring(contextStart, contextEnd);
           
-          const serialMatch = context.match(/(?:serial|sn|device_id|mac)["\s:=]+([A-Za-z0-9:]{10,})/i);
-          const authKeyMatches = [...context.matchAll(/(?:authkey|encrypt_key|token)["\s:=]+([0-9a-fA-F]{16,})/gi)];
           
           const debugEntry = {
             position: match.index,
             fullMatch: fullMatch,
             key: key,
-            serial: serialMatch ? serialMatch[1] : null,
-            authKeys: authKeyMatches.map(m => m[1]),
+            // serial: serialMatch ? serialMatch[1] : null,
+            // authKeys: authKeyMatches.map(m => m[1]),
             context: context,
             rawContext: context.replace(/[^\x20-\x7E]/g, '')
           };
           debugInfo.push(debugEntry);
           
           results.push({
-            productName: serialMatch ? serialMatch[1] : 'Unknown Device',
+            // productName 暂时不解析 serial/mac
+            productName: null,
             token: key,
             source: 'encrypt_key',
-            debug: debugEntry
+            debug: debugEntry,
+            meta: collectFuzzyMetaFromEncryptKey(key)
           });
         }
         
-        // 查找序列号附近的 authkey
-        const serialRegex = /(?:serial|sn|device_id|mac)["\s:=]+([A-Za-z0-9:]{10,})/gi;
-        while ((match = serialRegex.exec(content)) !== null) {
-          const serial = match[1];
-          const contextStart = Math.max(0, match.index - 500);
-          const contextEnd = Math.min(content.length, match.index + 500);
-          const context = content.substring(contextStart, contextEnd);
-          
-          const authKeyMatch = context.match(/(?:authkey|encrypt_key|token)["\s:=]+([0-9a-fA-F]{16,})/i);
-          
-          if (authKeyMatch) {
-            const exists = results.some(r => r.productName === serial);
-            if (!exists) {
-              const debugEntry = {
-                position: match.index,
-                serial: serial,
-                authKey: authKeyMatch[1],
-                context: context,
-                rawContext: context.replace(/[^\x20-\x7E]/g, '')
-              };
-              debugInfo.push(debugEntry);
-              
-              results.push({
-                productName: serial,
-                token: authKeyMatch[1],
-                source: 'serial_context',
-                debug: debugEntry
-              });
-            }
-          }
-        }
         
-        // 即使没有找到标准格式，也返回所有包含关键字的原始数据
         if (results.length === 0 && debugInfo.length === 0) {
-          const keywords = ['encrypt_key', 'authkey', 'auth_key', 'token', 'device_id', 'serial', 'mac', 'ble_key'];
+          const keywords = ['encrypt_key'];
           
           for (const keyword of keywords) {
             const regex = new RegExp(keyword, 'gi');
@@ -480,19 +428,7 @@ import { Icon } from "astro-icon/components";
             }
           }
           
-          if (colName.includes('serial') || colName.includes('device_id') || colName.includes('mac')) {
-            if (value) {
-              result.productName = String(value);
-            }
-          }
           
-          if (typeof value === 'string') {
-            if (value.includes('encrypt_key') || value.length > 32) {
-              if (!result.token && /^[0-9a-fA-F]{32,}$/.test(value)) {
-                result.token = value;
-              }
-            }
-          }
         }
         
         if (result.token || result.productName) {
@@ -661,15 +597,15 @@ import { Icon } from "astro-icon/components";
             `;
             itemCard.appendChild(nameRow);
           }
-          
+
           if (result.token) {
             const tokenRow = document.createElement('div');
             tokenRow.className = 'flex items-start py-2';
             const safeToken = result.token.replace(/'/g, "\\'"); 
             tokenRow.innerHTML = `
-              <span class="text-75 text-gray-500 w-20 flex-shrink-0">AuthKey</span>
+              <span class="text-75 text-gray-500 w-28 flex-shrink-0">AuthKey</span>
               <div class="flex-1 flex items-center gap-2">
-                <span class="copyable-text font-mono text-sm break-all flex-1" title="点击复制">${result.token}</span>
+                <span class="copyable-text font-mono text-sm break-all flex-1 text-white" title="点击复制">${result.token}</span>
                 <button class="px-3 py-1.5 text-xs font-medium text-[var(--primary)] bg-[var(--primary)]/10 rounded-lg hover:bg-[var(--primary)]/20 transition-colors whitespace-nowrap" onclick="window.copyToClipboard('${safeToken}')">
                   复制
                 </button>
@@ -683,7 +619,7 @@ import { Icon } from "astro-icon/components";
         
         successCard.appendChild(resultList);
         resultContainer.appendChild(successCard);
-        
+
         // 如果有调试信息，显示可折叠的原始数据
         if (debugInfo && debugInfo.length > 0) {
           const debugSection = document.createElement('div');
@@ -758,48 +694,48 @@ import { Icon } from "astro-icon/components";
         }
       }
 
+
       function displayDebugInfo(debugInfo, fileName) {
         resultContainer.innerHTML = '';
         
-        const warningCard = document.createElement('div');
-        warningCard.className = 'card-base rounded-[var(--radius-large)] p-5 bg-yellow-50 border border-yellow-300';
+        const infoCard = document.createElement('div');
+        infoCard.className = 'card-base rounded-[var(--radius-large)] p-5 bg-[var(--card-bg)] border border-[var(--line-divider)]';
         
-        const warningHeader = document.createElement('div');
-        warningHeader.className = 'flex items-center mb-4 pb-3 border-b border-yellow-200';
-        const warningIconSvg = `<svg class="w-6 h-6 text-yellow-600 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>`;
+        const infoHeader = document.createElement('div');
+        infoHeader.className = 'flex items-center mb-4 pb-3 border-b border-[var(--line-divider)]';
+        const infoIconSvg = `<svg class="w-6 h-6 text-[var(--primary)] mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
         
-        warningHeader.innerHTML = `
-          ${warningIconSvg}
+        infoHeader.innerHTML = `
+          ${infoIconSvg}
           <div>
-            <h3 class="text-lg font-bold text-yellow-800">找到相关关键字，但无法自动解析</h3>
-            <h3 class="text-lg font-bold text-yellow-800">测试功能 仅供参考。</h3>
-            <p class="text-sm text-yellow-700">文件: <span class="font-mono">${fileName}</span> | 找到 ${debugInfo.length} 处匹配</p>
+            <h3 class="text-lg font-bold text-90">找到相关关键字，但无法自动解析</h3>
+            <p class="text-75 text-gray-500">文件: <span class="font-mono text-sm">${fileName}</span> | 找到 ${debugInfo.length} 处匹配</p>
           </div>
         `;
-        warningCard.appendChild(warningHeader);
+        infoCard.appendChild(infoHeader);
         
         const matchesList = document.createElement('div');
         matchesList.className = 'space-y-3 debug-section';
         
         debugInfo.forEach((info, index) => {
           const matchCard = document.createElement('div');
-          matchCard.className = 'rounded-lg bg-white border border-yellow-200 p-4';
+          matchCard.className = 'rounded-lg bg-[var(--card-bg)] border border-[var(--line-divider)] p-4';
           
-          let headerHtml = `<div class="flex items-center mb-2">
-            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-yellow-500 text-white text-xs mr-2">${index + 1}</span>
-            <span class="text-sm font-mono text-yellow-800">位置: ${info.position}</span>
+          let headerHtml = `<div class="flex items-center text-sm font-medium text-90 mb-3">
+            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[var(--primary)] text-white text-xs mr-2">${index + 1}</span>
+            位置: <span class="font-mono ml-1">${info.position}</span>
           </div>`;
           
           if (info.keyword) {
-            headerHtml += `<div class="text-sm text-yellow-700 mb-2">关键字: <span class="font-mono font-bold">${info.keyword}</span></div>`;
+            headerHtml += `<div class="text-75 text-gray-500 mb-2">关键字: <span class="font-mono text-90">${info.keyword}</span></div>`;
           }
           
           if (info.serial) {
-            headerHtml += `<div class="text-sm text-yellow-700 mb-2">序列号: <span class="font-mono">${info.serial}</span></div>`;
+            headerHtml += `<div class="text-75 text-gray-500 mb-2">序列号: <span class="font-mono text-90">${info.serial}</span></div>`;
           }
           
           if (info.key) {
-            headerHtml += `<div class="text-sm text-yellow-700 mb-2">Key: <span class="font-mono">${info.key.substring(0, 50)}${info.key.length > 50 ? '...' : ''}</span></div>`;
+            headerHtml += `<div class="text-75 text-gray-500 mb-2">Key: <span class="font-mono text-90">${info.key.substring(0, 50)}${info.key.length > 50 ? '...' : ''}</span></div>`;
           }
           
           const rawText = info.rawContext || info.context.replace(/[^\x20-\x7E]/g, '');
@@ -808,15 +744,15 @@ import { Icon } from "astro-icon/components";
             ${headerHtml}
             <div class="mt-3">
               <div class="text-xs text-gray-500 mb-1">原始数据（可打印字符）:</div>
-              <pre class="p-3 bg-gray-50 rounded border border-gray-200 font-mono text-xs break-all text-gray-700 max-h-[200px] overflow-y-auto">${escapeHtml(rawText)}</pre>
+              <pre class="p-3 bg-[var(--card-bg)] rounded border border-[var(--line-divider)] font-mono text-xs break-all text-90 max-h-[200px] overflow-y-auto">${escapeHtml(rawText)}</pre>
             </div>
             ${info.authKeys && info.authKeys.length > 0 ? `
-              <div class="mt-2 pt-2 border-t border-yellow-200">
+              <div class="mt-2 pt-2 border-t border-[var(--line-divider)]">
                 <div class="text-xs text-gray-500 mb-1">找到的 AuthKeys:</div>
-                ${info.authKeys.map((key, i) => `
+                ${info.authKeys.map((key) => `
                   <div class="flex items-center gap-2 mt-1">
-                    <code class="flex-1 text-xs bg-blue-50 px-2 py-1 rounded font-mono">${key}</code>
-                    <button onclick="window.copyToClipboard('${key}')" class="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">复制</button>
+                    <code class="flex-1 text-xs bg-[var(--card-bg)] px-2 py-1 rounded font-mono">${key}</code>
+                    <button onclick="window.copyToClipboard('${key}')" class="px-2 py-1 text-xs bg-[var(--primary)] text-white rounded hover:opacity-80">复制</button>
                   </div>
                 `).join('')}
               </div>
@@ -826,8 +762,8 @@ import { Icon } from "astro-icon/components";
           matchesList.appendChild(matchCard);
         });
         
-        warningCard.appendChild(matchesList);
-        resultContainer.appendChild(warningCard);
+        infoCard.appendChild(matchesList);
+        resultContainer.appendChild(infoCard);
       }
 
       function escapeHtml(text) {
