@@ -4,160 +4,48 @@ import { Icon } from "astro-icon/components";
 ---
 
 <MainGridLayout title="浏览器信息检测" description="全面检测您的浏览器、设备及隐私指纹特征">
-  <div class="onload-animation">
-    <!-- 标题卡片 -->
-    <div class="card-base rounded-[var(--radius-large)] p-8 mb-6">
-      <div class="text-center">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-[var(--primary)] rounded-2xl mb-4">
-          <Icon name="material-symbols:browse" class="text-white text-3xl" />
+  <div class="onload-animation space-y-6">
+    <section class="card-base rounded-[var(--radius-large)] p-8">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div class="flex items-center gap-4">
+          <div class="inline-flex items-center justify-center w-16 h-16 bg-[var(--primary)] rounded-2xl">
+            <Icon name="material-symbols:browse" class="text-white text-3xl" />
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-90">浏览器信息检测</h1>
+            <p class="text-75 mt-2">全面检测您的浏览器、设备及隐私指纹特征</p>
+          </div>
         </div>
-        <h1 class="text-3xl font-bold text-[var(--primary)] mb-3">浏览器信息检测</h1>
-        <p class="text-75 max-w-2xl mx-auto">全面检测您的浏览器、设备及隐私指纹特征</p>
+        <div class="flex flex-wrap items-center gap-3">
+          <button id="refresh-btn" class="px-4 py-2 text-sm font-medium text-white bg-[var(--primary)] rounded-lg hover:opacity-90 transition">
+            重新检测
+          </button>
+          <button id="copy-all-btn" class="px-4 py-2 text-sm font-medium text-90 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg hover:border-[var(--primary)] transition">
+            复制全部
+          </button>
+        </div>
       </div>
-    </div>
+      <div id="status-msg" class="text-xs text-gray-500 mt-4" aria-live="polite">正在自动检测中…</div>
+    </section>
 
-    <!-- 操作区域 -->
-    <!-- <div class="card-base rounded-[var(--radius-large)] p-6 mb-6">
-      <h2 class="text-xl font-bold text-90 mb-4 flex items-center">
-        <Icon name="material-symbols:play-arrow" class="mr-2 text-[var(--primary)]" />
-        开始检测
-      </h2>
-      <div class="flex items-center gap-3 flex-wrap">
-        <button
-          id="detect-btn"
-          class="px-5 py-2.5 bg-[var(--primary)] text-white rounded-lg hover:opacity-80 transition-all duration-200 font-medium text-sm whitespace-nowrap"
-        >
-          获取浏览器信息
-        </button>
-        <!-- <button
-          id="copy-all-btn"
-          class="px-5 py-2.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-all duration-200 font-medium text-sm whitespace-nowrap"
-        >
-          复制全部
-        </button> -->
-      </div>
-    </div> -->
-
-    <!-- 输出样式切换 -->
-<div class="card-base rounded-[var(--radius-large)] p-6 mb-6">
-  <div class="flex items-center justify-between">
-    <h2 class="text-xl font-bold text-90 flex items-center">
-      <Icon name="material-symbols:design-services" class="mr-2 text-[var(--primary)]" />
-      输出样式
-    </h2>
-    <label class="flex items-center cursor-pointer">
-      <!-- 隐藏原生 checkbox - 确保 sr-only 完全脱离布局 -->
-      <input type="checkbox" id="pretty-toggle" class="absolute left-[-9999999999999999999999999999999999999999999999999999px]" checked />
-
-      <!-- 自定义 checkbox 外框 -->
-      <div class="relative w-5 h-5 border-2 border-gray-400 rounded-md flex items-center justify-center bg-white transition-colors duration-200">
-        <!-- 勾选图标 -->
-        <svg
-          class="absolute w-3 h-3 text-[var(--primary)] opacity-0 transition-opacity duration-200"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="5" d="M5 13l4 4L19 7"></path>
-        </svg>
-      </div>
-
-      <span class="ml-3 text-sm font-medium text-90">：美观输出</span>
-    </label>
-  </div>
-</div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const toggle = document.getElementById('pretty-toggle');
-    const box = toggle.nextElementSibling; // 指向 div.checkbox
-    const svg = box.querySelector('svg');
-
-    function updateCheckbox() {
-      if (toggle.checked) {
-        svg.classList.add('opacity-100');
-        box.classList.replace('border-gray-400', 'border-[var(--primary)]');
-        box.classList.add('bg-[var(--primary)]/10');
-      } else {
-        svg.classList.remove('opacity-100');
-        box.classList.replace('border-[var(--primary)]', 'border-gray-400');
-        box.classList.remove('bg-[var(--primary)]/10');
-      }
-    }
-
-    // 初始化
-    updateCheckbox();
-
-    // 监听变化
-    toggle.addEventListener('change', updateCheckbox);
-  });
-</script>
-
-    <!-- 输出容器 -->
-    <div class="card-base rounded-[var(--radius-large)] p-6">
+    <section class="card-base rounded-[var(--radius-large)] p-6">
       <h2 class="text-xl font-bold text-90 mb-4 flex items-center">
         <Icon name="material-symbols:monitoring" class="mr-2 text-[var(--primary)]" />
-        检测结果(如果不显示请刷新页面)
+        检测结果
       </h2>
 
-
-      <!-- 原始文本输出（默认隐藏） -->
-      <div id="plain-output" class="hidden">
-        <div class="bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg p-4 min-h-[200px]">
-          <pre id="output-area" class="text-75 text-sm font-mono whitespace-pre-wrap break-words">正在自动检测中…</pre>
-        </div>
+      <div class="bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg p-4 min-h-[220px]">
+        <pre id="output-area" class="text-75 text-sm font-mono whitespace-pre-wrap break-words">正在自动检测中…</pre>
       </div>
-
-      <!-- 美观输出（默认显示） -->
-      <div id="pretty-output" class="hidden">
-        <div class="bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg divide-y divide-[var(--line-divider)] overflow-hidden"></div>
-      </div>
-    </div>
+    </section>
   </div>
 
+  <style></style>
+
   <script is:inline>
-    // ========== 分组定义 ==========
-    const GROUPS = [
-      {
-        name: '基础信息',
-        keys: ['浏览器', '版本', '内核', '操作系统', '设备类型', '硬件平台', '语言', 'CPU 架构', 'CPU 位数', '网络在线']
-      },
-      {
-        name: '屏幕与显示',
-        keys: ['屏幕分辨率', '可用分辨率', '颜色深度', '屏幕方向']
-      },
-      {
-        name: '存储与 API 支持',
-        keys: ['localStorage', 'sessionStorage', 'IndexedDB', 'Service Worker', 'WebRTC', '剪贴板 API', '媒体设备 (getUserMedia)', 'Web Audio API']
-      },
-      {
-        name: '隐私与自动化检测',
-        keys: ['WebDriver', 'Headless 检测']
-      },
-      {
-        name: 'navigator 原始字段',
-        keys: [
-          '应用名称 (appName)', '应用版本 (appVersion)', '平台信息 (platform)', '产品标识 (product)',
-          '产品子版本 (productSub)', '厂商信息 (vendor)', '用户代理字符串 (userAgent)',
-          'Cookie 是否启用', 'MIME 类型数量', '插件数量', '设备内存 (GB)', '逻辑 CPU 核心数'
-        ]
-      },
-      {
-        name: '网络与电池',
-        keys: ['网络类型', '下行带宽估算 (Mbps)', 'RTT (ms)', '电池充电中', '电池电量', '预计充满时间', '电池信息']
-      },
-      {
-        name: '设备指纹',
-        keys: ['Canvas 画布指纹', 'WebGL 图像指纹', '字体列表指纹', '音频上下文指纹', '综合特征指纹 (SHA-256 前 16 位)']
-      }
-    ];
-
-    // ========== 核心检测函数 ==========
     async function detectBrowserInfo() {
-      let info = {};
+      const info = {};
 
-      // === 基础信息 ===
       info['浏览器'] = getBrowser();
       info['版本'] = getBrowserVersion();
       info['内核'] = getEngine();
@@ -173,7 +61,6 @@ import { Icon } from "astro-icon/components";
       info['颜色深度'] = `${window.screen.colorDepth} 位`;
       info['屏幕方向'] = window.screen.orientation?.type || '未知';
 
-      // === 存储与 API 支持 ===
       info['localStorage'] = isSupported(() => localStorage);
       info['sessionStorage'] = isSupported(() => sessionStorage);
       info['IndexedDB'] = isSupported(() => indexedDB);
@@ -183,11 +70,9 @@ import { Icon } from "astro-icon/components";
       info['媒体设备 (getUserMedia)'] = isSupported(() => navigator.mediaDevices?.getUserMedia);
       info['Web Audio API'] = isSupported(() => window.AudioContext || window.webkitAudioContext);
 
-      // === 隐私/自动化检测 ===
       info['WebDriver'] = navigator.webdriver === true ? '是（可能为自动化）' : '否';
       info['Headless 检测'] = detectHeadless();
 
-      // === navigator 原始字段（中文命名）===
       info['应用名称 (appName)'] = navigator.appName;
       info['应用版本 (appVersion)'] = navigator.appVersion;
       info['平台信息 (platform)'] = navigator.platform;
@@ -201,7 +86,6 @@ import { Icon } from "astro-icon/components";
       info['设备内存 (GB)'] = navigator.deviceMemory ? `${navigator.deviceMemory} GB` : '未知';
       info['逻辑 CPU 核心数'] = navigator.hardwareConcurrency || '未知';
 
-      // === 连接信息 ===
       if (navigator.connection) {
         const conn = navigator.connection;
         info['网络类型'] = conn.effectiveType || '未知';
@@ -211,7 +95,6 @@ import { Icon } from "astro-icon/components";
         info['网络类型'] = '不支持 Network Information API';
       }
 
-      // === 电池（异步）===
       try {
         const battery = await navigator.getBattery?.();
         if (battery) {
@@ -221,24 +104,21 @@ import { Icon } from "astro-icon/components";
         } else {
           info['电池信息'] = '不支持或未授权';
         }
-      } catch (e) {
+      } catch {
         info['电池信息'] = '获取失败';
       }
 
-      // === 指纹部分 ===
       info['Canvas 画布指纹'] = getCanvasFingerprint();
       info['WebGL 图像指纹'] = getWebGLFingerprint();
       info['字体列表指纹'] = await getFontFingerprint();
       info['音频上下文指纹'] = getAudioFingerprint();
 
-      // === 综合指纹 ===
       const fingerprintStr = Object.values(info).join('|');
       info['综合特征指纹 (SHA-256 前 16 位)'] = await hashFingerprint(fingerprintStr);
 
       return info;
     }
 
-    // ========== 渲染函数 ==========
     function renderPlainOutput(info) {
       let outputText = '';
       for (const [key, value] of Object.entries(info)) {
@@ -247,63 +127,9 @@ import { Icon } from "astro-icon/components";
       document.getElementById('output-area').textContent = outputText;
     }
 
-    function renderPrettyOutput(info) {
-      const container = document.getElementById('pretty-output').querySelector('div');
-      container.innerHTML = '';
-
-      for (const group of GROUPS) {
-        const hasAny = group.keys.some(k => info.hasOwnProperty(k));
-        if (!hasAny) continue;
-
-        const groupEl = document.createElement('div');
-        groupEl.className = 'p-4';
-
-        const title = document.createElement('h3');
-        title.className = 'text-lg font-semibold text-blue-400 mb-3';
-        title.textContent = group.name;
-        groupEl.appendChild(title);
-
-        const list = document.createElement('div');
-        list.className = 'space-y-2';
-
-        for (const key of group.keys) {
-          if (!info.hasOwnProperty(key)) continue;
-
-          const item = document.createElement('div');
-          item.className = 'flex items-start justify-between py-1';
-
-          const label = document.createElement('span');
-          label.className = 'text-gray-400 text-sm';
-          label.textContent = key;
-
-          const valueWrap = document.createElement('div');
-          valueWrap.className = 'flex items-center space-x-2 max-w-[60%] md:max-w-[70%]';
-
-          const value = document.createElement('span');
-          value.className = 'text-white text-sm break-words text-right';
-          value.textContent = String(info[key]);
-
-          const copyBtn = document.createElement('button');
-          copyBtn.className = 'copy-item px-2 py-0.5 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded transition text-nowrap';
-          copyBtn.textContent = '复制';
-          copyBtn.onclick = () => copyText(String(info[key]));
-
-          valueWrap.appendChild(value);
-          valueWrap.appendChild(copyBtn);
-
-          item.appendChild(label);
-          item.appendChild(valueWrap);
-          list.appendChild(item);
-        }
-
-        groupEl.appendChild(list);
-        container.appendChild(groupEl);
-      }
-    }
-
     function copyText(text) {
       if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text).then(() => showFeedback());
+        navigator.clipboard.writeText(text).then(() => updateStatus('已复制到剪贴板'));
       } else {
         const textarea = document.createElement('textarea');
         textarea.value = text;
@@ -313,72 +139,23 @@ import { Icon } from "astro-icon/components";
         textarea.select();
         try {
           document.execCommand('copy');
-          showFeedback();
-        } catch (e) {}
+          updateStatus('已复制到剪贴板');
+        } catch {}
         document.body.removeChild(textarea);
       }
     }
 
-    function showFeedback() {
-      // 可扩展为 toast，此处简化
-      console.log('已复制');
+    function updateStatus(message) {
+      const el = document.getElementById('status-msg');
+      if (!el) return;
+      el.textContent = message;
+      clearTimeout(el._t);
+      el._t = setTimeout(() => {
+        el.textContent = '检测结果已更新';
+      }, 1500);
     }
 
-    // ========== 切换逻辑 ==========
-    function toggleOutputStyle(isPretty) {
-      const plain = document.getElementById('plain-output');
-      const pretty = document.getElementById('pretty-output');
-      const toggle = document.getElementById('pretty-toggle');
 
-      if (isPretty) {
-        plain.classList.add('hidden');
-        pretty.classList.remove('hidden');
-        toggle.checked = true;
-        // 更新开关滑块位置
-        const thumb = toggle.parentElement.querySelector('div div');
-        thumb.style.transform = 'translateX(22px)';
-      } else {
-        plain.classList.remove('hidden');
-        pretty.classList.add('hidden');
-        toggle.checked = false;
-        const thumb = toggle.parentElement.querySelector('div div');
-        thumb.style.transform = 'translateX(0)';
-      }
-    }
-
-    // ========== 全局复制 ==========
-    function setupCopyAllButton(infoRef) {
-      document.getElementById('copy-all-btn')?.addEventListener('click', () => {
-        if (!infoRef.current) {
-          alert('请先获取浏览器信息再复制！');
-          return;
-        }
-
-        let text = '';
-        for (const [k, v] of Object.entries(infoRef.current)) {
-          text += `${k}: ${v}\n`;
-        }
-
-        if (navigator.clipboard && window.isSecureContext) {
-          navigator.clipboard.writeText(text).then(() => {
-            const btn = document.getElementById('copy-all-btn');
-            const orig = btn.textContent;
-            btn.textContent = '已复制！';
-            setTimeout(() => btn.textContent = orig, 2000);
-          });
-        } else {
-          const ta = document.createElement('textarea');
-          ta.value = text;
-          ta.style.position = 'fixed'; ta.style.opacity = '0';
-          document.body.appendChild(ta); ta.select();
-          try { document.execCommand('copy'); } catch (e) {}
-          document.body.removeChild(ta);
-          alert('已复制（降级方式）');
-        }
-      });
-    }
-
-    // ========== 辅助函数 ==========
     function getBrowser() {
       const ua = navigator.userAgent;
       if (ua.includes('Edg')) return 'Edge';
@@ -501,36 +278,36 @@ import { Icon } from "astro-icon/components";
       return hex.substring(0, 16);
     }
 
-    // ========== 初始化 ==========
     if (typeof window !== 'undefined') {
       let currentInfo = null;
 
-      // 页面加载后自动检测
-      window.addEventListener('load', async () => {
-        currentInfo = await detectBrowserInfo().catch(console.error);
+      const refresh = async () => {
+        updateStatus('正在检测…');
+        currentInfo = await detectBrowserInfo().catch(() => null);
+        if (!currentInfo) {
+          updateStatus('检测失败，请刷新重试');
+          return;
+        }
         renderPlainOutput(currentInfo);
-        renderPrettyOutput(currentInfo);
-        toggleOutputStyle(true); // 默认开启美观
+        updateStatus('检测结果已更新');
+      };
+
+      window.addEventListener('load', refresh);
+
+      document.getElementById('refresh-btn')?.addEventListener('click', refresh);
+
+      document.getElementById('copy-all-btn')?.addEventListener('click', () => {
+        if (!currentInfo) {
+          updateStatus('暂无可复制内容');
+          return;
+        }
+        let text = '';
+        for (const [k, v] of Object.entries(currentInfo)) {
+          text += `${k}: ${v}\n`;
+        }
+        copyText(text);
       });
 
-      document.addEventListener('DOMContentLoaded', () => {
-        // 检测按钮
-        document.getElementById('detect-btn')?.addEventListener('click', async () => {
-          currentInfo = await detectBrowserInfo().catch(console.error);
-          renderPlainOutput(currentInfo);
-          renderPrettyOutput(currentInfo);
-        });
-
-        // 全局复制
-        setupCopyAllButton({ current: currentInfo });
-
-        // 切换开关
-        const toggle = document.getElementById('pretty-toggle');
-        toggle?.parentElement.addEventListener('click', () => {
-          const isNowPretty = !toggle.checked;
-          toggleOutputStyle(isNowPretty);
-        });
-      });
     }
   </script>
 </MainGridLayout>
