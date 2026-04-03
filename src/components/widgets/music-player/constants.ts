@@ -10,8 +10,8 @@ export const LOCAL_PLAYLIST: Song[] = [
 		id: 1,
 		title: "驫麤～とりぷるばか～ (骉麤～三倍的笨蛋～)",
 		artist: "初音未来 (初音ミク)",
-		cover: "assets/music/cover/驫麤～とりぷるばか～(骉麤～三倍的笨蛋～) - 初音未来 (初音ミク).jpg.webp",
-		url: "assets/music/music/驫麤～とりぷるばか～ (骉麤～三倍的笨蛋～)- 初音未来 (初音ミク).mp3",
+		cover: "public/assets/music/cover/驫麤～とりぷるばか.jpg.webp",
+		url: "public/assets/music/music/驫麤～とりぷるばか～.mp3",
 		duration: 0,
 	},
 	{
