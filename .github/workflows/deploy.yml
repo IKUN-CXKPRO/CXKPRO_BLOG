@@ -1,51 +1,64 @@
-name: Deploy to dist branch
+name: Deploy Astro Site to dist Branch
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+  workflow_dispatch: # 允许手动触发
 
-# 必须赋予写入权限，否则无法推送到 dist 分支
 permissions:
   contents: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
     steps:
       # 1. 检出代码
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 获取完整历史，方便脚本获取 git 信息
 
-      # 2. 设置 Node.js 环境
-      - name: Setup Node.js
+      # 2. 安装系统依赖 (预防 sharp 或 fontmin 报错)
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libvips-dev fonts-noto-cjk
+
+      # 3. 设置 pnpm (严格匹配项目要求的版本)
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 10 # 对应 package.json 中的 pnpm@10.x.x
+
+      # 4. 设置 Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm' # 启用 pnpm 依赖缓存，加速构建
+          node-version: '20' # Astro 6 推荐 Node 20+
+          cache: 'pnpm'
 
-      # 3. 【核心修复】使用 npm 全局安装 pnpm
-      # 这一步确保环境中一定有 pnpm 命令，解决 "Unable to locate executable file" 错误
-      - name: Install PNPM
-        run: npm install -g pnpm
-
-      # 4. 安装项目依赖
-      # --frozen-lockfile 确保严格匹配 pnpm-lock.yaml，保证构建一致性
-      - name: Install Dependencies
+      # 5. 安装依赖
+      # --frozen-lockfile 确保与 pnpm-lock.yaml 完全一致
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # 5. 构建项目
-      - name: Build Project
+      # 6. 执行构建
+      # 这将依次运行：update-anime -> astro build -> pagefind -> compress-fonts
+      - name: Build
         run: pnpm run build
 
-      # 6. 部署到 dist 分支
+      # 7. 部署到 dist 分支
       - name: Deploy to dist branch
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist          # 构建输出目录
-          destination_dir: .           # 部署到分支根目录
-          keep_files: false            # 每次部署前清空旧文件
-          branch: dist                 # 目标分支名
+          publish_dir: ./dist
+          destination_dir: .
+          keep_files: false
+          branch: dist
+          force_orphan: true
           commit_message: 'Deploy: ${{ github.sha }}'
