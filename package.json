@@ -51,6 +51,7 @@
 		"crypto-js": "^4.2.0",
 		"dayjs": "^1.11.19",
 		"hastscript": "^9.0.1",
+		"hls.js": "^1.6.15",
 		"jszip": "^3.10.1",
 		"katex": "^0.16.33",
 		"markdown-it": "^14.1.1",

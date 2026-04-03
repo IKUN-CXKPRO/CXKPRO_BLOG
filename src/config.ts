@@ -253,6 +253,11 @@ export const navBarConfig: NavBarConfig = {
 					url: "/browserinfo/",
 					icon: "material-symbols:work",
 				},
+				{
+					name: "网页播放器",
+					url: "/movie-player/",
+					icon: "material-symbols:work",
+				},
 			],
 		},
 		{
