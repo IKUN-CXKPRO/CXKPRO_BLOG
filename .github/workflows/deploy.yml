@@ -17,22 +17,28 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. 设置 Node.js 环境
+      # 2. 设置 Node.js (注意：这里 cache 写 pnpm 只是为了优化，不会自动安装 pnpm)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
+          cache: 'pnpm' 
 
-      # 3. 安装依赖
+      # 3. 显式安装 pnpm 工具
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9 
+
+      # 4. 安装依赖
       - name: Install dependencies
-        run: npm install
+        run: pnpm install --frozen-lockfile
 
-      # 4. 构建项目
+      # 5. 构建项目
       - name: Build project
-        run: npm run build
+        run: pnpm run build
 
-      # 5. 部署到 dist 分支
+      # 6. 部署到 dist 分支
       - name: Deploy to dist branch
         uses: peaceiris/actions-gh-pages@v4
         with:
