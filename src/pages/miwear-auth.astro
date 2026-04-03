@@ -78,6 +78,15 @@ import { Icon } from "astro-icon/components";
       <div id="fileInfo" class="hidden mt-4 p-3 bg-[var(--card-bg)] rounded-lg text-sm text-90 border border-[var(--line-divider)]">
         <strong>已选择文件:</strong> <span id="fileName" class="text-[var(--primary)] break-all"></span>
       </div>
+
+      <button
+        id="fallbackFileBtn"
+        type="button"
+        class="mt-4 w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-[var(--primary)] bg-[var(--primary)]/10 rounded-lg hover:bg-[var(--primary)]/20 transition-colors"
+        aria-label="移动端点击卡片没反应点我"
+      >
+        移动端点击卡片没反应点我
+      </button>
     </div>
 
     <!-- 结果展示区域 -->
@@ -158,6 +167,7 @@ import { Icon } from "astro-icon/components";
       const resultContainer = document.getElementById('resultContainer');
       const fileInfo = document.getElementById('fileInfo');
       const fileNameSpan = document.getElementById('fileName');
+      const fallbackFileBtn = document.getElementById('fallbackFileBtn');
       
       let currentZip = null;
       let selectedLogFile = null;
@@ -204,6 +214,18 @@ import { Icon } from "astro-icon/components";
         e.preventDefault(); // 防止触发随后的 mouse click
         triggerFileSelect();
       }, { passive: false }); // passive: false 允许 preventDefault
+
+      // 3. 兜底按钮（移动端点击卡片无效时使用）
+      if (fallbackFileBtn) {
+        fallbackFileBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          triggerFileSelect();
+        });
+        fallbackFileBtn.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          triggerFileSelect();
+        }, { passive: false });
+      }
 
       // --- 优化结束 ---
 
