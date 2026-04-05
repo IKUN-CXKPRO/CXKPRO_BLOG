@@ -44,6 +44,7 @@ export const siteConfig: SiteConfig = {
 		timeline: false,
 		albums: false,
 		devices: true,
+		tools: true,
 	},
 
 	// 顶栏标题配置 - 适配新结构
@@ -234,31 +235,9 @@ export const navBarConfig: NavBarConfig = {
 			icon: "material-symbols:link",
 		},
 		{
-			name: "Others",
-			url: "#",
-			icon: "material-symbols:more-horiz",
-			children: [
-				{
-					name: "小米运动健康AuthKey提取器",
-					url: "/miwear-auth/",
-					icon: "material-symbols:work",
-				},
-				{
-					name: "小米穿戴设备解锁码计算",
-					url: "/Xiaomi-Wearable-Unlock/",
-					icon: "material-symbols:work",
-				},
-				{
-					name: "浏览器信息",
-					url: "/browserinfo/",
-					icon: "material-symbols:work",
-				},
-				{
-					name: "网页播放器",
-					url: "/movie-player/",
-					icon: "material-symbols:work",
-				},
-			],
+			name: "Tools",
+			url: "/tools/",
+			icon: "material-symbols:build",
 		},
 		{
 			name: "About",

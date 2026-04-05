@@ -1,0 +1,255 @@
+---
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { Icon } from "astro-icon/components";
+---
+
+<MainGridLayout title="时间戳转换器" description="时间戳与日期格式互转">
+  <div class="onload-animation space-y-6">
+    <!-- 头部 -->
+    <section class="card-base rounded-[var(--radius-large)] p-8">
+      <div class="flex items-center gap-4">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-amber-500 rounded-2xl">
+          <Icon name="material-symbols:schedule" class="text-[var(--primary)] text-3xl" />
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-90">时间戳转换器</h1>
+          <p class="text-75 mt-2">Unix 时间戳与日期格式互转，支持毫秒/秒级</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 当前时间 -->
+    <section class="card-base rounded-[var(--radius-large)] p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-60 mb-1">当前时间</p>
+          <p class="text-2xl font-bold text-90 font-mono" id="currentTime">--</p>
+        </div>
+        <div class="text-right">
+          <p class="text-sm text-60 mb-1">Unix 时间戳 (秒)</p>
+          <p class="text-2xl font-bold text-[var(--primary)] font-mono" id="currentTimestamp">--</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 转换区域 -->
+    <section class="card-base rounded-[var(--radius-large)] p-6">
+      <div class="flex items-center gap-4 mb-6">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="mode" value="ms" checked class="w-4 h-4 accent-[var(--primary)]" />
+          <span class="text-sm text-90">毫秒级 (13位)</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="mode" value="s" class="w-4 h-4 accent-[var(--primary)]" />
+          <span class="text-sm text-90">秒级 (10位)</span>
+        </label>
+        <button id="refreshBtn" class="ml-auto btn-secondary px-4 py-2 rounded-lg text-sm">
+          <Icon name="material-symbols:refresh" class="inline mr-1" />刷新
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- 时间戳转日期 -->
+        <div>
+          <label class="block text-sm font-medium text-90 mb-3">时间戳 → 日期</label>
+          <input type="text" id="timestampInput" placeholder="输入时间戳，如 1704067200000" class="timestamp-input w-full px-4 py-3 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg font-mono focus:outline-none focus:border-[var(--primary)] mb-3" />
+          <div class="flex gap-2">
+            <button id="convertToDate" class="btn-primary px-4 py-2 rounded-lg text-sm font-medium flex-1">
+              <Icon name="material-symbols:arrow-forward" class="inline mr-1" />转换
+            </button>
+          </div>
+          <div id="dateOutput" class="mt-4 p-4 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg min-h-20">
+            <p class="text-60 text-center">转换结果将显示在这里</p>
+          </div>
+        </div>
+
+        <!-- 日期转时间戳 -->
+        <div>
+          <label class="block text-sm font-medium text-90 mb-3">日期 → 时间戳</label>
+          <input type="datetime-local" id="dateInput" class="timestamp-input w-full px-4 py-3 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg font-mono focus:outline-none focus:border-[var(--primary)] mb-3" />
+          <div class="flex gap-2">
+            <button id="convertToTimestamp" class="btn-primary px-4 py-2 rounded-lg text-sm font-medium flex-1">
+              <Icon name="material-symbols:arrow-forward" class="inline mr-1" />转换
+            </button>
+            <button id="useCurrentTime" class="btn-secondary px-4 py-2 rounded-lg text-sm">
+              <Icon name="material-symbols:schedule" class="inline mr-1" />当前时间
+            </button>
+          </div>
+          <div id="timestampOutput" class="mt-4 p-4 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg min-h-20">
+            <p class="text-60 text-center">转换结果将显示在这里</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 常用时间点 -->
+    <section class="card-base rounded-[var(--radius-large)] p-6">
+      <label class="block text-sm font-medium text-90 mb-4">常用时间点</label>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="quickDates">
+        <button class="quick-date p-3 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg text-left hover:border-[var(--primary)] transition" data-timestamp="0">
+          <div class="text-xs text-60">Unix 纪元</div>
+          <div class="text-sm font-mono text-90">1970-01-01</div>
+        </button>
+        <button class="quick-date p-3 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg text-left hover:border-[var(--primary)] transition" data-timestamp="946684800">
+          <div class="text-xs text-60">千禧年</div>
+          <div class="text-sm font-mono text-90">2000-01-01</div>
+        </button>
+        <button class="quick-date p-3 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg text-left hover:border-[var(--primary)] transition" data-timestamp="1609459200">
+          <div class="text-xs text-60">2021年</div>
+          <div class="text-sm font-mono text-90">2021-01-01</div>
+        </button>
+        <button class="quick-date p-3 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg text-left hover:border-[var(--primary)] transition" data-timestamp="1735689600">
+          <div class="text-xs text-60">2025年</div>
+          <div class="text-sm font-mono text-90">2025-01-01</div>
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <style>
+    .btn-primary {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+    }
+    .btn-secondary {
+      background: var(--btn-regular-bg);
+      color: var(--btn-content);
+      border: 1px solid var(--line-divider);
+    }
+    .timestamp-input {
+      color: var(--text-color);
+    }
+    .timestamp-input::placeholder {
+      color: var(--text-60);
+    }
+    @moz-document url-prefix() {
+      .timestamp-input {
+        color: var(--text-90);
+      }
+    }
+  </style>
+
+  <script>
+    const currentTimeEl = document.getElementById('currentTime') as HTMLElement;
+    const currentTimestampEl = document.getElementById('currentTimestamp') as HTMLElement;
+    const timestampInput = document.getElementById('timestampInput') as HTMLInputElement;
+    const dateInput = document.getElementById('dateInput') as HTMLInputElement;
+    const dateOutput = document.getElementById('dateOutput') as HTMLElement;
+    const timestampOutput = document.getElementById('timestampOutput') as HTMLElement;
+    const modeRadio = document.querySelectorAll('input[name="mode"]');
+
+    let currentMode = 'ms';
+
+    function updateCurrentTime() {
+      const now = Date.now();
+      const date = new Date(now);
+      currentTimeEl.textContent = date.toLocaleString('zh-CN', { hour12: false });
+      currentTimestampEl.textContent = now.toString();
+    }
+
+    function getMode(): number {
+      return currentMode === 'ms' ? 1 : 1000;
+    }
+
+    function formatDate(timestamp: number): string {
+      const date = new Date(timestamp * getMode());
+      return `
+        <div class="space-y-2">
+          <div class="flex items-center gap-4">
+            <span class="text-60">完整:</span>
+            <span class="text-90 font-mono">${date.toLocaleString('zh-CN', { hour12: false })}</span>
+          </div>
+          <div class="flex items-center gap-4">
+            <span class="text-60">ISO:</span>
+            <span class="text-90 font-mono">${date.toISOString()}</span>
+          </div>
+          <div class="flex items-center gap-4">
+            <span class="text-60">UTC:</span>
+            <span class="text-90 font-mono">${date.toUTCString()}</span>
+          </div>
+          <div class="flex items-center gap-4">
+            <span class="text-60">相对:</span>
+            <span class="text-90">${getRelativeTime(date)}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function getRelativeTime(date: Date): string {
+      const diff = Date.now() - date.getTime();
+      const abs = Math.abs(diff);
+      const past = diff > 0;
+      
+      if (abs < 60000) return past ? '刚刚' : '即将';
+      if (abs < 3600000) return past ? `${Math.floor(abs / 60000)}分钟前` : `${Math.floor(abs / 60000)}分钟后`;
+      if (abs < 86400000) return past ? `${Math.floor(abs / 3600000)}小时前` : `${Math.floor(abs / 3600000)}小时后`;
+      return past ? `${Math.floor(abs / 86400000)}天前` : `${Math.floor(abs / 86400000)}天后`;
+    }
+
+    updateCurrentTime();
+    setInterval(updateCurrentTime, 1000);
+
+    document.getElementById('refreshBtn')?.addEventListener('click', updateCurrentTime);
+
+    modeRadio.forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        currentMode = (e.target as HTMLInputElement).value;
+        updateCurrentTime();
+      });
+    });
+
+    document.getElementById('convertToDate')?.addEventListener('click', () => {
+      const input = timestampInput.value.trim();
+      if (!input) return;
+      
+      try {
+        let timestamp = parseInt(input);
+        if (currentMode === 's') timestamp *= 1000;
+        if (isNaN(timestamp)) throw new Error('无效的时间戳');
+        
+        dateOutput.innerHTML = formatDate(timestamp);
+      } catch {
+        dateOutput.innerHTML = '<p class="text-red-500 text-center">请输入有效的时间戳</p>';
+      }
+    });
+
+    document.getElementById('convertToTimestamp')?.addEventListener('click', () => {
+      const input = dateInput.value;
+      if (!input) return;
+      
+      try {
+        const date = new Date(input);
+        const ms = date.getTime();
+        const s = Math.floor(ms / 1000);
+        
+        timestampOutput.innerHTML = `
+          <div class="space-y-2">
+            <div class="flex items-center gap-4">
+              <span class="text-60">毫秒:</span>
+              <span class="text-90 font-mono cursor-pointer hover:text-[var(--primary)]" onclick="navigator.clipboard.writeText('${ms}')">${ms}</span>
+            </div>
+            <div class="flex items-center gap-4">
+              <span class="text-60">秒:</span>
+              <span class="text-90 font-mono cursor-pointer hover:text-[var(--primary)]" onclick="navigator.clipboard.writeText('${s}')">${s}</span>
+            </div>
+          </div>
+        `;
+      } catch {
+        timestampOutput.innerHTML = '<p class="text-red-500 text-center">请选择有效日期</p>';
+      }
+    });
+
+    document.getElementById('useCurrentTime')?.addEventListener('click', () => {
+      const now = new Date();
+      dateInput.value = now.toISOString().slice(0, 16);
+    });
+
+    document.querySelectorAll('.quick-date').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const timestamp = btn.getAttribute('data-timestamp');
+        timestampInput.value = currentMode === 'ms' ? (parseInt(timestamp!) * 1000).toString() : timestamp!;
+        document.getElementById('convertToDate')?.dispatchEvent(new Event('click'));
+      });
+    });
+  </script>
+</MainGridLayout>

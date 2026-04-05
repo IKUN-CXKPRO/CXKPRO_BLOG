@@ -10,7 +10,7 @@ import { Icon } from "astro-icon/components";
     <div class="card-base rounded-[var(--radius-large)] p-8 mb-6">
       <div class="text-center">
         <div class="inline-flex items-center justify-center w-16 h-16 bg-[var(--primary)] rounded-2xl mb-4">
-          <Icon name="material-symbols:key" class="text-white text-3xl" />
+          <Icon name="material-symbols:key" class="text-90 text-3xl" />
         </div>
         <h1 class="text-3xl font-bold text-[var(--primary)] mb-3">AuthKey提取器</h1>
         <p class="text-75 max-w-2xl mx-auto">支持从安卓日志ZIP或iOS数据库文件中提取设备连接所需的 AuthKey。</p>
@@ -585,7 +585,7 @@ import { Icon } from "astro-icon/components";
           const itemTitle = document.createElement('div');
           itemTitle.className = 'flex items-center text-sm font-medium text-90 mb-3';
           itemTitle.innerHTML = `
-            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[var(--primary)] text-white text-xs mr-2">${index + 1}</span>
+            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[var(--primary)] text-90 text-xs mr-2">${index + 1}</span>
             设备记录 ${result.source ? `(${result.source})` : ''}
           `;
           itemCard.appendChild(itemTitle);
@@ -607,7 +607,7 @@ import { Icon } from "astro-icon/components";
             tokenRow.innerHTML = `
               <span class="text-75 text-gray-500 w-28 flex-shrink-0">AuthKey</span>
               <div class="flex-1 flex items-center gap-2">
-                <span class="copyable-text font-mono text-sm break-all flex-1 text-white" title="点击复制">${result.token}</span>
+                <span class="copyable-text font-mono text-sm break-all flex-1 text-90" title="点击复制">${result.token}</span>
                 <button class="px-3 py-1.5 text-xs font-medium text-[var(--primary)] bg-[var(--primary)]/10 rounded-lg hover:bg-[var(--primary)]/20 transition-colors whitespace-nowrap" onclick="window.copyToClipboard('${safeToken}')">
                   复制
                 </button>
@@ -645,7 +645,7 @@ import { Icon } from "astro-icon/components";
             debugCard.className = 'debug-card';
             
             let headerHtml = `<div class="text-xs text-gray-500 mb-2 flex items-center">
-              <span class="inline-flex items-center justify-center w-4 h-4 rounded bg-[var(--primary)] text-white text-[10px] mr-2">${idx + 1}</span>
+              <span class="inline-flex items-center justify-center w-4 h-4 rounded bg-[var(--primary)] text-90 text-[10px] mr-2">${idx + 1}</span>
               位置: ${info.position}
             `;
             
@@ -666,7 +666,7 @@ import { Icon } from "astro-icon/components";
                   ${info.authKeys.map((key, i) => `
                     <div class="flex items-center gap-2 mt-1">
                       <code class="flex-1 text-xs bg-[var(--card-bg)] px-2 py-1 rounded font-mono">${key}</code>
-                      <button onclick="window.copyToClipboard('${key}')" class="px-2 py-1 text-xs bg-[var(--primary)] text-white rounded hover:opacity-80">复制</button>
+                      <button onclick="window.copyToClipboard('${key}')" class="px-2 py-1 text-xs bg-[var(--primary)] text-90 rounded hover:opacity-80">复制</button>
                     </div>
                   `).join('')}
                 </div>
@@ -724,7 +724,7 @@ import { Icon } from "astro-icon/components";
           matchCard.className = 'rounded-lg bg-[var(--card-bg)] border border-[var(--line-divider)] p-4';
           
           let headerHtml = `<div class="flex items-center text-sm font-medium text-90 mb-3">
-            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[var(--primary)] text-white text-xs mr-2">${index + 1}</span>
+            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[var(--primary)] text-90 text-xs mr-2">${index + 1}</span>
             位置: <span class="font-mono ml-1">${info.position}</span>
           </div>`;
           
@@ -754,7 +754,7 @@ import { Icon } from "astro-icon/components";
                 ${info.authKeys.map((key) => `
                   <div class="flex items-center gap-2 mt-1">
                     <code class="flex-1 text-xs bg-[var(--card-bg)] px-2 py-1 rounded font-mono">${key}</code>
-                    <button onclick="window.copyToClipboard('${key}')" class="px-2 py-1 text-xs bg-[var(--primary)] text-white rounded hover:opacity-80">复制</button>
+                    <button onclick="window.copyToClipboard('${key}')" class="px-2 py-1 text-xs bg-[var(--primary)] text-90 rounded hover:opacity-80">复制</button>
                   </div>
                 `).join('')}
               </div>

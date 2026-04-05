@@ -8,11 +8,11 @@ import { Icon } from "astro-icon/components";
     <section class="card-base rounded-[var(--radius-large)] p-8">
         <div class="flex items-center gap-4">
           <div class="inline-flex items-center justify-center w-16 h-16 bg-[var(--primary)] rounded-2xl">
-            <Icon name="material-symbols:movie" class="text-white text-3xl" />
+            <Icon name="material-symbols:movie" class="text-90 text-3xl" />
           </div>
           <div>
-            <h1 class="text-3xl font-bold text-white">简易播放器</h1>
-      <p class="text-75 text-white/80 mt-2">😱99% AI编写😱</p>
+            <h1 class="text-3xl font-bold text-90">简易播放器</h1>
+      <p class="text-75 text-90/80 mt-2">😱99% AI编写😱</p>
           </div>
         </div>
     </section>
@@ -20,91 +20,91 @@ import { Icon } from "astro-icon/components";
     <section class="card-base rounded-[var(--radius-large)] p-6 space-y-4">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg p-4">
-          <div class="text-sm font-medium text-white mb-2">本地播放（推荐）</div>
+          <div class="text-sm font-medium text-90 mb-2">本地播放（推荐）</div>
           <div class="flex items-center gap-3">
-            <button id="local-pick" type="button" class="px-3 py-2 text-xs font-medium text-white bg-[var(--primary)] rounded-lg hover:opacity-90 transition">选择本地文件</button>
-            <span id="local-name" class="text-xs text-white/70 truncate">未选择</span>
+            <button id="local-pick" type="button" class="px-3 py-2 text-xs font-medium text-90 bg-[var(--primary)] rounded-lg hover:opacity-90 transition">选择本地文件</button>
+            <span id="local-name" class="text-xs text-90/70 truncate">未选择</span>
           </div>
           <input id="local-file" type="file" accept=".mkv,.mp4,.webm,.m4v,.mov,.avi,.ts,.m2ts" class="hidden" />
-          <div class="text-xs text-white/60 mt-2">支持 MKV/MP4/WebM/MOV/AVI/TS/M2TS。读取本地文件不会上传。</div>
+          <div class="text-xs text-90/60 mt-2">支持 MKV/MP4/WebM/MOV/AVI/TS/M2TS。读取本地文件不会上传。</div>
         </div>
 
         <div class="bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg p-4">
-          <div class="text-sm font-medium text-white mb-2 flex items-center gap-2">
+          <div class="text-sm font-medium text-90 mb-2 flex items-center gap-2">
             URL 播放
-            <span class="text-[10px] px-2 py-0.5 rounded-full border border-[var(--line-divider)] text-white/70">实验性</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full border border-[var(--line-divider)] text-90/70">实验性</span>
           </div>
-          <input id="video-url" class="mt-2 w-full px-3 py-2 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg text-white text-sm placeholder:text-white/40" placeholder="https://example.com/video.mkv" />
-          <div class="text-xs text-white/60 mt-2">跨域与编码限制可能导致无法播放。</div>
+          <input id="video-url" class="mt-2 w-full px-3 py-2 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg text-90 text-sm placeholder:text-90/40" placeholder="https://example.com/video.mkv" />
+          <div class="text-xs text-90/60 mt-2">跨域与编码限制可能导致无法播放。</div>
         </div>
       </div>
 
       <div class="flex flex-wrap items-center gap-3">
-        <button id="load-btn" class="px-4 py-2 text-sm font-medium text-white bg-[var(--primary)] rounded-lg hover:opacity-90 transition">加载并播放</button>
+        <button id="load-btn" class="px-4 py-2 text-sm font-medium text-90 bg-[var(--primary)] rounded-lg hover:opacity-90 transition">加载并播放</button>
         <button id="stop-btn" class="px-4 py-2 text-sm font-medium text-90 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg hover:border-[var(--primary)] transition">停止</button>
       </div>
 
-      <div class="text-xs text-white/60">提示：浏览器对 MKV 支持有限，若无法播放请检查视频编码或使用 MP4/HLS。</div>
+      <div class="text-xs text-90/60">提示：浏览器对 MKV 支持有限，若无法播放请检查视频编码或使用 MP4/HLS。</div>
     </section>
 
     <section class="card-base rounded-[var(--radius-large)] p-6">
-      <h2 class="text-xl font-bold text-white mb-4 flex items-center">
+      <h2 class="text-xl font-bold text-90 mb-4 flex items-center">
         <Icon name="material-symbols:play-circle" class="mr-2 text-[var(--primary)]" />
         播放器
       </h2>
       <video id="player" class="w-full rounded-lg border border-[var(--line-divider)] bg-black" controls playsinline preload="metadata"></video>
 
       <div class="mt-4 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg p-4">
-        <div class="text-sm font-medium text-white mb-2">视频信息</div>
-        <div id="video-info" class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-white/80"></div>
+        <div class="text-sm font-medium text-90 mb-2">视频信息</div>
+        <div id="video-info" class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-90/80"></div>
       </div>
 
       <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg p-4">
-          <div class="text-sm font-medium text-white mb-2">字幕</div>
+          <div class="text-sm font-medium text-90 mb-2">字幕</div>
           <div class="flex items-center gap-3 flex-wrap">
-            <select id="subtitle-select" class="px-2 py-1 text-sm bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg text-white"></select>
-            <label class="text-xs text-white/60">大小</label>
+            <select id="subtitle-select" class="px-2 py-1 text-sm bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg text-90"></select>
+            <label class="text-xs text-90/60">大小</label>
             <input id="subtitle-size" type="range" min="16" max="48" value="24" />
           </div>
         </div>
         <div class="bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg p-4">
-          <div class="text-sm font-medium text-white mb-2">音轨</div>
+          <div class="text-sm font-medium text-90 mb-2">音轨</div>
           <div class="flex items-center gap-3 flex-wrap">
-            <select id="audio-select" class="px-2 py-1 text-sm bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg text-white"></select>
-            <button id="audio-refresh" class="px-3 py-1 text-xs border border-[var(--line-divider)] rounded-lg hover:border-[var(--primary)] transition text-white">刷新</button>
+            <select id="audio-select" class="px-2 py-1 text-sm bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg text-90"></select>
+            <button id="audio-refresh" class="px-3 py-1 text-xs border border-[var(--line-divider)] rounded-lg hover:border-[var(--primary)] transition text-90">刷新</button>
           </div>
-          <div class="text-xs text-white/60 mt-2">说明：audioTracks 在部分浏览器不可用。</div>
+          <div class="text-xs text-90/60 mt-2">说明：audioTracks 在部分浏览器不可用。</div>
         </div>
       </div>
     </section>
 
     <section class="card-base rounded-[var(--radius-large)] p-6">
-      <h2 class="text-xl font-bold text-white mb-4 flex items-center">
+      <h2 class="text-xl font-bold text-90 mb-4 flex items-center">
         <Icon name="material-symbols:bug-report" class="mr-2 text-[var(--primary)]" />
         播放信息
       </h2>
-      <div id="ui-debug" class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm text-white"></div>
+      <div id="ui-debug" class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm text-90"></div>
     </section>
 
     <section class="card-base rounded-[var(--radius-large)] p-6">
-      <h2 class="text-xl font-bold text-white mb-4 flex items-center">
+      <h2 class="text-xl font-bold text-90 mb-4 flex items-center">
         <Icon name="material-symbols:terminal" class="mr-2 text-[var(--primary)]" />
         调试输出（简版）
       </h2>
-      <div id="log-box" class="bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg p-4 text-xs font-mono whitespace-pre-wrap break-words max-h-[260px] overflow-y-auto text-white"></div>
+      <div id="log-box" class="bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg p-4 text-xs font-mono whitespace-pre-wrap break-words max-h-[260px] overflow-y-auto text-90"></div>
     </section>
   </div>
 
     <div id="backend-modal" class="fixed inset-0 hidden items-center justify-center bg-black/70 z-[1000]">
       <div class="bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-[var(--radius-large)] p-6 max-w-lg w-[90%]">
-        <h3 class="text-lg font-bold text-white mb-2">需要后端转换</h3>
-        <p class="text-sm text-white/80 leading-6">
+        <h3 class="text-lg font-bold text-90 mb-2">需要后端转换</h3>
+        <p class="text-sm text-90/80 leading-6">
           当前文件需要后端解复用/转码才能播放。上传后将进行服务器转换。如果你担心数据泄露，请离开。
         </p>
         <div class="mt-4 flex items-center gap-3 justify-end">
-          <button id="modal-cancel" class="px-3 py-1.5 text-xs border border-[var(--line-divider)] rounded-lg text-white/80 hover:border-[var(--primary)] transition">取消</button>
-          <button id="modal-confirm" class="px-3 py-1.5 text-xs bg-[var(--primary)] rounded-lg text-white hover:opacity-90 transition">继续上传</button>
+          <button id="modal-cancel" class="px-3 py-1.5 text-xs border border-[var(--line-divider)] rounded-lg text-90/80 hover:border-[var(--primary)] transition">取消</button>
+          <button id="modal-confirm" class="px-3 py-1.5 text-xs bg-[var(--primary)] rounded-lg text-90 hover:opacity-90 transition">继续上传</button>
         </div>
       </div>
     </div>
