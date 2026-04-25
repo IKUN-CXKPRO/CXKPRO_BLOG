@@ -4,847 +4,272 @@ import { Icon } from "astro-icon/components";
 ---
 
 <MainGridLayout title="小米运动健康AuthKey提取器" description="从安卓日志或iOS数据库中提取小米穿戴设备的 AuthKey。">
-  <div class="onload-animation space-y-6">
+  <div class="onload-animation space-y-8 max-w-5xl mx-auto px-4 pb-12">
     
-    <!-- 头部介绍卡片 -->
-    <div class="card-base rounded-[var(--radius-large)] p-8 mb-6">
-      <div class="text-center">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-[var(--primary)] rounded-2xl mb-4">
-          <Icon name="material-symbols:key" class="text-90 text-3xl" />
-        </div>
-        <h1 class="text-3xl font-bold text-[var(--primary)] mb-3">AuthKey提取器</h1>
-        <p class="text-75 max-w-2xl mx-auto">支持从安卓日志ZIP或iOS数据库文件中提取设备连接所需的 AuthKey。</p>
+    <!-- 头部标题 -->
+    <div class="card-base rounded-[var(--radius-large)] p-8 text-center">
+      <div class="inline-flex items-center justify-center w-16 h-16 bg-[var(--primary)] rounded-2xl mb-4 shadow-lg shadow-[var(--primary)]/20">
+        <Icon name="material-symbols:key" class="text-white text-3xl" />
       </div>
+      <h1 class="text-3xl font-bold text-[var(--primary)] mb-2">AuthKey 提取器</h1>
+      <p class="text-75 text-sm opacity-70">支持从安卓日志 ZIP 或 iOS 数据库中提取设备 AuthKey</p>
     </div>
 
-    <!-- 使用说明卡片 - 安卓 -->
-    <div class="card-base rounded-[var(--radius-large)] p-8 mb-6">
-      <div class="text-center">
-        <h2 class="text-xl font-bold text-90 mb-4 flex items-center justify-center">
-          <Icon name="material-symbols:android" class="mr-2 text-[var(--primary)]" />
+    <!-- 安卓端提取方法卡片 - 仿照图片大卡片样式 -->
+    <div class="card-base rounded-[var(--radius-large)] p-10 md:p-12 border border-[var(--line-divider)]">
+      <div class="text-center mb-8">
+        <h2 class="text-2xl font-bold text-90 flex items-center justify-center">
+          <Icon name="material-symbols:android" class="mr-3 text-[var(--primary)] text-3xl" />
           安卓端提取方法
         </h2>
-        <ol class="text-75 max-w-2xl mx-auto text-left space-y-2 list-decimal list-inside bg-[var(--card-bg)] p-4 rounded-lg">
-          <li>打开小米运动健康 APP</li>
-          <li>点击右下角"我的" -> 滑动到最下方选择"关于"</li>
-          <li>连续点击关于页面上方的logo，直到弹出日志保存提示</li>
-          <li>在文件管理器中找到 <code class="bg-[var(--line-divider)] px-1 rounded">Download/wearablelog/****.zip</code></li>
-          <li>上传该ZIP文件</li>
-          <li>上传文件后不显示的话，多刷新几下然后重新上传即可</li>
+      </div>
+      <div class="max-w-2xl mx-auto">
+        <ol class="text-base text-75 space-y-4 opacity-90 leading-relaxed">
+          <li>1. 打开小米运动健康 APP</li>
+          <li>2. 点击右下角"我的" -> 滑动到最下方选择"关于"</li>
+          <li>3. 连续点击关于页面上方的logo，直到弹出日志保存提示</li>
+          <li>4. 在文件管理器中找到 <code class="bg-[var(--line-divider)] px-2 py-0.5 rounded font-mono text-sm">Download/wearablelog/****.zip</code></li>
+          <li>5. 上传该ZIP文件</li>
+          <li>6. 上传文件后不显示的话，多刷新几下然后重新上传即可</li>
         </ol>
       </div>
     </div>
 
-    <!-- 使用说明卡片 - iOS -->
-    <div class="card-base rounded-[var(--radius-large)] p-8 mb-6">
-      <div class="text-center">
-        <h2 class="text-xl font-bold text-90 mb-4 flex items-center justify-center">
-          <Icon name="material-symbols:phone-iphone" class="mr-2 text-[var(--primary)]" />
+    <!-- iOS端提取方法卡片 - 仿照图片大卡片样式 -->
+    <div class="card-base rounded-[var(--radius-large)] p-10 md:p-12 border border-[var(--line-divider)]">
+      <div class="text-center mb-8">
+        <h2 class="text-2xl font-bold text-90 flex items-center justify-center">
+          <Icon name="material-symbols:phone-iphone" class="mr-3 text-[var(--primary)] text-3xl" />
           iOS端提取方法
         </h2>
-        <ol class="text-75 max-w-2xl mx-auto text-left space-y-2 list-decimal list-inside bg-[var(--card-bg)] p-4 rounded-lg">
-          <li>打开系统自带的"文件"app，浏览我的iPhone，找到小米运动健康文件夹，按路径找到文件 \MHWCahe\6284670\VirtualDevice_registerList\manifest.sqlite</li>
-          <li>上传sqlite文件</li>
-          <li>自行寻找：在encrypt_key找到peripheral_id，后面的16位字符就是AuthKey</li>
-          <li>上传文件后不显示的话，多刷新几下然后重新上传即可</li>
+      </div>
+      <div class="max-w-2xl mx-auto">
+        <ol class="text-base text-75 space-y-4 opacity-90 leading-relaxed">
+          <li>1. 打开系统自带的"文件"app，浏览我的iPhone，找到小米运动健康文件夹，按路径找到文件 <code class="bg-[var(--line-divider)] px-2 py-0.5 rounded font-mono text-sm">\MHWCahe\6284670\VirtualDevice_registerList\manifest.sqlite</code></li>
+          <li>2. 上传sqlite文件</li>
+          <li>3. 自行寻找：在encrypt_key找到peripheral_id，后面的16位字符就是AuthKey</li>
+          <li>4. 上传文件后不显示的话，多刷新几下然后重新上传即可</li>
         </ol>
       </div>
     </div>
-    
-    <!-- 上传区域卡片 (已优化移动端兼容性) -->
-    <div class="card-base rounded-[var(--radius-large)] p-6 mb-6">
-      <h2 class="text-xl font-bold text-90 mb-4 flex items-center">
+
+    <!-- 上传区域 -->
+    <div class="card-base rounded-[var(--radius-large)] p-8">
+      <h2 class="text-xl font-bold text-90 mb-6 flex items-center">
         <Icon name="material-symbols:upload-file" class="mr-2 text-[var(--primary)]" />
         上传文件
       </h2>
-      
-      <input type="file" id="fileInput" accept=".zip,.sqlite,.db,.sqlitedb,.sqlite-wal" class="absolute opacity-0 pointer-events-none" tabindex="-1" aria-hidden="true">
-      
+      <input type="file" id="fileInput" accept=".zip,.sqlite,.db,.sqlitedb,.sqlite-wal" class="hidden">
       <div 
         id="uploadArea"
-        class="border-2 border-dashed border-[var(--line-divider)] rounded-lg p-8 text-center cursor-pointer transition-all duration-200 hover:border-[var(--primary)] hover:bg-[var(--card-bg)] active:scale-[0.98] touch-manipulation select-none"
-        role="button"
-        aria-label="点击上传文件"
+        class="border-4 border-dashed border-[var(--line-divider)] rounded-3xl p-12 text-center cursor-pointer transition-all duration-500 hover:border-[var(--primary)] hover:bg-[var(--primary)]/[0.03] group"
       >
-        <!-- pointer-events-none 确保点击文字时事件能穿透到父容器 -->
-        <div class="pointer-events-none">
-          <p class="text-75 text-90 mb-2 font-medium">点击选择或拖拽文件到此处</p>
-          <p class="text-75 text-gray-500 text-sm">支持格式：ZIP（安卓日志）或 SQLite数据库文件</p>
+        <div class="pointer-events-none space-y-4">
+          <Icon name="material-symbols:cloud-upload" class="text-6xl mx-auto text-gray-300 group-hover:text-[var(--primary)] transition-colors" />
+          <div>
+            <p class="text-xl font-bold text-90">点击此处或拖拽文件上传</p>
+            <p class="text-sm text-gray-400 mt-1">支持 .zip (Android) 或 manifest.sqlite (iOS)</p>
+          </div>
         </div>
       </div>
-      
-      <div id="fileInfo" class="hidden mt-4 p-3 bg-[var(--card-bg)] rounded-lg text-sm text-90 border border-[var(--line-divider)]">
-        <strong>已选择文件:</strong> <span id="fileName" class="text-[var(--primary)] break-all"></span>
-      </div>
-
-      <button
-        id="fallbackFileBtn"
-        type="button"
-        class="mt-4 w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-[var(--primary)] bg-[var(--primary)]/10 rounded-lg hover:bg-[var(--primary)]/20 transition-colors relative overflow-hidden"
-        aria-label="移动端点击卡片没反应点我"
-      >
-        移动端点击卡片没反应点我
-        <input
-          id="fallbackFileInput"
-          type="file"
-          accept=".zip,.sqlite,.db,.sqlitedb,.sqlite-wal"
-          class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          aria-label="选择文件"
-        >
-      </button>
     </div>
 
-    <!-- 结果展示区域 -->
-    <div class="card-base rounded-[var(--radius-large)] p-6">
-      <h2 class="text-xl font-bold text-90 mb-4 flex items-center">
-        <Icon name="material-symbols:password" class="mr-2 text-[var(--primary)]" />
-        提取结果
-      </h2>
-      <div id="resultContainer" class="space-y-4">
-        <div class="text-75 text-center text-gray-500 py-8">
-          请上传文件以开始提取...
-        </div>
+    <!-- 结果区域 -->
+    <div id="resultBox" class="hidden space-y-8">
+      <!-- 自动匹配 -->
+      <div class="card-base rounded-[var(--radius-large)] p-8 border-l-8 border-[var(--primary)] shadow-lg">
+        <h2 class="text-2xl font-bold text-90 mb-6 flex items-center">
+          <Icon name="material-symbols:robot" class="mr-3 text-[var(--primary)] text-3xl" />
+          智能提取结果
+        </h2>
+        <div id="autoResultContainer" class="grid grid-cols-1 gap-4"></div>
+      </div>
+
+      <!-- 原始数据检测 -->
+      <div class="card-base rounded-[var(--radius-large)] p-8">
+        <h2 class="text-2xl font-bold text-90 mb-6 flex items-center">
+          <Icon name="material-symbols:database" class="mr-3 text-gray-400 text-3xl" />
+          原始数据检测 (Binary Context)
+        </h2>
+        <div id="rawResultContainer" class="space-y-6"></div>
       </div>
     </div>
 
   </div>
 
-  <style>
-    .drag-over {
-      border-color: var(--primary) !important;
-      background-color: var(--card-bg) !important;
+  <style is:global>
+    .drag-over { border-color: var(--primary) !important; background-color: var(--card-bg) !important; }
+    
+    /* 顶部居中深色提示框 */
+    .copy-msg { 
+      position: fixed; top: 40px; left: 50%; transform: translateX(-50%);
+      padding: 10px 24px; background: #2d2d2d; color: #ffffff; 
+      border-radius: 50px; z-index: 2000; font-size: 14px; font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2); pointer-events: none;
+      display: flex; align-items: center; gap: 8px;
+      animation: toastIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
     }
-    .copyable-text {
-      text-decoration: underline;
-      cursor: pointer;
-      color: var(--primary);
-      font-weight: 500;
-      transition: opacity 0.2s;
+    
+    @keyframes toastIn { from { transform: translate(-50%, -40px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+
+    /* 原始数据卡片样式 */
+    .debug-card { background: var(--card-bg); border: 1px solid var(--line-divider); border-radius: 1rem; padding: 1.5rem; }
+    .debug-card pre { 
+      font-family: 'JetBrains Mono', 'Cascadia Code', ui-monospace, monospace;
+      font-size: 0.8rem; white-space: pre-wrap; word-break: break-all;
+      color: var(--text-color); /* 自适应配色 */
+      opacity: 0.85; line-height: 1.6;
     }
-    .copyable-text:hover {
-      opacity: 0.8;
-    }
-    .copy-success-message {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 10px 20px;
-      background-color: var(--card-bg);
-      color: var(--primary);
-      border: 1px solid var(--primary);
-      border-radius: var(--radius-large);
-      z-index: 1000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      font-family: inherit;
-      font-size: 14px;
-      animation: fadeIn 0.3s ease-out;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .debug-section {
-      max-height: 560px;
-      overflow-y: auto;
-    }
-    .debug-card {
-      background: var(--card-bg);
-      border: 1px solid var(--line-divider);
-      border-radius: 0.5rem;
-      padding: 0.75rem;
-      margin-bottom: 0.5rem;
-    }
-    .debug-card pre {
-      font-family: ui-monospace, monospace;
-      font-size: 0.75rem;
-      white-space: pre-wrap;
-      word-break: break-all;
-      color: var(--text-color);
-    }
+    .highlight-key { background-color: var(--primary); color: white !important; padding: 0 4px; border-radius: 4px; font-weight: bold; }
+    .highlight-name { color: var(--primary); font-weight: 800; border-bottom: 2px dashed var(--primary); }
   </style>
 
   <script>
+    // 逻辑：进入页面自动刷新一次，确保脚本初始化
+    if (!sessionStorage.getItem('reloaded_authkey')) {
+        sessionStorage.setItem('reloaded_authkey', 'true');
+        window.location.reload();
+    } else {
+        setTimeout(() => sessionStorage.removeItem('reloaded_authkey'), 5000);
+    }
+
     const JSZip = (await import('jszip')).default;
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', () => {
       const fileInput = document.getElementById('fileInput');
       const uploadArea = document.getElementById('uploadArea');
-      const resultContainer = document.getElementById('resultContainer');
-      const fileInfo = document.getElementById('fileInfo');
-      const fileNameSpan = document.getElementById('fileName');
-      const fallbackFileBtn = document.getElementById('fallbackFileBtn');
-      const fallbackFileInput = document.getElementById('fallbackFileInput');
-      
-      let currentZip = null;
-      let selectedLogFile = null;
-      let fileType = null;
-      
-      // --- 优化开始：移动端兼容的文件触发逻辑 ---
-      
-      // 封装触发函数，处理移动端可能的异步或拦截问题
-      const triggerFileSelect = () => {
-        if (!fileInput) return;
-        
-        fileInput.value = ''; 
-        
-        try {
-          fileInput.click();
-        } catch (e) {
-          const event = new MouseEvent('click', {
-            view: window,
-            bubbles: true,
-            cancelable: true
-          });
-          fileInput.dispatchEvent(event);
-        }
+      const resultBox = document.getElementById('resultBox');
+      const autoResultContainer = document.getElementById('autoResultContainer');
+      const rawResultContainer = document.getElementById('rawResultContainer');
+
+      window.copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text).then(() => {
+          const old = document.querySelector('.copy-msg');
+          if (old) old.remove();
+          const el = document.createElement('div');
+          el.className = 'copy-msg';
+          el.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> 密钥复制成功`;
+          document.body.appendChild(el);
+          setTimeout(() => {
+            el.style.opacity = '0';
+            el.style.transform = 'translate(-50%, -20px)';
+            el.style.transition = 'all 0.4s ease';
+            setTimeout(() => el.remove(), 400);
+          }, 1600);
+        });
       };
 
-      uploadArea.addEventListener('click', (e) => {
-        e.preventDefault();
-        triggerFileSelect();
-      });
-
-      uploadArea.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        triggerFileSelect();
-      }, { passive: false });
-
-      if (fallbackFileBtn) {
-        fallbackFileBtn.addEventListener('click', (e) => {
-          if (e.target === fallbackFileInput) return;
-          e.preventDefault();
-          triggerFileSelect();
-        });
-        fallbackFileBtn.addEventListener('touchend', (e) => {
-          if (e.target === fallbackFileInput) return;
-          e.preventDefault();
-          triggerFileSelect();
-        }, { passive: false });
-      }
-
-      // --- 优化结束 ---
-
-      fileInput.addEventListener('change', () => handleFileSelect());
-      if (fallbackFileInput) {
-        fallbackFileInput.addEventListener('change', () => handleFileSelect(fallbackFileInput.files && fallbackFileInput.files[0]));
-      }
-      
-      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        uploadArea.addEventListener(eventName, (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }, false);
-      });
-      
-      ['dragenter', 'dragover'].forEach(eventName => {
-        uploadArea.addEventListener(eventName, () => uploadArea.classList.add('drag-over'), false);
-      });
-      
-      ['dragleave', 'drop'].forEach(eventName => {
-        uploadArea.addEventListener(eventName, () => uploadArea.classList.remove('drag-over'), false);
-      });
-      
-      uploadArea.addEventListener('drop', (e) => {
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-          const file = files[0];
-          if (isValidFileType(file)) {
-            handleFileSelect(file);
-          } else {
-            showError('请选择 .zip 或 .sqlite/.db 格式的文件');
-          }
-        }
-      }, false);
-      
-      function isValidFileType(file) {
-        const name = file.name.toLowerCase();
-        return name.endsWith('.zip') || name.endsWith('.sqlite') || name.endsWith('.db') || name.endsWith('.sqlitedb') || name.endsWith('.sqlite-wal');
-      }
-      
-      function handleFileSelect(droppedFile = null) {
-        const file = droppedFile || (fileInput.files && fileInput.files[0]);
-        if (file) {
-          fileNameSpan.textContent = file.name;
-          fileInfo.classList.remove('hidden');
-          
-          const fileName = file.name.toLowerCase();
-          if (fileName.endsWith('.zip')) {
-            fileType = 'android-log';
-            loadAndExtract(file);
-          } else if (fileName.endsWith('.sqlite-wal')) {
-            fileType = 'ios-sqlite-wal';
-            extractFromSQLiteWAL(file);
-          } else {
-            fileType = 'ios-sqlite';
-            extractFromSQLite(file);
-          }
-        }
-      }
-      
-      async function extractFromSQLite(file) {
-        try {
-          resultContainer.innerHTML = '<div class="text-center text-75 text-gray-500 py-4">正在加载 SQLite 数据库...</div>';
-          
-          const sqlJsModule = await import('sql.js');
-          const initSqlJs = sqlJsModule.default;
-          
-          const SQL = await initSqlJs({
-            locateFile: (file) => {
-              if (file === 'sql-wasm.wasm' || file === 'sql-wasm-browser.wasm') {
-                return '../sql-wasm-browser.wasm';
-              }
-              return file;
-            }
-          });
-          
-          const arrayBuffer = await file.arrayBuffer();
-          const uint8Array = new Uint8Array(arrayBuffer);
-          const db = new SQL.Database(uint8Array);
-          
-          const results = [];
-          let allDebugInfo = [];
-          
-          // 方法1：查找包含 encrypt_key 的表
-          try {
-            const tables = db.exec("SELECT name FROM sqlite_master WHERE type='table'");
-            if (tables.length > 0) {
-              for (const tableRow of tables[0].values) {
-                const tableName = tableRow[0];
-                try {
-                  const stmt = db.prepare(`SELECT * FROM "${tableName}"`);
-                  while (stmt.step()) {
-                    const row = stmt.get();
-                    const rowData = JSON.stringify(row);
-                    
-                    if (rowData.includes('encrypt_key') || rowData.includes('auth_key') || rowData.includes('authkey')) {
-                      const extracted = parseSQLiteRow(row, stmt.getColumnNames());
-                      if (extracted) {
-                        results.push(extracted);
-                      }
-                    }
-                  }
-                  stmt.free();
-                } catch (e) {}
-              }
-            }
-          } catch (e) {
-            console.error('查询表失败:', e);
-          }
-          
-          if (results.length === 0) {
-            const textContent = await file.text();
-            const parseResult = parseSQLiteBinaryContent(textContent);
-            allDebugInfo = parseResult.debugInfo;
-            
-            if (parseResult.results && parseResult.results.length > 0) {
-              results.push(...parseResult.results);
-            }
-          }
-          
-          db.close();
-          
-          if (results.length > 0) {
-            displayResult(results, file.name, 'iOS SQLite', allDebugInfo);
-          } else if (allDebugInfo.length > 0) {
-            displayDebugInfo(allDebugInfo, file.name);
-          } else {
-            showError('未在数据库中找到 encrypt_key、AuthKey 或相关关键字');
-          }
-        } catch (error) {
-          console.error('SQLite 处理错误:', error);
-          if (error.message.includes('wasm') || error.message.includes('fetch')) {
-            showError('WASM 文件加载失败，请确保 public/sql-wasm-browser.wasm 存在');
-          } else {
-            showError(`解析失败: ${error.message || error}`);
-          }
-        }
-      }
-      
-      // 处理 SQLite WAL 文件（不需要验证文件头）
-      async function extractFromSQLiteWAL(file) {
-        try {
-          resultContainer.innerHTML = '<div class="text-center text-75 text-gray-500 py-4">正在解析 WAL 文件...</div>';
-          
-          // 直接读取文件内容作为文本搜索 encrypt_key
-          const textContent = await file.text();
-          const parseResult = parseSQLiteBinaryContent(textContent);
-          
-          if (parseResult.results && parseResult.results.length > 0) {
-            displayResult(parseResult.results, file.name, 'iOS SQLite WAL', parseResult.debugInfo);
-          } else if (parseResult.debugInfo && parseResult.debugInfo.length > 0) {
-            displayDebugInfo(parseResult.debugInfo, file.name);
-          } else {
-            showError('未在 WAL 文件中找到 encrypt_key、AuthKey 或相关关键字');
-          }
-        } catch (error) {
-          console.error('WAL 处理错误:', error);
-          showError(`解析失败: ${error.message || error}`);
-        }
-      }
-      
-      function parseSQLiteBinaryContent(content) {
-        const results = [];
-        const debugInfo = [];
-        
-        // 查找所有包含 encrypt_key 的位置
-        const encryptKeyRegex = /encrypt_key[_"\s:=]+([A-Za-z0-9._:\/\-]+)(?=[\s"']|$)/gi;
-        let match;
-        
-        while ((match = encryptKeyRegex.exec(content)) !== null) {
-          const key = sanitizeEncryptKey(match[1]);
-          const fullMatch = match[0];
-          const contextStart = Math.max(0, match.index - 500);
-          const contextEnd = Math.min(content.length, match.index + 500);
-          const context = content.substring(contextStart, contextEnd);
-          
-          
-          const debugEntry = {
-            position: match.index,
-            fullMatch: fullMatch,
-            key: key,
-            // serial: serialMatch ? serialMatch[1] : null,
-            // authKeys: authKeyMatches.map(m => m[1]),
-            context: context,
-            rawContext: context.replace(/[^\x20-\x7E]/g, '')
-          };
-          debugInfo.push(debugEntry);
-          
-          results.push({
-            // productName 暂时不解析 serial/mac
-            productName: null,
-            token: key,
-            source: 'encrypt_key',
-            debug: debugEntry,
-            meta: collectFuzzyMetaFromEncryptKey(key)
-          });
-        }
-        
-        
-        if (results.length === 0 && debugInfo.length === 0) {
-          const keywords = ['encrypt_key'];
-          
-          for (const keyword of keywords) {
-            const regex = new RegExp(keyword, 'gi');
-            while ((match = regex.exec(content)) !== null) {
-              const contextStart = Math.max(0, match.index - 300);
-              const contextEnd = Math.min(content.length, match.index + 300);
-              const context = content.substring(contextStart, contextEnd);
-              
-              debugInfo.push({
-                position: match.index,
-                keyword: keyword,
-                context: context,
-                rawContext: context.replace(/[^\x20-\x7E]/g, '').substring(0, 500)
-              });
-            }
-          }
-        }
-        
-        return { results, debugInfo };
-      }
-      
-      function parseSQLiteRow(row, columns) {
-        const result = { productName: null, token: null };
-        
-        for (let i = 0; i < columns.length; i++) {
-          const colName = columns[i].toLowerCase();
-          const value = row[i];
-          
-          if (colName.includes('encrypt_key') || colName.includes('auth_key') || colName.includes('authkey')) {
-            if (value && typeof value === 'string' && value.length > 16) {
-              result.token = value;
-            }
-          }
-          
-          
-        }
-        
-        if (result.token || result.productName) {
-          return result;
-        }
-        return null;
-      }
-      
-      async function loadAndExtract(file) {
-        try {
-          resultContainer.innerHTML = '<div class="text-center text-75 text-gray-500 py-4">正在加载 ZIP 文件...</div>';
-          
-          const arrayBuffer = await file.arrayBuffer();
-          currentZip = await JSZip.loadAsync(arrayBuffer);
-          
-          let mainLogFile = null;
-          for (const fileName in currentZip.files) {
-            if (fileName.toLowerCase().includes('xiaomifit.main.log')) {
-              mainLogFile = fileName;
-              break;
-            }
-          }
-          
-          if (mainLogFile) {
-            selectedLogFile = mainLogFile;
-            resultContainer.innerHTML = `<div class="text-center text-75 text-[var(--primary)] py-4">✓ 已找到日志文件，正在解析...</div>`;
-            await extractData();
-          } else {
-            const logFiles = Object.keys(currentZip.files).filter(f => 
-              f.toLowerCase().endsWith('.log') && !currentZip.files[f].dir
-            );
-            
-            if (logFiles.length > 0) {
-              selectedLogFile = logFiles[0];
-              resultContainer.innerHTML = `<div class="text-center text-75 text-[var(--primary)] py-4">⚠ 未找到主日志，尝试使用: ${selectedLogFile}</div>`;
-              await extractData();
-            } else {
-              showError('ZIP 文件中未找到任何 .log 日志文件');
-            }
-          }
-        } catch (error) {
-          console.error('ZIP 处理错误:', error);
-          showError(`解析失败: ${error.message || error}`);
-        }
-      }
-      
-      async function extractData() {
-        if (!currentZip || !selectedLogFile) {
-          showError('请先选择一个日志文件');
-          return;
-        }
-        
-        resultContainer.innerHTML = '<div class="text-center text-75 text-gray-500 py-4">正在处理日志文件...</div>';
-        
-        try {
-          const logFile = currentZip.file(selectedLogFile);
-          if (!logFile) throw new Error(`无法找到文件: ${selectedLogFile}`);
-          
-          const content = await logFile.async('text');
-          const results = parseLogContent(content);
-          
-          if (results.length > 0) {
-            displayResult(results, selectedLogFile, 'Android Log');
-          } else {
-            const altResults = parseAlternativeFormat(content);
-            if (altResults.length > 0) {
-              displayResult(altResults, selectedLogFile, 'Android Log');
-            } else {
-              showError(`在日志文件 "${selectedLogFile}" 中未找到 productName 或 token 信息`);
-            }
-          }
-        } catch (error) {
-          console.error('处理文件时出错:', error);
-          showError(`处理文件时出错: ${error.message}`);
-        }
-      }
-      
-      function parseLogContent(content) {
+      const parseAndroid = async (file) => {
+        const zip = await JSZip.loadAsync(await file.arrayBuffer());
+        const logFileName = Object.keys(zip.files).find(n => n.includes('xiaomifit.main.log')) || Object.keys(zip.files).find(n => n.endsWith('.log'));
+        if (!logFileName) return [];
+        const content = await zip.file(logFileName).async('text');
         const results = [];
         const jsonLineRegex = /({[^{}]*"productName"[^{}]*"token"[^{}]*})|({[^{}]*"token"[^{}]*"productName"[^{}]*})/g;
-        let match;
-        
-        while ((match = jsonLineRegex.exec(content)) !== null) {
-          try {
-            const jsonObj = JSON.parse(match[0]);
-            if (jsonObj.productName || jsonObj.token) {
-              const exists = results.some(item => 
-                item.productName === jsonObj.productName && 
-                item.token === jsonObj.token
-              );
-              if (!exists) {
-                results.push({
-                  productName: jsonObj.productName || null,
-                  token: jsonObj.token || null
-                });
-              }
-            }
-          } catch (e) {}
-        }
-        return results;
-      }
-      
-      function parseAlternativeFormat(content) {
-        const results = [];
-        const productNameRegex = /["']?productName["']?\s*[=:]\s*["']([^"']+)["']/g;
-        const tokenRegex = /["']?token["']?\s*[=:]\s*["']([^"']+)["']/g;
-        
-        const productNames = [], tokens = [];
         let m;
-        productNameRegex.lastIndex = 0;
-        while ((m = productNameRegex.exec(content)) !== null) productNames.push(m[1]);
-        tokenRegex.lastIndex = 0;
-        while ((m = tokenRegex.exec(content)) !== null) tokens.push(m[1]);
-        
-        const maxLen = Math.max(productNames.length, tokens.length);
-        for (let i = 0; i < maxLen; i++) {
-          const pn = productNames[i] || null, tk = tokens[i] || null;
-          const exists = results.some(r => r.productName === pn && r.token === tk);
-          if (!exists && (pn || tk)) results.push({ productName: pn, token: tk });
+        while ((m = jsonLineRegex.exec(content)) !== null) {
+          try {
+            const obj = JSON.parse(m[0]);
+            if (obj.token) results.push({ name: obj.productName || "Android设备", key: obj.token });
+          } catch(e) {}
+        }
+        if (results.length === 0) {
+          const pnRegex = /["']?productName["']?\s*[=:]\s*["']([^"']+)["']/g;
+          const tkRegex = /["']?token["']?\s*[=:]\s*["']([^"']+)["']/g;
+          const names = [...content.matchAll(pnRegex)].map(x => x[1]);
+          const tokens = [...content.matchAll(tkRegex)].map(x => x[1]);
+          tokens.forEach((tk, i) => results.push({ name: names[i] || "Android设备", key: tk }));
         }
         return results;
-      }
-      
-      function displayResult(results, fileName, sourceType, debugInfo = []) {
-        resultContainer.innerHTML = '';
-        
-        const successCard = document.createElement('div');
-        successCard.className = 'card-base rounded-[var(--radius-large)] p-5 bg-[var(--card-bg)] border border-[var(--line-divider)]';
-        
-        const cardHeader = document.createElement('div');
-        cardHeader.className = 'flex items-center mb-4 pb-3 border-b border-[var(--line-divider)]';
-        const checkIconSvg = `<svg class="w-6 h-6 text-[var(--primary)] mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
-        
-        cardHeader.innerHTML = `
-          ${checkIconSvg}
-          <div>
-            <h3 class="text-lg font-bold text-90">提取成功</h3>
-            <p class="text-75 text-gray-500">来源: <span class="text-[var(--primary)]">${sourceType}</span> | 文件: <span class="font-mono text-sm">${fileName}</span></p>
-          </div>
-        `;
-        successCard.appendChild(cardHeader);
-        
-        const resultList = document.createElement('div');
-        resultList.className = 'space-y-3';
-        
-        results.forEach((result, index) => {
-          if (!result.productName && !result.token) return;
-          
-          const itemCard = document.createElement('div');
-          itemCard.className = 'rounded-lg bg-[var(--card-bg)] border border-[var(--line-divider)] p-4';
-          
-          const itemTitle = document.createElement('div');
-          itemTitle.className = 'flex items-center text-sm font-medium text-90 mb-3';
-          itemTitle.innerHTML = `
-            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[var(--primary)] text-90 text-xs mr-2">${index + 1}</span>
-            设备记录 ${result.source ? `(${result.source})` : ''}
-          `;
-          itemCard.appendChild(itemTitle);
-          
-          if (result.productName) {
-            const nameRow = document.createElement('div');
-            nameRow.className = 'flex items-start py-2 border-b border-[var(--line-divider)] last:border-0';
-            nameRow.innerHTML = `
-              <span class="text-75 text-gray-500 w-20 flex-shrink-0">设备信息</span>
-              <span class="text-90 font-mono text-sm break-all">${result.productName}</span>
-            `;
-            itemCard.appendChild(nameRow);
-          }
+      };
 
-          if (result.token) {
-            const tokenRow = document.createElement('div');
-            tokenRow.className = 'flex items-start py-2';
-            const safeToken = result.token.replace(/'/g, "\\'"); 
-            tokenRow.innerHTML = `
-              <span class="text-75 text-gray-500 w-28 flex-shrink-0">AuthKey</span>
-              <div class="flex-1 flex items-center gap-2">
-                <span class="copyable-text font-mono text-sm break-all flex-1 text-90" title="点击复制">${result.token}</span>
-                <button class="px-3 py-1.5 text-xs font-medium text-[var(--primary)] bg-[var(--primary)]/10 rounded-lg hover:bg-[var(--primary)]/20 transition-colors whitespace-nowrap" onclick="window.copyToClipboard('${safeToken}')">
-                  复制
-                </button>
-              </div>
-            `;
-            itemCard.appendChild(tokenRow);
-          }
-          
-          resultList.appendChild(itemCard);
-        });
-        
-        successCard.appendChild(resultList);
-        resultContainer.appendChild(successCard);
-
-        // 如果有调试信息，显示可折叠的原始数据
-        if (debugInfo && debugInfo.length > 0) {
-          const debugSection = document.createElement('div');
-          debugSection.className = 'mt-6 pt-4 border-t border-[var(--line-divider)]';
-          
-          const toggleBtn = document.createElement('button');
-          toggleBtn.className = 'text-sm text-gray-500 hover:text-[var(--primary)] underline flex items-center';
-          toggleBtn.innerHTML = `
-            <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            显示原始数据 (${debugInfo.length} 处匹配)
-          `;
-          
-          const debugContent = document.createElement('div');
-          debugContent.className = 'hidden mt-3 debug-section';
-          debugContent.id = `debug-info-${Date.now()}`;
-          
-          debugInfo.slice(0, 10).forEach((info, idx) => {
-            const debugCard = document.createElement('div');
-            debugCard.className = 'debug-card';
-            
-            let headerHtml = `<div class="text-xs text-gray-500 mb-2 flex items-center">
-              <span class="inline-flex items-center justify-center w-4 h-4 rounded bg-[var(--primary)] text-90 text-[10px] mr-2">${idx + 1}</span>
-              位置: ${info.position}
-            `;
-            
-            if (info.keyword) headerHtml += ` | 关键字: <span class="font-mono">${info.keyword}</span>`;
-            if (info.serial) headerHtml += ` | 序列号: <span class="font-mono">${info.serial}</span>`;
-            if (info.key) headerHtml += ` | Key: <span class="font-mono">${info.key.substring(0, 20)}...</span>`;
-            
-            headerHtml += '</div>';
-            
-            const rawText = info.rawContext || info.context.replace(/[^\x20-\x7E]/g, '');
-            
-            debugCard.innerHTML = `
-              ${headerHtml}
-              <pre class="text-gray-600">${escapeHtml(rawText)}</pre>
-              ${info.authKeys && info.authKeys.length > 0 ? `
-                <div class="mt-2 pt-2 border-t border-[var(--line-divider)]">
-                  <div class="text-xs text-gray-500 mb-1">找到的 AuthKeys:</div>
-                  ${info.authKeys.map((key, i) => `
-                    <div class="flex items-center gap-2 mt-1">
-                      <code class="flex-1 text-xs bg-[var(--card-bg)] px-2 py-1 rounded font-mono">${key}</code>
-                      <button onclick="window.copyToClipboard('${key}')" class="px-2 py-1 text-xs bg-[var(--primary)] text-90 rounded hover:opacity-80">复制</button>
-                    </div>
-                  `).join('')}
-                </div>
-              ` : ''}
-            `;
-            
-            debugContent.appendChild(debugCard);
-          });
-          
-          if (debugInfo.length > 10) {
-            const moreNote = document.createElement('p');
-            moreNote.className = 'text-xs text-gray-400 mt-2 text-center';
-            moreNote.textContent = `... 还有 ${debugInfo.length - 10} 条匹配，请检查控制台日志`;
-            debugContent.appendChild(moreNote);
-          }
-          
-          toggleBtn.addEventListener('click', () => {
-            debugContent.classList.toggle('hidden');
-            toggleBtn.innerHTML = debugContent.classList.contains('hidden') 
-              ? `<svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> 显示原始数据 (${debugInfo.length} 处匹配)`
-              : `<svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg> 隐藏原始数据`;
-          });
-          
-          debugSection.appendChild(toggleBtn);
-          debugSection.appendChild(debugContent);
-          resultContainer.appendChild(debugSection);
+      const processIOS = async (file) => {
+        const buffer = await file.arrayBuffer();
+        const uint8 = new Uint8Array(buffer);
+        let rawStr = "";
+        for (let i = 0; i < uint8.length; i++) {
+          rawStr += (uint8[i] >= 32 && uint8[i] <= 126) ? String.fromCharCode(uint8[i]) : ".";
         }
-      }
-
-
-      function displayDebugInfo(debugInfo, fileName) {
-        resultContainer.innerHTML = '';
-        
-        const infoCard = document.createElement('div');
-        infoCard.className = 'card-base rounded-[var(--radius-large)] p-5 bg-[var(--card-bg)] border border-[var(--line-divider)]';
-        
-        const infoHeader = document.createElement('div');
-        infoHeader.className = 'flex items-center mb-4 pb-3 border-b border-[var(--line-divider)]';
-        const infoIconSvg = `<svg class="w-6 h-6 text-[var(--primary)] mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
-        
-        infoHeader.innerHTML = `
-          ${infoIconSvg}
-          <div>
-            <h3 class="text-lg font-bold text-90">找到相关关键字，但无法自动解析</h3>
-            <p class="text-75 text-gray-500">文件: <span class="font-mono text-sm">${fileName}</span> | 找到 ${debugInfo.length} 处匹配</p>
-          </div>
-        `;
-        infoCard.appendChild(infoHeader);
-        
-        const matchesList = document.createElement('div');
-        matchesList.className = 'space-y-3 debug-section';
-        
-        debugInfo.forEach((info, index) => {
-          const matchCard = document.createElement('div');
-          matchCard.className = 'rounded-lg bg-[var(--card-bg)] border border-[var(--line-divider)] p-4';
-          
-          let headerHtml = `<div class="flex items-center text-sm font-medium text-90 mb-3">
-            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[var(--primary)] text-90 text-xs mr-2">${index + 1}</span>
-            位置: <span class="font-mono ml-1">${info.position}</span>
-          </div>`;
-          
-          if (info.keyword) {
-            headerHtml += `<div class="text-75 text-gray-500 mb-2">关键字: <span class="font-mono text-90">${info.keyword}</span></div>`;
+        const autoResults = [];
+        const debugInfos = [];
+        const seen = new Set();
+        const nameKeywords = /(Xiaomi|REDMI|Watch|Band|Mi\sBand|POCO)[\s\w\-]{1,30}/gi;
+        const anchor = "encrypt_key";
+        let pos = rawStr.indexOf(anchor);
+        while (pos !== -1) {
+          const windowStart = Math.max(0, pos - 400);
+          const windowEnd = Math.min(rawStr.length, pos + 850);
+          const windowText = rawStr.substring(windowStart, windowEnd);
+          const hexMatches = windowText.match(/[a-fA-F0-9]{32}/g);
+          const nameMatch = windowText.match(nameKeywords);
+          const detectedName = nameMatch ? nameMatch[0].replace(/\.+/g, '').trim() : "iOS 设备 (未知型号)";
+          if (hexMatches) {
+            hexMatches.forEach(key => {
+              if (!seen.has(key)) {
+                autoResults.push({ name: detectedName, key: key });
+                seen.add(key);
+              }
+            });
           }
-          
-          if (info.serial) {
-            headerHtml += `<div class="text-75 text-gray-500 mb-2">序列号: <span class="font-mono text-90">${info.serial}</span></div>`;
-          }
-          
-          if (info.key) {
-            headerHtml += `<div class="text-75 text-gray-500 mb-2">Key: <span class="font-mono text-90">${info.key.substring(0, 50)}${info.key.length > 50 ? '...' : ''}</span></div>`;
-          }
-          
-          const rawText = info.rawContext || info.context.replace(/[^\x20-\x7E]/g, '');
-          
-          matchCard.innerHTML = `
-            ${headerHtml}
-            <div class="mt-3">
-              <div class="text-xs text-gray-500 mb-1">原始数据（可打印字符）:</div>
-              <pre class="p-3 bg-[var(--card-bg)] rounded border border-[var(--line-divider)] font-mono text-xs break-all text-90 max-h-[200px] overflow-y-auto">${escapeHtml(rawText)}</pre>
-            </div>
-            ${info.authKeys && info.authKeys.length > 0 ? `
-              <div class="mt-2 pt-2 border-t border-[var(--line-divider)]">
-                <div class="text-xs text-gray-500 mb-1">找到的 AuthKeys:</div>
-                ${info.authKeys.map((key) => `
-                  <div class="flex items-center gap-2 mt-1">
-                    <code class="flex-1 text-xs bg-[var(--card-bg)] px-2 py-1 rounded font-mono">${key}</code>
-                    <button onclick="window.copyToClipboard('${key}')" class="px-2 py-1 text-xs bg-[var(--primary)] text-90 rounded hover:opacity-80">复制</button>
-                  </div>
-                `).join('')}
-              </div>
-            ` : ''}
-          `;
-          
-          matchesList.appendChild(matchCard);
-        });
-        
-        infoCard.appendChild(matchesList);
-        resultContainer.appendChild(infoCard);
-      }
-
-      function escapeHtml(text) {
-        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-        return text.replace(/[&<>"']/g, m => map[m]);
-      }
-
-      function showError(message) {
-        const errorIconSvg = `<svg class="w-6 h-6 text-red-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
-        resultContainer.innerHTML = `
-          <div class="card-base rounded-[var(--radius-large)] p-5 bg-[var(--card-bg)] border border-[var(--line-divider)]">
-            <div class="flex items-center">
-              ${errorIconSvg}
-              <div>
-                <h3 class="text-lg font-bold text-90">提取失败</h3>
-                <p class="text-75 text-gray-500 mt-1">${message}</p>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-
-      window.copyToClipboard = function(text) {
-        if (navigator.clipboard && window.isSecureContext) {
-          navigator.clipboard.writeText(text).then(() => showMessage('✓ 已复制到剪贴板')).catch(fallbackCopy);
-        } else {
-          fallbackCopy();
+          debugInfos.push({ offset: pos, content: windowText });
+          pos = rawStr.indexOf(anchor, pos + 1);
         }
-        function fallbackCopy() {
-          const ta = document.createElement('textarea');
-          ta.value = text;
-          ta.style.cssText = 'position:fixed;opacity:0;';
-          document.body.appendChild(ta);
-          ta.select();
-          try {
-            document.execCommand('copy');
-            showMessage('✓ 已复制到剪贴板');
-          } catch {
-            showMessage('复制失败，请手动复制');
+        return { autoResults, debugInfos };
+      };
+
+      const handleFile = async (file) => {
+        if (!file) return;
+        resultBox.classList.remove('hidden');
+        autoResultContainer.innerHTML = '<p class="text-sm opacity-50">正在提取中...</p>';
+        try {
+          if (file.name.toLowerCase().endsWith('.zip')) {
+            const list = await parseAndroid(file);
+            renderAuto(list);
+            rawResultContainer.innerHTML = '<p class="text-sm opacity-40 italic text-center">Android ZIP 暂不提供二进制预览</p>';
+          } else {
+            const { autoResults, debugInfos } = await processIOS(file);
+            renderAuto(autoResults);
+            renderRaw(debugInfos);
           }
-          document.body.removeChild(ta);
+          resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch (e) {
+          autoResultContainer.innerHTML = `<div class="p-6 bg-red-500/10 text-red-500 rounded-2xl border border-red-500/20">解析失败: ${e.message}</div>`;
         }
       };
 
-      function showMessage(msg) {
-        const existing = document.querySelector('.copy-success-message');
-        if (existing) existing.remove();
-        const el = document.createElement('div');
-        el.className = 'copy-success-message';
-        el.textContent = msg;
-        document.body.appendChild(el);
-        setTimeout(() => el.remove(), 2000);
-      }
+      const renderAuto = (list) => {
+        if (list.length === 0) {
+          autoResultContainer.innerHTML = '<p class="text-sm opacity-40 italic text-center">未能检测到任何 AuthKey</p>';
+          return;
+        }
+        autoResultContainer.innerHTML = list.map(item => `
+          <div class="flex flex-col md:flex-row justify-between items-center gap-6 bg-[var(--primary)]/[0.04] p-6 rounded-2xl border border-[var(--primary)]/10 hover:bg-[var(--primary)]/[0.06] transition-all">
+            <div class="w-full text-center md:text-left">
+              <div class="text-[10px] font-black text-[var(--primary)] uppercase mb-2 tracking-widest opacity-80">${item.name}</div>
+              <div class="font-mono text-xl font-black break-all text-90 select-all leading-tight">${item.key}</div>
+            </div>
+            <button onclick="copyToClipboard('${item.key}')" class="shrink-0 w-full md:w-auto px-10 py-4 bg-[var(--primary)] text-white rounded-xl text-base font-black shadow-lg shadow-[var(--primary)]/20 active:scale-95 transition-all">复制密钥</button>
+          </div>
+        `).join('');
+      };
+
+      const renderRaw = (debugs) => {
+        rawResultContainer.innerHTML = debugs.map(d => `
+          <div class="debug-card mb-4">
+            <div class="text-[10px] font-black opacity-30 mb-3 font-mono tracking-widest uppercase">Location Offset: ${d.offset}</div>
+            <pre>${d.content
+              .replace(/[a-fA-F0-9]{32}/g, m => `<span class="highlight-key">${m}</span>`)
+              .replace(/(Xiaomi|REDMI|Watch|Band|Mi\sBand|POCO)[\s\w\-]{1,30}/gi, m => `<span class="highlight-name">${m}</span>`)
+            }</pre>
+          </div>
+        `).join('');
+      };
+
+      uploadArea.onclick = () => fileInput.click();
+      fileInput.onchange = (e) => handleFile(e.target.files[0]);
+      uploadArea.ondragover = (e) => { e.preventDefault(); uploadArea.classList.add('drag-over'); };
+      uploadArea.ondragleave = () => uploadArea.classList.remove('drag-over');
+      uploadArea.ondrop = (e) => { e.preventDefault(); uploadArea.classList.remove('drag-over'); handleFile(e.dataTransfer.files[0]); };
     });
   </script>
 </MainGridLayout>
