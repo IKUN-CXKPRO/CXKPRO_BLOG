@@ -4,7 +4,7 @@ import { Icon } from "astro-icon/components";
 ---
 
 <MainGridLayout title="小米运动健康AuthKey提取器" description="从安卓日志或iOS数据库中提取小米穿戴设备的 AuthKey。">
-  <div class="onload-animation space-y-8 max-w-5xl mx-auto px-4 pb-12">
+  <div class="onload-animation space-y-6 max-w-5xl mx-auto px-4 pb-12">
     
     <!-- 头部标题 -->
     <div class="card-base rounded-[var(--radius-large)] p-8 text-center shadow-lg">
@@ -19,18 +19,18 @@ import { Icon } from "astro-icon/components";
     <div class="card-base rounded-[var(--radius-large)] p-10 md:p-12 border border-[var(--line-divider)]">
       <div class="text-center mb-8">
         <h2 class="text-2xl font-bold text-90 flex items-center justify-center">
-          <Icon name="material-symbols:android" class="mr-3 text-[var(--primary)] text-3xl" />
+          <Icon name="material-symbols:android" class="mr-3 text-blue-400 text-3xl" />
           安卓端提取方法
         </h2>
       </div>
       <div class="max-w-2xl mx-auto">
-        <ol class="text-base text-75 space-y-4 opacity-90 leading-relaxed">
-          <li>1. 打开小米运动健康 APP</li>
-          <li>2. 点击右下角"我的" -> 滑动到最下方选择"关于"</li>
-          <li>3. 连续点击关于页面上方的logo，直到弹出日志保存提示</li>
-          <li>4. 在文件管理器中找到 <code class="bg-[var(--line-divider)] px-2 py-0.5 rounded font-mono text-sm">Download/wearablelog/****.zip</code></li>
-          <li>5. 上传该ZIP文件</li>
-          <li>6. 上传文件后不显示的话，多刷新几下然后重新上传即可</li>
+        <ol class="text-[17px] text-75 space-y-5 leading-relaxed list-decimal list-outside ml-6">
+          <li>打开小米运动健康 APP</li>
+          <li>点击右下角"我的" -> 滑动到最下方选择"关于"</li>
+          <li>连续点击关于页面上方的logo，直到弹出日志保存提示</li>
+          <li>在文件管理器中找到 <code class="bg-[var(--line-divider)] px-2 py-1 rounded font-mono text-sm mx-1">Download/wearablelog/****.zip</code></li>
+          <li>上传该ZIP文件</li>
+          <li>上传文件后不显示的话，多刷新几下然后重新上传即可</li>
         </ol>
       </div>
     </div>
@@ -39,24 +39,23 @@ import { Icon } from "astro-icon/components";
     <div class="card-base rounded-[var(--radius-large)] p-10 md:p-12 border border-[var(--line-divider)]">
       <div class="text-center mb-8">
         <h2 class="text-2xl font-bold text-90 flex items-center justify-center">
-          <Icon name="material-symbols:phone-iphone" class="mr-3 text-[var(--primary)] text-3xl" />
+          <Icon name="material-symbols:phone-iphone" class="mr-3 text-blue-400 text-3xl" />
           iOS端提取方法
         </h2>
       </div>
       <div class="max-w-2xl mx-auto">
-        <ol class="text-base text-75 space-y-4 opacity-90 leading-relaxed">
-          <li>1. 打开系统自带的"文件"app，浏览我的iPhone，找到小米运动健康文件夹</li>
-          <li>2. 路径：<code class="bg-[var(--line-divider)] px-2 py-0.5 rounded font-mono text-sm">\MHWCahe\数字ID\VirtualDevice_registerList\manifest.sqlite</code></li>
-          <li>3. 上传该 sqlite 文件</li>
-          <li>4. 自行寻找：在 <code class="font-mono text-[var(--primary)]">encrypt_key</code> 附近寻找 32 位字符即为 AuthKey</li>
+        <ol class="text-[17px] text-75 space-y-5 leading-relaxed list-decimal list-outside ml-6">
+          <li>打开系统自带的"文件"app，浏览我的iPhone，找到小米运动健康文件夹，按路径找到文件 <code class="bg-[var(--line-divider)] px-1 py-0.5 rounded font-mono text-sm">\MHWCahe\6284670\VirtualDevice_registerList\manifest.sqlite</code></li>
+          <li>上传sqlite文件</li>
+          <li>自行寻找：在encrypt_key找到peripheral_id，后面的16位字符就是AuthKey</li>
+          <li>上传文件后不显示的话，多刷新几下然后重新上传即可</li>
         </ol>
       </div>
     </div>
 
     <!-- 上传区域 -->
     <div class="card-base rounded-[var(--radius-large)] p-8">
-      <!-- 隐藏的主输入框 -->
-      <input type="file" id="fileInput" accept=".zip,.sqlite,.db,.sqlitedb,.sqlite-wal" class="hidden">
+      <input type="file" id="fileInput" accept=".zip,.sqlite,.db,.sqlitedb,.sqlite-wal,application/x-sqlite3,application/octet-stream,*" class="hidden">
       
       <div 
         id="uploadArea"
@@ -66,28 +65,23 @@ import { Icon } from "astro-icon/components";
           <Icon name="material-symbols:cloud-upload" class="text-6xl mx-auto text-gray-300 group-hover:text-[var(--primary)] transition-colors" />
           <div>
             <p class="text-2xl font-bold text-90">点击此处或拖拽文件上传</p>
-            <p class="text-sm text-gray-400 mt-2">支持 .zip (Android) 或 manifest.sqlite (iOS)</p>
+            <p class="text-sm text-gray-400 mt-2">支持 .zip (Android) 或 .sqlite (iOS)</p>
           </div>
         </div>
       </div>
 
-      <!-- 移动端兼容性按钮：核心移植部分 -->
+      <!-- 移动端 100% 触发按钮 -->
       <div class="mt-6 flex justify-center">
         <div class="relative overflow-hidden inline-block w-full sm:w-auto">
-          <button
-            type="button"
-            class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-base font-bold text-[var(--primary)] bg-[var(--primary)]/10 rounded-2xl hover:bg-[var(--primary)]/20 transition-all border-2 border-[var(--primary)]/20 active:scale-95"
-          >
+          <button type="button" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-base font-bold text-[var(--primary)] bg-[var(--primary)]/10 rounded-2xl border-2 border-[var(--primary)]/20 active:scale-95">
             <Icon name="material-symbols:touch-app" class="mr-2 text-xl" />
-            移动端点击卡片没反应点我
+            移动端无法选择文件点我
           </button>
-          <!-- 真正起作用的 Input，覆盖在按钮上方并透明 -->
           <input
             id="fallbackFileInput"
             type="file"
-            accept=".zip,.sqlite,.db,.sqlitedb,.sqlite-wal"
+            accept=".zip,.sqlite,.db,.sqlitedb,.sqlite-wal,application/x-sqlite3,application/octet-stream,*"
             class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-            aria-label="选择文件"
           >
         </div>
       </div>
@@ -95,7 +89,6 @@ import { Icon } from "astro-icon/components";
 
     <!-- 结果区域 -->
     <div id="resultBox" class="hidden space-y-8">
-      <!-- 自动匹配 -->
       <div class="card-base rounded-[var(--radius-large)] p-8 border-l-8 border-[var(--primary)] shadow-lg">
         <h2 class="text-2xl font-bold text-90 mb-6 flex items-center">
           <Icon name="material-symbols:robot" class="mr-3 text-[var(--primary)] text-3xl" />
@@ -104,7 +97,6 @@ import { Icon } from "astro-icon/components";
         <div id="autoResultContainer" class="grid grid-cols-1 gap-4"></div>
       </div>
 
-      <!-- 原始数据检测 -->
       <div id="rawResultBox" class="hidden card-base rounded-[var(--radius-large)] p-8">
         <h2 class="text-2xl font-bold text-90 mb-6 flex items-center">
           <Icon name="material-symbols:database" class="mr-3 text-gray-400 text-3xl" />
@@ -124,7 +116,6 @@ import { Icon } from "astro-icon/components";
       padding: 10px 24px; background: #2d2d2d; color: #ffffff; 
       border-radius: 50px; z-index: 9999; font-size: 14px; font-weight: 500;
       box-shadow: 0 8px 24px rgba(0,0,0,0.2); pointer-events: none;
-      display: flex; align-items: center; gap: 8px;
       animation: toastIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
     }
     
@@ -132,13 +123,11 @@ import { Icon } from "astro-icon/components";
 
     .debug-card { background: var(--card-bg); border: 1px solid var(--line-divider); border-radius: 1.25rem; padding: 1.5rem; }
     .debug-card pre { 
-      font-family: 'JetBrains Mono', 'Cascadia Code', ui-monospace, monospace;
+      font-family: monospace;
       font-size: 0.8rem; white-space: pre-wrap; word-break: break-all;
-      color: var(--text-color); 
-      opacity: 0.9; line-height: 1.6;
+      color: var(--text-color); opacity: 0.9;
     }
     .highlight-key { background-color: var(--primary); color: white !important; padding: 1px 4px; border-radius: 4px; font-weight: bold; }
-    .highlight-name { color: var(--primary); font-weight: 800; border-bottom: 2px dashed var(--primary); }
   </style>
 
   <script>
@@ -154,47 +143,38 @@ import { Icon } from "astro-icon/components";
       const rawResultBox = document.getElementById('rawResultBox');
 
       window.copyToClipboard = (text) => {
-        if (navigator.clipboard && window.isSecureContext) {
-          navigator.clipboard.writeText(text).then(() => showToast()).catch(() => fallbackCopy(text));
-        } else {
-          fallbackCopy(text);
-        }
-
-        function showToast() {
-          const old = document.querySelector('.copy-msg');
-          if (old) old.remove();
-          const el = document.createElement('div');
-          el.className = 'copy-msg';
-          el.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> 密钥复制成功`;
-          document.body.appendChild(el);
-          setTimeout(() => {
-            el.style.opacity = '0';
-            el.style.transform = 'translate(-50%, -20px)';
-            el.style.transition = 'all 0.4s ease';
-            setTimeout(() => el.remove(), 400);
-          }, 1600);
-        }
-
-        function fallbackCopy(str) {
-          const area = document.createElement('textarea');
-          area.value = str;
-          document.body.appendChild(area);
-          area.select();
-          document.execCommand('copy');
-          document.body.removeChild(area);
-          showToast();
-        }
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        
+        const old = document.querySelector('.copy-msg');
+        if (old) old.remove();
+        const el = document.createElement('div');
+        el.className = 'copy-msg';
+        el.innerHTML = `✓ 密钥复制成功`;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 2000);
       };
 
       // --- Android 逻辑 ---
       const parseAndroid = async (file) => {
-        const zip = await JSZip.loadAsync(await file.arrayBuffer());
-        const logFileKey = Object.keys(zip.files).find(n => n.toLowerCase().includes('xiaomifit.main.log')) 
-                         || Object.keys(zip.files).find(n => n.toLowerCase().endsWith('.log'));
-        
-        if (!logFileKey) throw new Error("ZIP 文件中未找到有效的日志文件 (.log)");
-        const content = await zip.file(logFileKey).async('text');
-        
+        const arrayBuffer = await file.arrayBuffer();
+        const zip = await JSZip.loadAsync(arrayBuffer);
+        let selectedLogFile = null;
+        for (const fileName in zip.files) {
+          if (fileName.toLowerCase().includes('xiaomifit.main.log')) {
+            selectedLogFile = fileName;
+            break;
+          }
+        }
+        if (!selectedLogFile) {
+          selectedLogFile = Object.keys(zip.files).find(f => f.toLowerCase().endsWith('.log') && !zip.files[f].dir);
+        }
+        if (!selectedLogFile) throw new Error("ZIP 中未找到日志文件");
+        const content = await zip.file(selectedLogFile).async('text');
         const results = [];
         const seen = new Set();
         const jsonLineRegex = /({[^{}]*"productName"[^{}]*"token"[^{}]*})|({[^{}]*"token"[^{}]*"productName"[^{}]*})/g;
@@ -203,10 +183,24 @@ import { Icon } from "astro-icon/components";
           try {
             const jsonObj = JSON.parse(match[0]);
             if (jsonObj.token && !seen.has(jsonObj.token)) {
-              results.push({ name: jsonObj.productName || "未知设备", key: jsonObj.token });
+              results.push({ name: jsonObj.productName || "Android设备", key: jsonObj.token });
               seen.add(jsonObj.token);
             }
           } catch (e) {}
+        }
+        if (results.length === 0) {
+          const productNameRegex = /["']?productName["']?\s*[=:]\s*["']([^"']+)["']/g;
+          const tokenRegex = /["']?token["']?\s*[=:]\s*["']([^"']+)["']/g;
+          const productNames = [], tokens = [];
+          let m;
+          while ((m = productNameRegex.exec(content)) !== null) productNames.push(m[1]);
+          while ((m = tokenRegex.exec(content)) !== null) tokens.push(m[1]);
+          for (let i = 0; i < Math.max(productNames.length, tokens.length); i++) {
+            if (tokens[i] && !seen.has(tokens[i])) {
+              results.push({ name: productNames[i] || "Android设备", key: tokens[i] });
+              seen.add(tokens[i]);
+            }
+          }
         }
         return results;
       };
@@ -222,22 +216,15 @@ import { Icon } from "astro-icon/components";
         const autoResults = [];
         const debugInfos = [];
         const seen = new Set();
-        const nameKeywords = /(Xiaomi|REDMI|Watch|Band|Mi\sBand|POCO)[\s\w\-]{1,30}/gi;
         const anchor = "encrypt_key";
         let pos = rawStr.indexOf(anchor);
-        
         while (pos !== -1) {
-          const windowStart = Math.max(0, pos - 400);
-          const windowEnd = Math.min(rawStr.length, pos + 850);
-          const windowText = rawStr.substring(windowStart, windowEnd);
+          const windowText = rawStr.substring(Math.max(0, pos - 400), Math.min(rawStr.length, pos + 800));
           const hexMatches = windowText.match(/[a-fA-F0-9]{32}/g);
-          const nameMatch = windowText.match(nameKeywords);
-          const detectedName = nameMatch ? nameMatch[0].replace(/\.+/g, '').trim() : "iOS 设备";
-
           if (hexMatches) {
             hexMatches.forEach(key => {
               if (!seen.has(key)) {
-                autoResults.push({ name: detectedName, key: key });
+                autoResults.push({ name: "iOS设备", key: key });
                 seen.add(key);
               }
             });
@@ -248,13 +235,11 @@ import { Icon } from "astro-icon/components";
         return { autoResults, debugInfos };
       };
 
-      // --- 文件处理入口 ---
       const handleFile = async (file) => {
         if (!file) return;
         resultBox.classList.remove('hidden');
-        autoResultContainer.innerHTML = '<div class="p-8 text-center opacity-50 text-lg animate-pulse">正在提取中，请稍候...</div>';
+        autoResultContainer.innerHTML = '<div class="p-8 text-center animate-pulse">正在解析文件...</div>';
         rawResultBox.classList.add('hidden');
-
         try {
           if (file.name.toLowerCase().endsWith('.zip')) {
             const list = await parseAndroid(file);
@@ -267,18 +252,17 @@ import { Icon } from "astro-icon/components";
           }
           resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } catch (e) {
-          autoResultContainer.innerHTML = `<div class="p-6 bg-red-500/10 text-red-500 rounded-2xl border border-red-500/20">错误: ${e.message}</div>`;
+          autoResultContainer.innerHTML = `<div class="p-6 text-red-500">解析失败: ${e.message}</div>`;
         }
       };
 
-      // --- UI 渲染 ---
       const renderAuto = (list) => {
         if (list.length === 0) {
-          autoResultContainer.innerHTML = '<div class="p-8 text-center opacity-40 italic">未能检测到任何 AuthKey，请检查文件是否正确。</div>';
+          autoResultContainer.innerHTML = '<div class="p-8 text-center opacity-40 italic">未找到记录</div>';
           return;
         }
         autoResultContainer.innerHTML = list.map(item => `
-          <div class="flex flex-col md:flex-row justify-between items-center gap-6 bg-[var(--primary)]/[0.04] p-6 rounded-2xl border border-[var(--primary)]/10 hover:bg-[var(--primary)]/[0.06] transition-all">
+          <div class="flex flex-col md:flex-row justify-between items-center gap-6 bg-[var(--primary)]/[0.04] p-6 rounded-2xl border border-[var(--primary)]/10">
             <div class="w-full text-center md:text-left">
               <div class="text-[10px] font-black text-[var(--primary)] uppercase mb-2 tracking-widest opacity-80">${item.name}</div>
               <div class="font-mono text-xl font-black break-all text-90 select-all leading-tight">${item.key}</div>
@@ -291,24 +275,15 @@ import { Icon } from "astro-icon/components";
       const renderRaw = (debugs) => {
         rawResultContainer.innerHTML = debugs.map(d => `
           <div class="debug-card mb-4">
-            <div class="text-[10px] font-black opacity-30 mb-3 font-mono tracking-widest uppercase">Offset: ${d.offset}</div>
-            <pre>${d.content
-              .replace(/[a-fA-F0-9]{32}/g, m => `<span class="highlight-key">${m}</span>`)
-              .replace(/(Xiaomi|REDMI|Watch|Band|Mi\sBand|POCO)[\s\w\-]{1,30}/gi, m => `<span class="highlight-name">${m}</span>`)
-              .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-            }</pre>
+            <div class="text-[10px] opacity-30 mb-3 font-mono">OFFSET: ${d.offset}</div>
+            <pre>${d.content.replace(/[a-fA-F0-9]{32}/g, m => `<span class="highlight-key">${m}</span>`)}</pre>
           </div>
         `).join('');
       };
 
-      // 绑定普通点击
       uploadArea.onclick = () => fileInput.click();
-      
-      // 监听两个 Input 的变化
       fileInput.onchange = (e) => handleFile(e.target.files[0]);
       fallbackFileInput.onchange = (e) => handleFile(e.target.files[0]);
-
-      // 拖拽逻辑
       uploadArea.ondragover = (e) => { e.preventDefault(); uploadArea.classList.add('drag-over'); };
       uploadArea.ondragleave = () => uploadArea.classList.remove('drag-over');
       uploadArea.ondrop = (e) => { e.preventDefault(); uploadArea.classList.remove('drag-over'); handleFile(e.dataTransfer.files[0]); };
