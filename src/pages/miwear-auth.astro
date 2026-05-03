@@ -16,19 +16,19 @@ import { Icon } from "astro-icon/components";
       
       <div id="initStatus" class="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-gray-100 dark:bg-white/5 text-[10px] md:text-[12px] font-medium text-gray-500">
         <div class="w-2 h-2 rounded-full bg-yellow-400 mr-2 animate-pulse" id="statusDot"></div>
-        <span id="statusText">初始化核心引擎...</span>
+        <span id="statusText">正在初始化核心引擎...</span>
       </div>
     </div>
 
-    <!-- 教程卡片 -->
+    <!-- 提取教程 -->
     <div class="card-base rounded-[var(--radius-large)] p-6 md:p-10 border border-[var(--line-divider)]">
         <h2 class="text-xl md:text-2xl font-bold text-90 flex items-center mb-6"><Icon name="material-symbols:android" class="mr-3 text-blue-400 text-2xl md:text-3xl" />安卓端提取方法</h2>
-        <div class="max-w-3xl"><ol class="text-sm md:text-[16px] text-75 space-y-4 list-decimal ml-5"><li>小米运动健康 -> 我的 -> 关于 -> 连点Logo弹出日志</li><li>上传 Download/wearablelog/****.zip</li></ol></div>
+        <div class="max-w-3xl"><ol class="text-sm md:text-[16px] text-75 space-y-4 list-decimal ml-5"><li>小米运动健康 -> 我的 -> 关于 -> 连点Logo迁移日志</li><li>上传 Download/wearablelog/****.zip</li></ol></div>
     </div>
 
     <div class="card-base rounded-[var(--radius-large)] p-6 md:p-10 border border-[var(--line-divider)]">
         <h2 class="text-xl md:text-2xl font-bold text-90 flex items-center mb-6"><Icon name="material-symbols:phone-iphone" class="mr-3 text-blue-400 text-2xl md:text-3xl" />iOS端提取方法</h2>
-        <div class="max-w-3xl"><ol class="text-sm md:text-[16px] text-75 space-y-4 list-decimal ml-5"><li>文件App -> 小米运动健康 -> VirtualDevice_registerList</li><li>上传 manifest.sqlite 文件</li></ol></div>
+        <div class="max-w-3xl"><ol class="text-sm md:text-[16px] text-75 space-y-4 list-decimal ml-5"><li>文件App -> 小米运动健康 -> \MHWCahe\6284670\VirtualDevice_registerList\manifest.sqlite</li><li>上传 manifest.sqlite 文件</li></ol></div>
     </div>
 
     <!-- 解析设置面板 -->
@@ -55,7 +55,7 @@ import { Icon } from "astro-icon/components";
             <Icon name="material-symbols:database-outline" class="text-[var(--primary)] text-xl shrink-0 mt-1" />
             <div class="space-y-1">
               <p class="text-sm font-bold text-90">SQL 读取模式（优先使用）</p>
-              <p class="text-xs text-75 leading-relaxed">基于数据库 manifest 表。准确度最高，自动关联名称与 MAC 地址。</p>
+              <p class="text-xs text-75 leading-relaxed">基于 manifest 表解析。准确度最高，自动关联 MAC 地址。</p>
             </div>
           </div>
           <div class="flex gap-3">
@@ -73,52 +73,63 @@ import { Icon } from "astro-icon/components";
             <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="debugToggle" class="sr-only peer"><div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--primary)]"></div></label>
           </div>
           <div class="flex items-center justify-between p-5 bg-gray-100/50 dark:bg-white/5 rounded-2xl border border-[var(--line-divider)]">
-            <div class="space-y-0.5"><p class="text-sm md:text-[16px] font-bold text-90">跨平台ZIP</p><p class="text-[10px] text-75 opacity-70">自动扫描嵌套 ZIP 包</p></div>
+            <div class="space-y-0.5"><p class="text-sm md:text-[16px] font-bold text-90">跨平台ZIP</p><p class="text-[10px] text-75 opacity-70">嵌套包自动递归解析</p></div>
             <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="crossZipToggle" class="sr-only peer"><div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--primary)]"></div></label>
           </div>
           <div class="flex items-center justify-between p-5 bg-gray-100/50 dark:bg-white/5 rounded-2xl border border-[var(--line-divider)]">
-            <div class="space-y-0.5"><p class="text-sm md:text-[16px] font-bold text-90">允许未知后缀</p><p class="text-[10px] text-75 opacity-70">允许上传任何后缀尝试扫描</p></div>
+            <div class="space-y-0.5"><p class="text-sm md:text-[16px] font-bold text-90">允许未知后缀</p><p class="text-[10px] text-75 opacity-70">强制开启全量二进制扫描</p></div>
             <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="unsupportedToggle" checked class="sr-only peer"><div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--primary)]"></div></label>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-[var(--line-divider)] bg-gray-100/40 dark:bg-white/[0.03] p-5 md:p-6 space-y-3">
+          <div class="flex items-center gap-2 text-[var(--primary)]">
+            <Icon name="material-symbols:info-outline" class="text-xl" />
+            <p class="text-sm md:text-[15px] font-bold">开关说明</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs md:text-sm text-75">
+            <div class="rounded-xl border border-[var(--line-divider)] bg-white/40 dark:bg-white/[0.02] p-3">
+              <p class="font-bold text-90 mb-1">调试模式</p>
+              <p class="opacity-80">显示扫描片段与偏移信息，便于排查未命中的数据样本。<br>仅供调试用。</p>
+            </div>
+            <div class="rounded-xl border border-[var(--line-divider)] bg-white/40 dark:bg-white/[0.02] p-3">
+              <p class="font-bold text-90 mb-1">跨平台 ZIP</p>
+              <p class="opacity-80">开启只会检测根目录存放manifest.sqlite和Android日志的嵌套压缩包并存的压缩包文件</p>
+            </div>
+            <div class="rounded-xl border border-[var(--line-divider)] bg-white/40 dark:bg-white/[0.02] p-3">
+              <p class="font-bold text-90 mb-1">允许未知后缀</p>
+              <p class="opacity-80">放开文件选择后缀限制并尝试二进制扫描，兼容非标准文件命名。</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 上传区 (严格限制 accept 属性，解决安卓调用相机问题) -->
+    <!-- 上传区 -->
     <div class="card-base rounded-[var(--radius-large)] p-6 md:p-8 space-y-6">
-      <input 
-        type="file" 
-        id="fileInput" 
-        accept=".zip,.sqlite,.sqlite-wal,.db,.sqlitedb,application/zip,application/x-sqlite3,application/octet-stream" 
-        class="hidden"
-      >
+      <input type="file" id="fileInput" accept=".zip,.sqlite,.sqlite-wal,.db,.sqlitedb,.log,.txt,application/zip,application/octet-stream,application/x-sqlite3,text/plain" class="hidden">
       <div id="uploadArea" class="border-4 border-dashed border-[var(--line-divider)] rounded-3xl p-8 md:p-16 text-center cursor-pointer transition-all duration-500 hover:border-[var(--primary)] hover:bg-[var(--primary)]/[0.03] group">
         <div class="pointer-events-none space-y-4">
           <Icon name="material-symbols:cloud-upload" class="text-5xl md:text-6xl mx-auto text-gray-300 group-hover:text-[var(--primary)]" />
-          <div><p class="text-lg md:text-2xl font-bold text-90">点击或拖拽文件上传</p><p class="text-xs md:text-sm text-gray-400 mt-2">支持 ZIP、SQLITE 及嵌套日志文件</p></div>
+          <div><p class="text-lg md:text-2xl font-bold text-90">点击或拖拽文件上传</p><p class="text-xs md:text-sm text-gray-400 mt-2">支持所有可能包含 AuthKey 的数据文件</p></div>
         </div>
       </div>
       <div id="progressBox" class="hidden space-y-2">
         <div class="flex justify-between text-xs font-bold text-75"><span id="progressLabel">准备解析...</span><span id="progressPercent">0%</span></div>
         <div class="w-full bg-gray-200 dark:bg-white/10 rounded-full h-2 md:h-3 overflow-hidden"><div id="progressBar" class="bg-[var(--primary)] h-full transition-all duration-300 w-0"></div></div>
       </div>
-      <div class="flex justify-center"><button id="mobileBtn" type="button" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 text-sm font-bold text-[var(--primary)] bg-[var(--primary)]/10 rounded-2xl border-2 border-[var(--primary)]/20 active:scale-95 transition-transform">从文件拾取器选择</button></div>
+      <div class="flex justify-center"><button id="mobileBtn" type="button" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 text-sm font-bold text-[var(--primary)] bg-[var(--primary)]/10 rounded-2xl border-2 border-[var(--primary)]/20">从文件库选择文件</button></div>
     </div>
 
-    <!-- 结果显示 -->
+    <!-- 结果区域 -->
     <div id="resultBox" class="hidden space-y-6">
       <div class="card-base rounded-[var(--radius-large)] p-6 border-l-8 border-[var(--primary)] shadow-lg">
         <h2 class="text-xl md:text-2xl font-bold text-90 mb-6 flex items-center"><Icon name="material-symbols:robot" class="mr-3 text-[var(--primary)] text-3xl" />提取结果</h2>
         <div id="autoResultContainer" class="grid grid-cols-1 gap-4"></div>
       </div>
-      <div id="rawResultBox" class="hidden card-base rounded-[var(--radius-large)] p-6 md:p-8">
-        <h2 class="text-lg md:text-xl font-bold text-90 mb-4 flex items-center text-gray-400"><Icon name="material-symbols:database" class="mr-3 text-2xl" />调试与原始输出</h2>
-        <div id="debugOutput" class="mb-4 p-5 bg-red-50 dark:bg-red-900/10 text-red-500 rounded-2xl text-[10px] md:text-xs font-mono hidden whitespace-pre-wrap break-all"></div>
-        <div id="rawResultContainer" class="space-y-4"></div>
-      </div>
     </div>
 
-    <!-- 终端日志控制台 -->
+    <!-- 终端日志控制台 (字号已上调) -->
     <div class="card-base rounded-[var(--radius-large)] p-4 md:p-6 border border-[var(--line-divider)] shadow-2xl bg-[#0a0a0a]">
         <div class="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
             <div class="flex items-center gap-2">
@@ -130,10 +141,16 @@ import { Icon } from "astro-icon/components";
         <div id="systemLogConsole" class="bg-[#050505] text-[#4ade80] rounded-lg p-4 h-80 overflow-y-auto font-mono text-[13px] md:text-[14px] space-y-2 scroll-smooth border border-white/5">
             <div class="flex gap-2">
                 <span class="text-white/20 shrink-0 font-mono text-[11px] md:text-[12px]">[00:00:00.000]</span>
-                <span class="bg-green-500/10 text-[#4ade80] px-1.5 rounded text-[11px] font-bold">虚拟机</span>
+                <span class="bg-green-500/10 text-[#4ade80] px-1.5 rounded text-[11px] font-bold">系统</span>
                 <span class="opacity-40 italic">等待操作指令...</span>
             </div>
         </div>
+    </div>
+
+    <div id="rawResultBox" class="hidden card-base rounded-[var(--radius-large)] p-6 md:p-8">
+      <h2 class="text-lg md:text-xl font-bold text-90 mb-4 flex items-center text-gray-400"><Icon name="material-symbols:database" class="mr-3 text-2xl" />调试与原始输出</h2>
+      <div id="debugOutput" class="mb-4 p-5 bg-red-50 dark:bg-red-900/10 text-red-500 rounded-2xl text-[10px] md:text-xs font-mono hidden whitespace-pre-wrap break-all"></div>
+      <div id="rawResultContainer" class="space-y-4"></div>
     </div>
   </div>
 
@@ -150,7 +167,7 @@ import { Icon } from "astro-icon/components";
 
   <script>
     declare global { interface Window { copyToClipboard: (text: string) => void; initSqlJs: any; } }
-    interface AuthResult { name: string; key: string; mac?: string; platform?: string; isSql?: boolean; }
+    interface AuthResult { name: string; key: string; mac?: string; platform?: string; }
     interface DebugInfo { offset: number; content: string; }
 
     let JSZip: any = null;
@@ -164,7 +181,20 @@ import { Icon } from "astro-icon/components";
       return null;
     };
 
-    const terminal = (msg: string, tag: string = 'BROWSER', type: 'text' | 'device' = 'text') => {
+    // --- 终端日志核心 (字号已通过 CSS 上调) ---
+    const tagStyles: Record<string, string> = {
+        WASM: 'bg-green-500/20 text-[#4ade80]',
+        FS: 'bg-blue-500/20 text-[#60a5fa]',
+        BROWSER: 'bg-white/10 text-white/40',
+        CONFIG: 'bg-cyan-500/20 text-[#22d3ee]',
+        NETWORK: 'bg-yellow-500/20 text-[#facc15]',
+        INIT: 'bg-purple-500/20 text-[#f472b6]',
+        SUCCESS: 'bg-green-500/40 text-white font-bold',
+        ERROR: 'bg-red-500/40 text-white font-bold',
+        DEVICE: 'text-[#22d3ee] border-l border-[#22d3ee]/30 pl-2'
+    };
+
+    const terminal = (msg: string, tag: keyof typeof tagStyles = 'BROWSER', type: 'text' | 'device' = 'text') => {
         const consoleEl = document.getElementById('systemLogConsole');
         if (!consoleEl) return;
         const entry = document.createElement('div');
@@ -173,32 +203,50 @@ import { Icon } from "astro-icon/components";
         const ms = now.getMilliseconds().toString().padStart(3, '0');
         const time = `${now.toLocaleTimeString('en-GB', { hour12: false })}.${ms}`;
         
+        const tagClass = tagStyles[tag] || tagStyles.BROWSER;
         const tagMap: Record<string, string> = {
-            WASM: '虚拟机', FS: '文件流', BROWSER: '框架层', CONFIG: '持久化',
-            NETWORK: '网络层', INIT: '初始化', SUCCESS: '命中', ERROR: '异常', DEVICE: '匹配'
+            WASM: '解析引擎', FS: '文件系统', BROWSER: '浏览器', CONFIG: '配置',
+            NETWORK: '网络', INIT: '系统', SUCCESS: '命中', ERROR: '错误', DEVICE: '匹配'
         };
 
         if (type === 'device') {
-            entry.innerHTML = `<span class="text-white/20 shrink-0 font-mono text-[11px] md:text-[12px]">[${time}]</span><span class="bg-cyan-500/20 text-[#22d3ee] shrink-0 px-1.5 rounded text-[11px] font-bold">设备匹配</span><span class="text-[#22d3ee] font-bold">${msg}</span>`;
+            entry.innerHTML = `<span class="text-white/20 shrink-0 font-mono text-[11px] md:text-[12px]">[${time}]</span><span class="${tagClass} shrink-0 px-1.5 rounded text-[11px] font-bold">设备识别</span><span class="text-[#22d3ee] font-bold">${msg}</span>`;
         } else {
-            entry.innerHTML = `<span class="text-white/20 shrink-0 font-mono text-[11px] md:text-[12px]">[${time}]</span><span class="bg-white/10 text-white/40 shrink-0 px-1.5 rounded text-[11px] font-bold uppercase">${tagMap[tag] || tag}</span><span class="break-all ${tag === 'ERROR' ? 'text-red-400' : tag === 'SUCCESS' ? 'text-green-300' : 'text-white/60'}">${msg}</span>`;
+            entry.innerHTML = `<span class="text-white/20 shrink-0 font-mono text-[11px] md:text-[12px]">[${time}]</span><span class="${tagClass} shrink-0 px-1.5 rounded text-[11px] font-bold uppercase">${tagMap[tag] || tag}</span><span class="break-all ${tag === 'ERROR' ? 'text-red-400' : tag === 'SUCCESS' ? 'text-green-300' : 'text-white/60'}">${msg}</span>`;
         }
         consoleEl.prepend(entry);
     };
 
+    const stringifyConsoleArgs = (args: any[]) => args.map((arg) => {
+      if (typeof arg === 'string') return arg;
+      if (arg instanceof Error) return `${arg.name}: ${arg.message}`;
+      try { return JSON.stringify(arg); } catch { return String(arg); }
+    }).join(' ');
+
+    // 全局劫持 Console + 浏览器运行时错误
     const hookConsole = () => {
         const _log = console.log;
         const _warn = console.warn;
         const _err = console.error;
         const _info = console.info;
-        console.log = (...args) => { _log(...args); terminal(args.join(' '), 'BROWSER'); };
-        console.info = (...args) => { _info(...args); terminal(args.join(' '), 'INIT'); };
-        console.warn = (...args) => { _warn(...args); terminal(args.join(' '), 'NETWORK'); };
-        console.error = (...args) => { _err(...args); terminal(args.join(' '), 'ERROR'); };
+
+        console.log = (...args) => { _log(...args); terminal(stringifyConsoleArgs(args), 'BROWSER'); };
+        console.info = (...args) => { _info(...args); terminal(stringifyConsoleArgs(args), 'INIT'); };
+        console.warn = (...args) => { _warn(...args); terminal(stringifyConsoleArgs(args), 'NETWORK'); };
+        console.error = (...args) => { _err(...args); terminal(stringifyConsoleArgs(args), 'ERROR'); };
+
+        window.addEventListener('error', (event) => {
+          const msg = `${event.message} @ ${event.filename || 'inline'}:${event.lineno || 0}:${event.colno || 0}`;
+          terminal(`运行时错误: ${msg}`, 'ERROR');
+        });
+        window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+          const reason = event.reason instanceof Error ? `${event.reason.name}: ${event.reason.message}` : String(event.reason);
+          terminal(`未处理 Promise 拒绝: ${reason}`, 'ERROR');
+        });
     };
 
     async function calculateFileHash(buffer: ArrayBuffer) {
-        terminal("开始计算二进制流 SHA-256 指纹...", "FS");
+        terminal("计算二进制 SHA-256 全量校验和...", "FS");
         const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
         return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
     }
@@ -224,7 +272,7 @@ import { Icon } from "astro-icon/components";
 
     async function initEngines() {
       hookConsole();
-      terminal("拉取外部资源模块中...", "NETWORK");
+      terminal("正在初始化解析组件...", "NETWORK");
       try {
         const [jszipModule] = await Promise.all([
           import('jszip'),
@@ -235,19 +283,19 @@ import { Icon } from "astro-icon/components";
           })
         ]);
         JSZip = jszipModule.default;
-        terminal("JSZip 处理库加载完成", "FS");
+        terminal("JSZip 组件加载完成 (v3.10.1)", "FS");
+        
         SQL = await (window as any).initSqlJs({ locateFile: (f: string) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${f}` });
-        terminal("SQL-WASM 已初始化", "WASM");
+        terminal("SQL-WASM 就绪，SQLite 解析能力已启用", "WASM");
+        
         document.getElementById('statusText')!.innerText = "引擎就绪 (WASM已缓存)";
         document.getElementById('statusDot')!.className = "w-2 h-2 rounded-full bg-green-500 mr-2";
-      } catch (err: any) { terminal(`核心异常: ${err.message}`, "ERROR"); }
+      } catch (err: any) { terminal(`初始化失败: ${err.message}`, "ERROR"); }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
       initEngines();
       const fileInput = document.getElementById('fileInput') as HTMLInputElement;
-      const uploadArea = document.getElementById('uploadArea');
-      const mobileBtn = document.getElementById('mobileBtn');
       const debugToggle = document.getElementById('debugToggle') as HTMLInputElement;
       const crossZipToggle = document.getElementById('crossZipToggle') as HTMLInputElement;
       const unsupportedToggle = document.getElementById('unsupportedToggle') as HTMLInputElement;
@@ -267,39 +315,61 @@ import { Icon } from "astro-icon/components";
       unsupportedToggle.checked = cUnsup;
       parseModeRadios.forEach(r => { if(r.value === cMode) r.checked = true; });
 
-      terminal(`载入配置：调试(${cDebug}), 跨平台(${cCross}), 模式(${cMode})`, "CONFIG");
+      terminal(`载入配置：调试(${cDebug}), 跨平台(${cCross}), 全解析(${cUnsup}), 模式(${cMode})`, "CONFIG");
 
       const handleToggleRefresh = (el: HTMLInputElement, cookieName: string, label: string) => {
         el.addEventListener('change', () => {
             setCookie(cookieName, String(el.checked));
-            terminal(`配置变更：[${label}] 已同步。重载中...`, "CONFIG");
+            terminal(`配置变更：[${label}] 已保存，正在刷新页面...`, "CONFIG");
             showToast(`✓ ${label}已变更，重载中...`);
             setTimeout(() => location.reload(), 800);
         });
       };
       handleToggleRefresh(debugToggle, 'debugMode', '调试模式');
-      handleToggleRefresh(crossZipToggle, 'crossZip', '跨平台ZIP');
+      handleToggleRefresh(crossZipToggle, 'crossZip', '跨平台ZIP支持');
       handleToggleRefresh(unsupportedToggle, 'allowUnsupported', '读取策略');
 
       parseModeRadios.forEach(r => r.addEventListener('change', () => { 
           if(r.checked){ 
+              const modeLabelMap: Record<string, string> = {
+                smart: '智能模式',
+                sql: '仅 SQL',
+                scan: '硬扫描'
+              };
+              const modeLabel = modeLabelMap[r.value] || r.value;
               setCookie('parseMode', r.value); 
-              terminal(`解析策略切换为：${r.value}`, "CONFIG");
-              showToast(`✓ 模式已切换`); 
+              terminal(`解析策略已切换为：${modeLabel} (${r.value})`, "CONFIG");
+              showToast(`✓ 已切换到${modeLabel}`); 
           } 
       }));
+
+      document.getElementById('clearLogBtn')?.addEventListener('click', () => {
+          document.getElementById('systemLogConsole')!.innerHTML = '<div class="text-white/20 italic">[缓冲区已刷新] 日志服务重置完成。</div>';
+      });
+
+      const updateProgress = (v: number, t: string) => {
+        const pb = document.getElementById('progressBox');
+        if (pb) {
+            pb.classList.remove('hidden');
+            document.getElementById('progressBar')!.style.width = `${v}%`;
+            document.getElementById('progressLabel')!.innerText = t;
+            document.getElementById('progressPercent')!.innerText = `${Math.round(v)}%`;
+        }
+      };
 
       window.copyToClipboard = async (t) => {
         try { await navigator.clipboard.writeText(t); } 
         catch { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
-        terminal(`成功复制密钥 ${t.substring(0,8)}...`, "SUCCESS");
-        showToast('✓ 复制成功');
+        terminal(`用户成功复制了密钥 ${t.substring(0,8)}...`, "SUCCESS");
+        showToast('✓ 密钥已复制');
       };
 
       const parseAndroidFromContent = (content: string): AuthResult[] => {
+        terminal(`扫描 Android 字节序列 (流长度: ${content.length})`, "FS");
         const results: AuthResult[] = []; const seenTokens = new Set<string>();
         const tokenGlobalRegex = /"token"\s*[:=]\s*"([a-fA-F0-9]{32})"/gi;
         let match;
+        
         while ((match = tokenGlobalRegex.exec(content)) !== null) {
             const token = match[1];
             if (seenTokens.has(token)) continue;
@@ -309,11 +379,14 @@ import { Icon } from "astro-icon/components";
             let deviceName = ""; let nameMatch;
             while ((nameMatch = nameSearchRegex.exec(context)) !== null) { deviceName = nameMatch[2]; }
             const macMatch = context.match(/([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}/);
+            
             if (!deviceName || deviceName.toLowerCase() === "null") {
                 for (const p of DEVICE_PATTERNS) if (context.includes(p.name)) { deviceName = p.label; break; }
             }
+
             results.push({ name: deviceName || "Android设备", key: token, mac: macMatch ? macMatch[0] : undefined, platform: 'Android' });
             seenTokens.add(token);
+            terminal(`识别设备：${deviceName || '通用型号'} | MAC: ${macMatch ? macMatch[0] : '未知'}`, "DEVICE", "device");
         }
         return results;
       };
@@ -321,33 +394,53 @@ import { Icon } from "astro-icon/components";
       const processSQL = (u8: Uint8Array, isWal: boolean = false): {results: AuthResult[], log: string} => {
           let results: AuthResult[] = []; let log = "";
           try {
+              terminal(`SQL: 读取数据库快照 (${(u8.length/1024).toFixed(1)}KB)`, "WASM");
               const db = new SQL.Database(u8);
               const tables: string[] = [];
+              const isDebug = (document.getElementById('debugToggle') as HTMLInputElement)?.checked;
               const tableStmt = db.prepare("SELECT name FROM sqlite_master WHERE type='table'");
               while(tableStmt.step()) tables.push(tableStmt.get()[0] as string); tableStmt.free();
+              if (isDebug) {
+                  log += `[SQL] 表清单: ${tables.join(', ') || '无'}\n`;
+                  log += `\n[SQL] 原始 SQLite 十进制内容(完整)\n${Array.from(u8).join(',')}\n`;
+              }
+              
               if (tables.includes('manifest')) {
                   const stmt = db.prepare("SELECT inline_data FROM manifest WHERE inline_data IS NOT NULL");
+                  let rowIndex = 0;
                   while (stmt.step()) {
                       const blob = stmt.get()[0] as Uint8Array;
                       if (blob) {
+                          rowIndex += 1;
                           const rawStr = new TextDecoder('latin1').decode(blob);
                           const keyM = rawStr.match(/[a-fA-F0-9]{32}/);
                           const macM = rawStr.match(/([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}/);
                           let nm = "iOS设备"; for (const p of DEVICE_PATTERNS) if (rawStr.includes(p.name)) { nm = p.label; break; }
+
+                          if (isDebug) {
+                              const header = String.fromCharCode(...blob.slice(0, 8));
+                              const isBplist = header === 'bplist00';
+                              log += `\n[manifest.row ${rowIndex}] bytes=${blob.length} type=${isBplist ? 'Apple Binary Property List (bplist00)' : 'binary'}\n`;
+                              log += `[manifest.row ${rowIndex}] wasm-extracted-decimal(full)\n${Array.from(blob).join(',')}\n`;
+                          }
+
                           if (keyM) {
-                              terminal(`${nm} | MAC: ${macM ? macM[0] : '无'}`, "SUCCESS", "device");
-                              results.push({ name: nm, key: keyM[0], mac: macM ? macM[0] : undefined, platform: isWal ? 'SQLite-wal' : 'iOS (SQL模式)', isSql: true });
+                              terminal(`提取到记录：${nm} (通过 Plist)`, "SUCCESS");
+                              results.push({ name: nm, key: keyM[0], mac: macM ? macM[0] : undefined, platform: isWal ? 'SQLite-wal' : 'iOS (SQL模式)' });
                           }
                       }
                   }
                   stmt.free();
+              } else if (isDebug) {
+                  log += "[SQL] 未找到 manifest 表。\n";
               }
               db.close();
-          } catch(e: any) { terminal(`SQL异常: ${e.message}`, "ERROR"); }
+          } catch(e: any) { terminal(`数据库读取失败: ${e.message}`, "ERROR"); }
           return { results, log };
       };
 
       const processScan = (u8: Uint8Array, label: string = '硬扫描'): {results: AuthResult[], debugs: DebugInfo[]} => {
+          terminal(`全量特征提取启动 [${label}]...`, "FS");
           const results: AuthResult[] = []; const debugs: DebugInfo[] = []; const seen = new Set<string>();
           const raw = new TextDecoder('latin1').decode(u8);
           const anchors = ["encrypt_key", "auth_key", "peripheral_id", "token"];
@@ -359,7 +452,8 @@ import { Icon } from "astro-icon/components";
               if (hexM) hexM.forEach(k => {
                 if (!seen.has(k)) {
                   let nm = "扫描记录"; for (const p of DEVICE_PATTERNS) if (win.includes(p.name)) { nm = p.label; break; }
-                  results.push({ name: nm, key: k, platform: label, isSql: false });
+                  terminal(`特征命中：${k.substring(0,12)}... [${anchor}]`, "SUCCESS");
+                  results.push({ name: nm, key: k, platform: label });
                   seen.add(k);
                 }
               });
@@ -370,75 +464,152 @@ import { Icon } from "astro-icon/components";
           return { results, debugs };
       };
 
+      const processZipLevel = async (zip: any, depth = 0): Promise<{results: AuthResult[], debugs: DebugInfo[], log: string}> => {
+          let results: AuthResult[] = []; let debugs: DebugInfo[] = []; let log = "";
+          const files = Object.keys(zip.files);
+          const mode = (document.querySelector('input[name="parseMode"]:checked') as HTMLInputElement).value;
+          terminal(`遍历压缩包第 ${depth} 层 (${files.length} 个文件)`, "FS");
+
+          const logKey = files.find(f => f.toLowerCase().includes('main.log') || f.toLowerCase().endsWith('.log'));
+          if (logKey) {
+              terminal(`发现 Android 目标：[${logKey}]`, "FS");
+              const content = await zip.file(logKey)!.async('text');
+              results.push(...parseAndroidFromContent(content));
+          }
+          const sqlKey = files.find(f => f.toLowerCase().endsWith('manifest.sqlite'));
+          if (sqlKey) {
+              terminal(`发现 iOS 目标：[${sqlKey}]`, "FS");
+              const sqlBuf = await zip.file(sqlKey)!.async('uint8array');
+              if (mode === 'sql') {
+                  const sRes = processSQL(sqlBuf); results.push(...sRes.results); log += sRes.log;
+                  if (sRes.results.length === 0) {
+                      terminal("仅 SQL 模式未命中 ZIP 内数据库，请切换到硬扫描模式或智能模式后重试。", "NETWORK");
+                  }
+              } else if (mode === 'scan') {
+                  const sc = processScan(sqlBuf, 'ZIP扫描'); results.push(...sc.results); debugs.push(...sc.debugs);
+                  if (sc.results.length === 0) {
+                      terminal("仅硬扫描模式未命中 ZIP 内数据库，请切换到 SQL 模式或智能模式后重试。", "NETWORK");
+                  }
+              } else {
+                  const sRes = processSQL(sqlBuf); results.push(...sRes.results); log += sRes.log;
+                  const sc = processScan(sqlBuf, 'ZIP扫描'); results.push(...sc.results); debugs.push(...sc.debugs);
+              }
+          }
+          if (crossZipToggle.checked && depth < 2) {
+              const nZips = files.filter(f => f.toLowerCase().endsWith('.zip') && !zip.files[f].dir);
+              for (const nz of nZips) {
+                  terminal(`由于开启了跨平台，正在解开子包：${nz}`, "INIT");
+                  try {
+                      const nzBuf = await zip.file(nz)!.async('uint8array');
+                      const r = await processZipLevel(await JSZip.loadAsync(nzBuf.buffer), depth + 1);
+                      results.push(...r.results); debugs.push(...r.debugs); log += r.log;
+                  } catch {}
+              }
+          }
+          return { results, debugs, log };
+      };
+
       const handleFile = async (f: File) => {
         if (!f || !JSZip || !SQL) return;
-        terminal(`导入文件：[${f.name}]`, "INIT");
+        const name = f.name.toLowerCase();
+        const parseMode = (document.querySelector('input[name="parseMode"]:checked') as HTMLInputElement).value;
+        terminal(`导入成功：[${f.name}] 大小：${(f.size/1024).toFixed(1)}KB`, "INIT");
+        
+        const isStandard = ['zip', 'sqlite', 'sqlite-wal', 'db', 'sqlitedb'].some(v => name.endsWith(v));
+        if (!unsupportedToggle.checked && !isStandard) {
+            terminal(`策略拦截：扩展名 .${name.split('.').pop()} 不在安全读取列表中。`, "ERROR");
+            return;
+        }
+
+        updateProgress(10, "读取物理扇区...");
         const reader = new FileReader();
         reader.onload = async () => {
           try {
             const buf = new Uint8Array(reader.result as ArrayBuffer);
             const hash = await calculateFileHash(buf.buffer);
-            terminal(`SHA256指纹: [${hash.substring(0,32)}...]`, "FS");
+            terminal(`指纹校验成功 (SHA256): ${hash.substring(0,32)}...`, "FS");
+
             let fRes: AuthResult[] = []; let fDbg: DebugInfo[] = []; let fLog = "";
-            const name = f.name.toLowerCase();
-            
             if (name.endsWith('.zip')) {
-                const zip = await JSZip.loadAsync(buf.buffer);
-                const logKey = Object.keys(zip.files).find(f => f.toLowerCase().includes('main.log') || f.toLowerCase().endsWith('.log'));
-                if (logKey) {
-                    const content = await zip.file(logKey)!.async('text');
-                    fRes = parseAndroidFromContent(content);
-                }
+                const r = await processZipLevel(await JSZip.loadAsync(buf.buffer));
+                fRes = r.results; fDbg = r.debugs; fLog = r.log;
             } else if (name.endsWith('.sqlite-wal')) {
-                const sR = processSQL(buf, true); fRes = sR.results; fLog = sR.log;
-                const sc = processScan(buf, 'SQLite-wal'); fRes.push(...sc.results); fDbg = sc.debugs;
+                terminal("WAL 缓存模式：强制检索 manifest 区域...", "NETWORK");
+                if (parseMode === 'sql') {
+                    const sR = processSQL(buf, true); fRes = sR.results; fLog = sR.log;
+                    if (sR.results.length === 0) {
+                        terminal("仅 SQL 模式未命中结果，请切换到硬扫描模式或智能模式后重试。", "NETWORK");
+                    }
+                } else if (parseMode === 'scan') {
+                    const sc = processScan(buf, 'SQLite-wal'); fRes.push(...sc.results); fDbg = sc.debugs;
+                    if (sc.results.length === 0) {
+                        terminal("仅硬扫描模式未命中结果，请切换到 SQL 模式或智能模式后重试。", "NETWORK");
+                    }
+                } else {
+                    const sR = processSQL(buf, true); fRes = sR.results; fLog = sR.log;
+                    const sc = processScan(buf, 'SQLite-wal'); fRes.push(...sc.results); fDbg = sc.debugs;
+                }
             } else {
-                const sR = processSQL(buf); fRes = sR.results; fLog = sR.log;
-                const sc = processScan(buf); fRes.push(...sc.results); fDbg = sc.debugs;
+                const magic = String.fromCharCode(...buf.slice(0, 15));
+                if (magic !== "SQLite format 3" && (name.endsWith('.sqlite') || name.endsWith('.db'))) {
+                    if (parseMode === 'sql') {
+                        terminal("仅 SQL 模式检测到非标准 SQLite 文件，未执行硬扫描。请切换到硬扫描模式或智能模式。", "NETWORK");
+                    } else if (parseMode === 'scan') {
+                        terminal("警告：文件非标准库格式。执行二进制硬匹配方案。", "NETWORK");
+                        const sc = processScan(buf); fRes = sc.results; fDbg = sc.debugs;
+                        if (sc.results.length === 0) {
+                            terminal("仅硬扫描模式未命中结果，请切换到 SQL 模式或智能模式后重试。", "NETWORK");
+                        }
+                    } else {
+                        terminal("警告：文件非标准库格式。执行二进制硬匹配方案。", "NETWORK");
+                        const sc = processScan(buf); fRes = sc.results; fDbg = sc.debugs;
+                    }
+                } else {
+                    if (parseMode === 'sql') {
+                        const sR = processSQL(buf); fRes = sR.results; fLog = sR.log;
+                        if (sR.results.length === 0) {
+                            terminal("仅 SQL 模式未命中结果，请切换到硬扫描模式或智能模式后重试。", "NETWORK");
+                        }
+                    } else if (parseMode === 'scan') {
+                        const sc = processScan(buf); fRes.push(...sc.results); fDbg = sc.debugs;
+                        if (sc.results.length === 0) {
+                            terminal("仅硬扫描模式未命中结果，请切换到 SQL 模式或智能模式后重试。", "NETWORK");
+                        }
+                    } else {
+                        const sR = processSQL(buf); fRes = sR.results; fLog = sR.log;
+                        const sc = processScan(buf); fRes.push(...sc.results); fDbg = sc.debugs;
+                    }
+                }
             }
 
-            renderUI(fRes, fDbg, fLog);
-          } catch (e: any) { terminal(`崩溃: ${e.message}`, "ERROR"); }
+            updateProgress(100, "解析完成");
+            const unique = fRes.filter(v => v.key && v.key !== "undefined").filter((v, i, a) => a.findIndex(t => t.key === v.key) === i);
+            terminal(`事务提交：共发现 ${unique.length} 台设备密钥。`, "SUCCESS");
+            unique.forEach(d => terminal(`${d.name} | MAC: ${d.mac || '暂无'} | Key: ${d.key.substring(0,12)}...`, "DEVICE", "device"));
+            renderUI(unique, fDbg, fLog);
+            setTimeout(() => document.getElementById('progressBox')?.classList.add('hidden'), 1500);
+          } catch (e: any) { terminal(`处理失败: ${e.message}`, "ERROR"); }
         };
         reader.readAsArrayBuffer(f);
       };
 
       const renderUI = (list: AuthResult[], debugs: DebugInfo[], dLog: string) => {
         if (!autoResultContainer || !rawResultContainer || !rawResultBox || !debugOutput) return;
-        
-        // 分组结果
-        const sqlItems = list.filter(i => i.isSql);
-        const scanItems = list.filter(i => !i.isSql);
-        const androidItems = list.filter(i => i.platform === 'Android');
-        
-        let html = "";
-        
-        // 渲染逻辑
-        const renderBlock = (items: AuthResult[], isPriority = false) => {
-            return items.map(i => `
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-[var(--primary)]/[0.04] p-5 rounded-2xl border border-[var(--primary)]/10">
-                  <div class="w-full text-center md:text-left overflow-hidden">
-                    <div class="flex items-center justify-center md:justify-start gap-2 mb-1">
-                        <span class="text-[9px] px-2 py-0.5 rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-black uppercase">${i.platform}</span>
-                        <div class="text-sm md:text-lg font-black text-90 opacity-90">${i.name}</div>
-                        ${isPriority ? '<span class="text-[9px] px-2 py-0.5 rounded-full bg-green-500/20 text-green-500 font-bold">优先尝试</span>' : ''}
-                    </div>
-                    ${i.mac ? `<div class="text-[10px] md:text-xs font-bold text-75 opacity-60 mb-2 uppercase tracking-wider">${i.mac}</div>` : ''}
-                    <div class="font-mono text-sm md:text-xl font-black break-all text-90 select-all leading-tight">${i.key}</div>
-                  </div>
-                  <button onclick="copyToClipboard('${i.key}')" class="shrink-0 w-full md:w-auto px-6 py-3 bg-[var(--primary)] text-white rounded-xl text-sm font-bold active:scale-95 shadow-md">复制</button>
+        const currentMode = (document.querySelector('input[name="parseMode"]:checked') as HTMLInputElement)?.value || 'smart';
+        autoResultContainer.innerHTML = list.length ? list.map(i => `
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-[var(--primary)]/[0.04] p-5 rounded-2xl border border-[var(--primary)]/10">
+              <div class="w-full text-center md:text-left overflow-hidden">
+                <div class="flex items-center justify-center md:justify-start gap-2 mb-1">
+                    <span class="text-[9px] px-2 py-0.5 rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-black uppercase">${i.platform}</span>
+                    ${currentMode === 'smart' && String(i.platform || '').includes('SQL模式') ? `<span class="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-black uppercase">优先尝试</span>` : ''}
+                    <div class="text-sm md:text-lg font-black text-90 opacity-90">${i.name}</div>
                 </div>
-            `).join('');
-        };
-
-        html += renderBlock(sqlItems, true);
-        if (sqlItems.length > 0 && (scanItems.length > 0 || androidItems.length > 0)) {
-            html += '<div class="my-8"></div>'; // 空 2 格
-        }
-        html += renderBlock(androidItems);
-        html += renderBlock(scanItems);
-
-        autoResultContainer.innerHTML = html || '<div class="p-8 text-center opacity-40 italic">未发现结果</div>';
+                ${i.mac ? `<div class="text-[10px] md:text-xs font-bold text-75 opacity-60 mb-2 uppercase tracking-wider">${i.mac}</div>` : ''}
+                <div class="font-mono text-sm md:text-xl font-black break-all text-90 select-all leading-tight">${i.key}</div>
+              </div>
+              <button onclick="copyToClipboard('${i.key}')" class="shrink-0 w-full md:w-auto px-6 py-3 bg-[var(--primary)] text-white rounded-xl text-sm font-bold active:scale-95 shadow-md">复制</button>
+            </div>
+        `).join('') : '<div class="p-8 text-center opacity-40 italic">未检测到结果</div>';
         
         debugOutput.innerText = dLog; debugOutput.classList.toggle('hidden', !dLog);
         rawResultContainer.innerHTML = debugs.map(d => `<div class="debug-card"><div class="text-[10px] opacity-30 mb-1">OFFSET: ${d.offset}</div><pre>${d.content.replace(/[a-fA-F0-9]{32}/g, m => `<span class="highlight-key">${m}</span>`)}</pre></div>`).join('');
@@ -447,14 +618,113 @@ import { Icon } from "astro-icon/components";
         document.getElementById('resultBox')?.scrollIntoView({ behavior: 'smooth' });
       };
 
-      uploadArea?.addEventListener('click', () => { terminal("点击触发：请求文件选择器", "INIT"); fileInput.click(); });
-      mobileBtn?.addEventListener('click', () => { terminal("按钮触发：请求文件拾取", "INIT"); fileInput.click(); });
-      fileInput.onchange = (e: any) => { if (e.target.files.length > 0) handleFile(e.target.files[0]); };
-      uploadArea?.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('drag-over'); });
-      uploadArea?.addEventListener('dragleave', () => uploadArea.classList.remove('drag-over'));
+      const uploadArea = document.getElementById('uploadArea');
+      const mobileBtn = document.getElementById('mobileBtn');
+      const strictAccept = ".zip,.sqlite,.sqlite-wal,.db,.sqlitedb,.log,.txt,application/zip,application/octet-stream,application/x-sqlite3,text/plain";
+      let dragDepth = 0;
+      let lastDragOverLogAt = 0;
+      const pickerAcceptTypes = [
+        {
+          description: '日志与数据库文件',
+          accept: {
+            'application/zip': ['.zip'],
+            'application/x-sqlite3': ['.sqlite', '.sqlite-wal', '.db', '.sqlitedb'],
+            'application/octet-stream': ['.sqlite', '.sqlite-wal', '.db', '.sqlitedb'],
+            'text/plain': ['.log', '.txt']
+          }
+        }
+      ];
+
+      const pickFile = async () => {
+        const hasNativePicker = typeof (window as any).showOpenFilePicker === 'function';
+        terminal(`文件选择请求：策略=${unsupportedToggle.checked ? '宽松(允许未知后缀)' : '严格白名单'}`, "CONFIG");
+        if (hasNativePicker) {
+          try {
+            terminal("点击事件：打开系统文件选择器...", "INIT");
+            const allowUnknown = unsupportedToggle.checked;
+            const pickerOptions: any = {
+              multiple: false
+            };
+            if (!allowUnknown) {
+              pickerOptions.types = pickerAcceptTypes;
+              pickerOptions.excludeAcceptAllOption = true;
+            }
+            const [handle] = await (window as any).showOpenFilePicker({
+              ...pickerOptions
+            });
+            if (!handle) {
+              terminal("文件选择器未返回文件句柄。", "NETWORK");
+              return;
+            }
+            const file = await handle.getFile();
+            if (file) {
+              terminal(`文件选择器已返回文件：[${file.name}]`, "FS");
+              await handleFile(file);
+            } else {
+              terminal("文件选择器返回空文件对象。", "NETWORK");
+            }
+            return;
+          } catch (err: any) {
+            if (err?.name === 'AbortError') {
+              terminal("文件选择已取消。", "NETWORK");
+            } else {
+              terminal(`文件选择器异常: ${err?.message || err}`, "ERROR");
+            }
+          }
+        }
+
+        terminal("回退到标准文件输入组件...", "INIT");
+        fileInput.accept = unsupportedToggle.checked ? "" : strictAccept;
+        fileInput.value = '';
+        fileInput.click();
+      };
+
+      uploadArea?.addEventListener('click', () => { terminal("上传区域点击：准备拉起文件选择器。", "INIT"); pickFile(); });
+      mobileBtn?.addEventListener('click', () => { terminal("按钮点击：准备拉起文件选择器。", "INIT"); pickFile(); });
+      fileInput.onchange = (e: any) => {
+        const files = e.target?.files;
+        if (files?.length > 0) {
+          terminal(`标准输入组件已选择文件：[${files[0].name}]`, "FS");
+          handleFile(files[0]);
+        } else {
+          terminal("标准输入组件触发变更，但未选择文件。", "NETWORK");
+        }
+      };
+      uploadArea?.addEventListener('dragenter', (e: any) => {
+        e.preventDefault();
+        dragDepth += 1;
+        if (dragDepth === 1) {
+          terminal("拖拽进入上传区域。", "INIT");
+          uploadArea.classList.add('drag-over');
+        }
+      });
+      uploadArea?.addEventListener('dragover', (e: any) => {
+        e.preventDefault();
+        const now = Date.now();
+        if (e.dataTransfer?.types?.includes('Files') && now - lastDragOverLogAt > 800) {
+          terminal("拖拽悬停：检测到文件载荷。", "FS");
+          lastDragOverLogAt = now;
+        }
+        uploadArea.classList.add('drag-over');
+      });
+      uploadArea?.addEventListener('dragleave', (e: any) => {
+        e.preventDefault();
+        dragDepth = Math.max(0, dragDepth - 1);
+        if (dragDepth === 0) {
+          terminal("拖拽离开上传区域。", "INIT");
+          uploadArea.classList.remove('drag-over');
+        }
+      });
       uploadArea?.addEventListener('drop', (e: any) => { 
-          e.preventDefault(); uploadArea.classList.remove('drag-over'); 
-          if (e.dataTransfer?.files.length > 0) handleFile(e.dataTransfer.files[0]); 
+          e.preventDefault();
+          dragDepth = 0;
+          uploadArea.classList.remove('drag-over'); 
+          if (e.dataTransfer?.files.length > 0) {
+              terminal(`拖放事件：成功捕获文件 [${e.dataTransfer.files[0].name}]`, "INIT");
+              handleFile(e.dataTransfer.files[0]); 
+          } else {
+              terminal("拖放事件：未检测到可处理文件。", "NETWORK");
+          }
       });
     });
   </script>
