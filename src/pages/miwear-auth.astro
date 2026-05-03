@@ -14,14 +14,13 @@ import { Icon } from "astro-icon/components";
       <h1 class="text-2xl md:text-3xl font-bold text-[var(--primary)] mb-2">AuthKey 提取器</h1>
       <p class="text-75 text-xs md:text-sm opacity-70">支持 Android 日志 ZIP 与 iOS manifest.sqlite 数据库提取</p>
       
-      <!-- 初始化状态指示器 -->
       <div id="initStatus" class="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-gray-100 dark:bg-white/5 text-[10px] md:text-[12px] font-medium text-gray-500">
         <div class="w-2 h-2 rounded-full bg-yellow-400 mr-2 animate-pulse" id="statusDot"></div>
         <span id="statusText">正在初始化 WASM 引擎...</span>
       </div>
     </div>
 
-    <!-- 安卓端提取方法卡片 -->
+    <!-- 提取教程卡片 -->
     <div class="card-base rounded-[var(--radius-large)] p-6 md:p-10 border border-[var(--line-divider)]">
       <h2 class="text-xl md:text-2xl font-bold text-90 flex items-center mb-6">
         <Icon name="material-symbols:android" class="mr-3 text-blue-400 text-2xl md:text-3xl" />
@@ -37,7 +36,6 @@ import { Icon } from "astro-icon/components";
       </div>
     </div>
 
-    <!-- iOS端提取方法卡片 -->
     <div class="card-base rounded-[var(--radius-large)] p-6 md:p-10 border border-[var(--line-divider)]">
       <h2 class="text-xl md:text-2xl font-bold text-90 flex items-center mb-6">
         <Icon name="material-symbols:phone-iphone" class="mr-3 text-blue-400 text-2xl md:text-3xl" />
@@ -52,7 +50,7 @@ import { Icon } from "astro-icon/components";
       </div>
     </div>
 
-    <!-- 解析设置面板 (已按照 Astro8 规范对齐) -->
+    <!-- 解析设置面板 -->
     <div class="card-base rounded-[var(--radius-large)] p-6 md:p-10 border border-[var(--line-divider)]">
       <h2 class="text-xl md:text-2xl font-bold text-90 flex items-center mb-8">
         <Icon name="material-symbols:settings-suggest" class="mr-3 text-[var(--primary)] text-2xl md:text-3xl" />
@@ -64,7 +62,7 @@ import { Icon } from "astro-icon/components";
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div class="space-y-1">
             <p class="text-sm md:text-[16px] font-bold text-90">提取模式选择</p>
-            <p class="text-xs md:text-sm text-75 opacity-70">针对 SQLite 数据库，可选择深挖 SQL 或全文件硬扫描</p>
+            <p class="text-xs md:text-sm text-75 opacity-70">设定引擎对数据库或文本文件的解析优先级</p>
           </div>
           <div class="flex bg-gray-100 dark:bg-white/5 p-1.5 rounded-2xl w-full md:w-auto">
             <label class="flex-1 md:flex-none"><input type="radio" name="parseMode" value="smart" checked class="hidden peer"><div class="px-5 py-2.5 rounded-xl text-xs md:text-sm font-bold text-75 text-center cursor-pointer peer-checked:bg-[var(--primary)] peer-checked:text-white transition-all">智能模式</div></label>
@@ -73,23 +71,39 @@ import { Icon } from "astro-icon/components";
           </div>
         </div>
 
+        <!-- 模式说明文字 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-[var(--line-divider)] pt-6">
+          <div class="flex gap-3">
+            <Icon name="material-symbols:database-outline" class="text-[var(--primary)] text-xl shrink-0 mt-1" />
+            <div class="space-y-1">
+              <p class="text-sm font-bold text-90">SQL 读取模式</p>
+              <p class="text-xs text-75 leading-relaxed">严格基于数据库表结构查询。目前SQL读取模式功能在本站上极不完善。</p>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <Icon name="material-symbols:search-check" class="text-[var(--primary)] text-xl shrink-0 mt-1" />
+            <div class="space-y-1">
+              <p class="text-sm font-bold text-90">硬扫描模式</p>
+              <p class="text-xs text-75 leading-relaxed">对文件二进制数据进行特征匹配扫描。比较完善的功能，兼容性极强，支持任何文件，但可能产生冗余干扰结果。</p>
+            </div>
+          </div>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- 调试开关 -->
           <div class="flex items-center justify-between p-5 bg-gray-100/50 dark:bg-white/5 rounded-2xl border border-[var(--line-divider)]">
             <div class="space-y-0.5">
               <p class="text-sm md:text-[16px] font-bold text-90">调试模式</p>
-              <p class="text-xs text-75 opacity-70">找不到结果时导出数据库表结构 Dump</p>
+              <p class="text-xs text-75 opacity-70">开启后将导出数据库表结构 Dump 数据</p>
             </div>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" id="debugToggle" class="sr-only peer">
               <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--primary)]"></div>
             </label>
           </div>
-          <!-- 后缀开关 -->
           <div class="flex items-center justify-between p-5 bg-gray-100/50 dark:bg-white/5 rounded-2xl border border-[var(--line-divider)]">
             <div class="space-y-0.5">
               <p class="text-sm md:text-[16px] font-bold text-90">允许未知后缀</p>
-              <p class="text-xs text-75 opacity-70">开启后支持上传 .txt, .wal 等文件硬读取</p>
+              <p class="text-xs text-75 opacity-70">开启后支持上传非标准文件进行硬读取解析</p>
             </div>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" id="unsupportedToggle" checked class="sr-only peer">
@@ -108,14 +122,14 @@ import { Icon } from "astro-icon/components";
           <Icon name="material-symbols:cloud-upload" class="text-5xl md:text-6xl mx-auto text-gray-300 group-hover:text-[var(--primary)]" />
           <div>
             <p class="text-lg md:text-2xl font-bold text-90">点击或拖拽文件上传</p>
-            <p class="text-xs md:text-sm text-gray-400 mt-2">支持所有可能包含 AuthKey 的日志、数据库或文本文件</p>
+            <p class="text-xs md:text-sm text-gray-400 mt-2">支持 ZIP、SQLITE 及所有包含密钥的文件</p>
           </div>
         </div>
       </div>
 
       <div id="progressBox" class="hidden space-y-2">
         <div class="flex justify-between text-xs font-bold text-75">
-          <span id="progressLabel">准备解析...</span>
+          <span id="progressLabel">准备读取...</span>
           <span id="progressPercent">0%</span>
         </div>
         <div class="w-full bg-gray-200 dark:bg-white/10 rounded-full h-2 md:h-3 overflow-hidden">
@@ -125,7 +139,7 @@ import { Icon } from "astro-icon/components";
 
       <div class="flex justify-center">
         <button id="mobileBtn" type="button" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 text-sm font-bold text-[var(--primary)] bg-[var(--primary)]/10 rounded-2xl border-2 border-[var(--primary)]/20 active:scale-95 transition-transform">
-          <Icon name="material-symbols:touch-app" class="mr-2 text-xl" />选择文件
+          <Icon name="material-symbols:touch-app" class="mr-2 text-xl" />从系统文件库选择
         </button>
       </div>
     </div>
@@ -151,7 +165,7 @@ import { Icon } from "astro-icon/components";
 
   <style is:global>
     .drag-over { border-color: var(--primary) !important; background-color: var(--card-bg) !important; }
-    .copy-msg { position: fixed; top: 40px; left: 50%; transform: translateX(-50%); padding: 10px 24px; background: #2d2d2d; color: #ffffff; border-radius: 50px; z-index: 9999; font-size: 14px; animation: toastIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards; }
+    .toast-msg { position: fixed; top: 40px; left: 50%; transform: translateX(-50%); padding: 10px 24px; background: #2d2d2d; color: #ffffff; border-radius: 50px; z-index: 9999; font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); animation: toastIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards; }
     @keyframes toastIn { from { transform: translate(-50%, -40px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
     .debug-card { background: var(--card-bg); border: 1px solid var(--line-divider); border-radius: 1.25rem; padding: 1.25rem; }
     .debug-card pre { font-family: monospace; font-size: 0.75rem; white-space: pre-wrap; word-break: break-all; opacity: 0.8; line-height: 1.5; }
@@ -165,6 +179,25 @@ import { Icon } from "astro-icon/components";
 
     let JSZip: any = null;
     let SQL: any = null;
+
+    const setCookie = (name: string, value: string) => {
+      document.cookie = `${name}=${value};path=/;max-age=31536000`; // 1年
+    };
+    const getCookie = (name: string) => {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(';').shift();
+    };
+
+    const showToast = (msg: string) => {
+      const old = document.querySelector('.toast-msg');
+      if (old) old.remove();
+      const el = document.createElement('div');
+      el.className = 'toast-msg';
+      el.innerText = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2500);
+    };
 
     async function initEngines() {
       const statusText = document.getElementById('statusText');
@@ -192,6 +225,7 @@ import { Icon } from "astro-icon/components";
       const fileInput = document.getElementById('fileInput') as HTMLInputElement;
       const debugToggle = document.getElementById('debugToggle') as HTMLInputElement;
       const unsupportedToggle = document.getElementById('unsupportedToggle') as HTMLInputElement;
+      const parseModeRadios = document.getElementsByName('parseMode') as NodeListOf<HTMLInputElement>;
       const progressBar = document.getElementById('progressBar');
       const progressBox = document.getElementById('progressBox');
       const progressLabel = document.getElementById('progressLabel');
@@ -199,6 +233,42 @@ import { Icon } from "astro-icon/components";
       const autoResultContainer = document.getElementById('autoResultContainer');
       const rawResultContainer = document.getElementById('rawResultContainer');
       const debugOutput = document.getElementById('debugOutput');
+
+      // 初始化 Cookie 状态
+      if (getCookie('debugMode') === 'true') debugToggle.checked = true;
+      if (getCookie('allowUnsupported') === 'false') unsupportedToggle.checked = false;
+      
+      const savedMode = getCookie('parseMode');
+      if (savedMode) {
+        parseModeRadios.forEach(radio => {
+          if (radio.value === savedMode) radio.checked = true;
+        });
+      }
+
+      debugToggle.addEventListener('change', () => {
+        setCookie('debugMode', String(debugToggle.checked));
+        showToast('✓ 调试设置已生效');
+      });
+      
+      unsupportedToggle.addEventListener('change', () => {
+        setCookie('allowUnsupported', String(unsupportedToggle.checked));
+        showToast('✓ 读取策略已生效');
+      });
+
+      parseModeRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+          if (radio.checked) {
+            setCookie('parseMode', radio.value);
+            let msg = "";
+            switch(radio.value) {
+                case "smart": msg = "切换至智能模式：SQL优先，失败转扫描"; break;
+                case "sql": msg = "切换至仅SQL模式：严格执行数据库读取"; break;
+                case "scan": msg = "切换至硬扫描模式：直接搜索二进制特征"; break;
+            }
+            showToast(`✓ ${msg}`);
+          }
+        });
+      });
 
       const updateProgress = (v: number, t: string) => {
         if (progressBox && progressBar && progressLabel && progressPercent) {
@@ -215,8 +285,7 @@ import { Icon } from "astro-icon/components";
           const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta);
           ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
         }
-        const el = document.createElement('div'); el.className = 'copy-msg'; el.innerText = '✓ 密钥已成功复制';
-        document.body.appendChild(el); setTimeout(() => el.remove(), 2000);
+        showToast('✓ 密钥已成功复制');
       };
 
       // 严格 Android 逻辑
@@ -249,7 +318,6 @@ import { Icon } from "astro-icon/components";
         return results;
       };
 
-      // 强化通用逻辑 (iOS/万能)
       const processGeneral = async (buf: ArrayBuffer, forceScan: boolean) => {
         const mode = forceScan ? 'scan' : (document.querySelector('input[name="parseMode"]:checked') as HTMLInputElement).value;
         const debugOn = debugToggle.checked;
@@ -258,8 +326,9 @@ import { Icon } from "astro-icon/components";
 
         if (debugOutput) { debugOutput.classList.add('hidden'); debugOutput.innerText = ""; }
 
+        // 仅在 SQL/智能模式下执行
         if (mode !== 'scan') {
-          updateProgress(60, "SQL 深度提取引擎启动...");
+          updateProgress(60, "SQL 引擎解析中...");
           let db: any = null;
           try {
             const u8 = new Uint8Array(buf);
@@ -268,7 +337,7 @@ import { Icon } from "astro-icon/components";
             const tableStmt = db.prepare("SELECT name FROM sqlite_master WHERE type='table'");
             while(tableStmt.step()) allTables.push(tableStmt.get()[0]);
             tableStmt.free();
-            debugLog += `[引擎探测] 发现表: ${allTables.join(', ') || '空'}\n`;
+            debugLog += `[SQL探测] 发现表: ${allTables.join(', ') || '空'}\n`;
 
             if (allTables.includes('VirtualDevice_registerList')) {
               const stmt = db.prepare("SELECT name, encrypt_key FROM VirtualDevice_registerList");
@@ -280,7 +349,7 @@ import { Icon } from "astro-icon/components";
             }
 
             if (results.length === 0) {
-              debugLog += `[深挖模式] 搜索所有表中的 Key/Token 相关字段...\n`;
+              debugLog += `[深挖] 正在尝试从其它表中提取 AuthKey...\n`;
               for (const table of allTables) {
                 try {
                   const pragma = db.prepare(`PRAGMA table_info("${table}")`);
@@ -293,8 +362,8 @@ import { Icon } from "astro-icon/components";
                     const stmt = db.prepare(`SELECT "${nameCol}" as n, "${keyCol}" as k FROM "${table}" WHERE "${keyCol}" IS NOT NULL`);
                     while(stmt.step()) {
                       const r = stmt.getAsObject();
-                      const kVal = String(r.k);
-                      if (kVal.length >= 16 && !seen.has(kVal)) { results.push({ name: `[探测] ${table}`, key: kVal }); seen.add(kVal); }
+                      const val = String(r.k);
+                      if (val.length >= 16 && !seen.has(val)) { results.push({ name: `[探测] ${table}`, key: val }); seen.add(val); }
                     }
                     stmt.free();
                   }
@@ -302,8 +371,12 @@ import { Icon } from "astro-icon/components";
               }
             }
 
+            if (results.length === 0 && mode === 'sql') {
+                debugLog += `\n⚠ [SQL严格模式] 未发现匹配记录。请尝试切换到“硬扫描”模式尝试解析原始数据。\n`;
+            }
+
             if (debugOn && allTables.length > 0) {
-              debugLog += `\n--- 数据库全量调试 Dump ---\n`;
+              debugLog += `\n--- 调试数据 Dump (前3行) ---\n`;
               for (const table of allTables.slice(0, 8)) {
                 try {
                   const stmt = db.prepare(`SELECT * FROM "${table}" LIMIT 3`);
@@ -313,7 +386,7 @@ import { Icon } from "astro-icon/components";
                 } catch(e) {}
               }
             }
-          } catch (e: any) { debugLog += `[SQL 模式失败] ${e.message}\n`; }
+          } catch (e: any) { debugLog += `[SQL错误] ${e.message}\n请确认上传的是正确的数据库文件。\n`; }
           finally { if (db) db.close(); }
         }
 
@@ -321,12 +394,13 @@ import { Icon } from "astro-icon/components";
           debugOutput.classList.remove('hidden'); debugOutput.innerText = debugLog;
         }
 
+        // 硬扫描逻辑 (如果是仅SQL模式且没搜到，这里不会执行)
         if (mode === 'scan' || (mode === 'smart' && results.length === 0)) {
           updateProgress(80, "执行全局二进制硬扫描...");
           const u8 = new Uint8Array(buf); let raw = ""; const CHUNK = 0x8000;
           for (let i = 0; i < u8.length; i += CHUNK) raw += Array.from(u8.subarray(i, i + CHUNK)).map(b => (b >= 32 && b <= 126) ? String.fromCharCode(b) : ".").join("");
           
-          const anchors = ["encrypt_key", "auth_key", "peripheral_id", "VirtualDevice_registerList"];
+          const anchors = ["encrypt_key", "auth_key", "peripheral_id"];
           anchors.forEach(anchor => {
             let pos = raw.indexOf(anchor);
             while (pos !== -1) {
@@ -360,7 +434,7 @@ import { Icon } from "astro-icon/components";
             } else if (unsupportedToggle.checked) {
               const r = await processGeneral(buf, true);
               list = r.results; debugs = r.debugs;
-            } else { throw new Error("后缀不受支持，请检查或开启'未知后缀'开关"); }
+            } else { throw new Error("后缀不受支持。若要强制读取，请开启'允许未知后缀'开关。"); }
 
             updateProgress(100, "解析完成");
             renderUI(list, debugs);
@@ -378,9 +452,9 @@ import { Icon } from "astro-icon/components";
               <div class="text-[10px] font-black text-[var(--primary)] uppercase mb-1 opacity-70">${i.name}</div>
               <div class="font-mono text-sm md:text-lg font-black break-all text-90 select-all leading-tight">${i.key}</div>
             </div>
-            <button onclick="copyToClipboard('${i.key}')" class="shrink-0 w-full md:w-auto px-6 py-3 bg-[var(--primary)] text-white rounded-xl text-sm font-bold active:scale-95 shadow-md">复制</button>
+            <button onclick="copyToClipboard('${i.key}')" class="shrink-0 w-full md:w-auto px-6 py-3 bg-[var(--primary)] text-white rounded-xl text-sm font-bold active:scale-95 shadow-md transition-all">复制</button>
           </div>
-        `).join('') : '<div class="p-8 text-center opacity-40">未检测到有效 AuthKey</div>';
+        `).join('') : '<div class="p-8 text-center opacity-40 italic">未检测到有效结果，请确认文件路径或切换模式</div>';
         
         rawResultContainer.innerHTML = debugs.map(d => `<div class="debug-card"><div class="text-[10px] opacity-30 mb-1">OFFSET: ${d.offset}</div><pre>${d.content.replace(/[a-fA-F0-9]{32}/g, m => `<span class="highlight-key">${m}</span>`)}</pre></div>`).join('');
         document.getElementById('resultBox')?.classList.remove('hidden');
