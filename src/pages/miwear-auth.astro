@@ -4,7 +4,7 @@ import { Icon } from "astro-icon/components";
 ---
 
 <MainGridLayout title="小米运动健康AuthKey提取器" description="从安卓日志或iOS数据库中提取小米穿戴设备的 AuthKey。">
-  <div class="onload-animation space-y-4 md:space-y-6 max-w-5xl mx-auto px-4 pb-12">
+  <div class="miwear-unified-font onload-animation space-y-4 md:space-y-6 max-w-5xl mx-auto px-4 pb-12">
     
     <!-- 头部标题 -->
     <div class="card-base rounded-[var(--radius-large)] p-6 md:p-8 text-center shadow-lg">
@@ -155,6 +155,10 @@ import { Icon } from "astro-icon/components";
   </div>
 
   <style is:global>
+    .miwear-unified-font,
+    .miwear-unified-font * {
+      font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif !important;
+    }
     .drag-over { border-color: var(--primary) !important; background-color: var(--card-bg) !important; }
     .toast-msg { position: fixed; top: 40px; left: 50%; transform: translateX(-50%); padding: 10px 24px; background: #2d2d2d; color: #ffffff; border-radius: 50px; z-index: 9999; font-size: 14px; shadow: 0 8px 24px rgba(0,0,0,0.2); animation: toastIn 0.4s forwards; }
     @keyframes toastIn { from { transform: translate(-50%, -40px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }

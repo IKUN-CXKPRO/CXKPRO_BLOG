@@ -1,0 +1,392 @@
+---
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { Icon } from "astro-icon/components";
+
+const pageTitle = "bplist00 数据提取器";
+const pageDescription = "从 Apple Binary Property List 十进制数据中提取设备信息与关键字段";
+---
+
+<MainGridLayout title={pageTitle} description={pageDescription}>
+  <div class="bplist-app mx-auto max-w-5xl space-y-4 md:space-y-8 onload-animation">
+    
+    <!-- 头部：标题颜色自定义 -->
+    <header class="card-base rounded-[var(--radius-large)] p-6 md:p-10 border border-[var(--line-divider)] overflow-hidden relative">
+      <div class="flex items-center gap-5 relative z-10">
+        <div class="header-icon-box w-16 h-16 md:w-20 md:h-20 rounded-2xl flex items-center justify-center shadow-lg">
+          <Icon name="material-symbols:data-array" class="text-[var(--card-bg)] text-3xl md:text-4xl" />
+        </div>
+        <div>
+          <h1 class="fluid-title font-black theme-text-primary leading-tight">{pageTitle}</h1>
+          <p class="fluid-body theme-text-muted font-medium">从十进制字节流中自动识别并分析硬件指纹</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- 输入区 -->
+    <section class="card-base rounded-[var(--radius-large)] p-5 md:p-8 space-y-4">
+      <div class="flex justify-between items-center">
+        <span class="fluid-label font-bold theme-text-muted tracking-widest uppercase">Input Data Buffer</span>
+        <span id="byteCount" class="fluid-mono px-3 py-1 bg-theme-faint theme-text-primary font-bold rounded-lg border border-theme-soft">0 Bytes</span>
+      </div>
+      <!-- 输入框：文字颜色全部自定义 -->
+      <textarea
+        id="decimalInput"
+        class="fluid-mono w-full h-48 md:h-64 p-5 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-xl focus:border-[var(--primary)] transition-all outline-none resize-none custom-scrollbar theme-text-primary"
+        placeholder="在此粘贴十进制数组序列..."
+      ></textarea>
+      <div class="flex gap-3">
+        <button id="runBtn" class="flex-1 bg-theme-primary text-[var(--card-bg)] py-3 rounded-xl font-bold fluid-body transition-all active:scale-95 shadow-lg shadow-theme">
+          执行数据解析
+        </button>
+        <button id="resetBtn" class="px-6 py-3 border border-[var(--line-divider)] rounded-xl font-bold fluid-body theme-text-muted hover:bg-[var(--btn-regular-bg)] transition-all">
+          重置
+        </button>
+      </div>
+    </section>
+
+    <!-- 结果区：纵向一行一行布局 -->
+    <div class="space-y-6">
+      <section id="summaryLine" class="hidden flex flex-wrap gap-3">
+        <!-- JS 注入摘要芯片 -->
+      </section>
+
+      <section class="card-base rounded-[var(--radius-large)] overflow-hidden border border-[var(--line-divider)]">
+        <!-- 列表头背景自适应 -->
+        <div class="p-5 border-b border-[var(--line-divider)] flex justify-between items-center bg-theme-faint">
+          <h2 class="fluid-body font-bold theme-text-primary flex items-center gap-2">
+            <Icon name="material-symbols:list-alt" /> 设备指纹明细
+          </h2>
+          <button id="copyBtn" class="fluid-xs font-bold theme-text-primary hover:underline opacity-70">复制 JSON</button>
+        </div>
+        
+        <!-- 一行一行的列表：Value颜色全部自定义 -->
+        <div id="lineByLineList" class="divide-y divide-[var(--line-divider)]">
+          <div class="p-12 text-center opacity-30 theme-text-muted fluid-body italic font-medium">等待输入有效序列...</div>
+        </div>
+      </section>
+
+      <!-- 底部特征映射 -->
+      <section class="card-base rounded-[var(--radius-large)] p-6">
+        <h2 class="fluid-xs font-bold theme-text-muted uppercase tracking-widest mb-4">特征映射清单</h2>
+        <div id="fieldDetails" class="fluid-mono p-5 bg-theme-faint rounded-xl border border-[var(--line-divider)] overflow-auto max-h-60 theme-text-primary">
+          Waiting...
+        </div>
+      </section>
+    </div>
+
+    <!-- SQLite 读取工具 -->
+    <section class="card-base rounded-[var(--radius-large)] p-5 md:p-8 space-y-4">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+        <h2 class="fluid-body font-bold theme-text-primary flex items-center gap-2">
+          <Icon name="material-symbols:database" /> SQLite 读取工具
+        </h2>
+        <div class="fluid-xs theme-text-muted">执行：SELECT * FROM 'table_name'</div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <input id="sqliteFileInput" type="file" accept=".sqlite,.db,.sqlitedb,.sqlite-wal" class="px-4 py-3 border border-[var(--line-divider)] rounded-xl bg-[var(--card-bg)] theme-text-primary fluid-body" />
+        <input id="sqliteTableInput" type="text" value="manifest" placeholder="输入表名（如 manifest）" class="px-4 py-3 border border-[var(--line-divider)] rounded-xl bg-[var(--card-bg)] theme-text-primary fluid-body" />
+        <button id="sqliteRunBtn" class="bg-theme-primary text-[var(--card-bg)] py-3 rounded-xl font-bold fluid-body transition-all active:scale-95 shadow-lg shadow-theme">
+          执行 SELECT *
+        </button>
+      </div>
+
+      <div id="sqliteStatus" class="fluid-xs theme-text-muted">等待上传 SQLite 文件...</div>
+      <div id="sqliteTables" class="fluid-body theme-text-primary break-all"></div>
+      <div id="sqliteResult" class="fluid-mono p-5 bg-theme-faint rounded-xl border border-[var(--line-divider)] overflow-auto max-h-[420px] theme-text-primary whitespace-pre-wrap break-all">
+        暂无查询结果
+      </div>
+    </section>
+  </div>
+
+  <style is:global>
+    /* --- Astro 6 流式字体自适应体系 --- */
+    :root {
+      --f-title: clamp(1.25rem, 1.1rem + 1.8vw, 2.5rem);
+      --f-body: clamp(0.875rem, 0.85rem + 0.4vw, 1.15rem);
+      --f-mono: clamp(0.72rem, 0.7rem + 0.25vw, 0.9rem);
+      --f-label: clamp(0.7rem, 0.68rem + 0.1vw, 0.85rem);
+    }
+
+    .fluid-title { font-size: var(--f-title); }
+    .fluid-body { font-size: var(--f-body); }
+    .fluid-mono { font-size: var(--f-mono); font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+    .fluid-label { font-size: var(--f-label); }
+    .fluid-xs { font-size: 0.75rem; }
+
+    /* --- 核心：全文本颜色自定义适配 --- */
+
+    /* 1. 强强调色：使用 100% 主题色 */
+    .theme-text-primary {
+      color: var(--primary) !important;
+    }
+
+    /* 2. 次要文字：使用主题色与文本色混合，保持色调统一但不刺眼 */
+    .theme-text-muted {
+      color: color-mix(in srgb, var(--primary), var(--text-color) 40%) !important;
+    }
+
+    /* 3. 背景类自适应 */
+    .header-icon-box { background-color: var(--primary); }
+    .bg-theme-primary { background-color: var(--primary); }
+    .shadow-theme { shadow: 0 10px 15px -3px color-mix(in srgb, var(--primary), transparent 80%); }
+
+    /* 4. 极淡的主题色背景（用于行、芯片、输入框背景） */
+    .bg-theme-faint {
+      background-color: color-mix(in srgb, var(--primary), transparent 93%);
+    }
+    .border-theme-soft {
+      border-color: color-mix(in srgb, var(--primary), transparent 80%);
+    }
+
+    /* --- 纵向行布局控制 --- */
+    .data-row {
+      display: flex;
+      flex-direction: column;
+      padding: 1.25rem;
+      gap: 0.35rem;
+      transition: all 0.2s ease;
+    }
+    @media (min-width: 640px) {
+      .data-row { flex-direction: row; align-items: flex-start; padding: 1rem 1.5rem; gap: 2.5rem; }
+    }
+    .data-row:hover {
+      background-color: color-mix(in srgb, var(--primary), transparent 96%);
+    }
+    
+    .data-key {
+      min-width: 170px;
+      font-weight: 800;
+      color: color-mix(in srgb, var(--primary), var(--text-color) 60%);
+      text-transform: uppercase;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      margin-top: 0.25rem;
+    }
+
+    /* 结果值：高亮自定义颜色 */
+    .data-value {
+      flex: 1;
+      word-break: break-all;
+      color: var(--primary); 
+      font-weight: 700;
+      font-family: var(--fluid-mono);
+    }
+
+    .summary-chip {
+      padding: 0.5rem 1.25rem;
+      background-color: color-mix(in srgb, var(--primary), transparent 90%);
+      border: 1px solid color-mix(in srgb, var(--primary), transparent 80%);
+      border-radius: 12px;
+      color: var(--primary);
+      font-weight: 800;
+      font-size: 0.75rem;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--line-divider); border-radius: 10px; }
+  </style>
+
+  <script is:inline>
+    // 逻辑层：Vanilla JS，保障 100% 运行
+    (function() {
+      const $ = (id) => document.getElementById(id);
+      const dom = {
+        input: $("decimalInput"),
+        run: $("runBtn"),
+        reset: $("resetBtn"),
+        copy: $("copyBtn"),
+        count: $("byteCount"),
+        summary: $("summaryLine"),
+        list: $("lineByLineList"),
+        fields: $("fieldDetails"),
+        sqliteFile: $("sqliteFileInput"),
+        sqliteTable: $("sqliteTableInput"),
+        sqliteRun: $("sqliteRunBtn"),
+        sqliteStatus: $("sqliteStatus"),
+        sqliteTables: $("sqliteTables"),
+        sqliteResult: $("sqliteResult")
+      };
+
+      let resultStore = null;
+      let SQL = null;
+      let sqliteDb = null;
+
+      const parseBytes = (s) => new Uint8Array((s.match(/\d+/g) || []).map(v => parseInt(v, 10)));
+      const getStrings = (buf) => {
+        let res = [], t = "";
+        for (let i = 0; i < buf.length; i++) {
+          if (buf[i] >= 32 && buf[i] <= 126) t += String.fromCharCode(buf[i]);
+          else { if (t.length >= 4) res.push(t.trim()); t = ""; }
+        }
+        return [...new Set(res)];
+      };
+
+      const handleExtraction = () => {
+        const val = dom.input.value.trim();
+        if (!val) return;
+        const buf = parseBytes(val);
+        const strs = getStrings(buf);
+        const txt = strs.join(" ");
+
+        const patterns = {
+          IDs: [...new Set(txt.match(/[A-F0-9]{8}-([A-F0-9]{4}-){3}[A-F0-9]{12}/gi) || [])],
+          MACs: [...new Set(txt.match(/([0-9A-F]{2}:){5}[0-9A-F]{2}/gi) || [])],
+          Keys: [...new Set(txt.match(/[a-f0-9]{32}/gi) || [])],
+          Models: strs.filter(s => /miwear|watch|band|redmi|xiaomi/i.test(s))
+        };
+
+        const devices = [];
+        const loops = Math.max(patterns.IDs.length, patterns.MACs.length, 1);
+        for (let i = 0; i < loops; i++) {
+          const d = {
+            "Peripheral ID": patterns.IDs[i] || null,
+            "MAC Address": patterns.MACs[i] || null,
+            "Hardware Model": patterns.Models[i] || "Generic bplist Entry",
+            "Token / Key": patterns.Keys[i] || null
+          };
+          if (d["Peripheral ID"] || d["MAC Address"] || d["Token / Key"]) devices.push(d);
+        }
+        resultStore = { meta: { bytes: buf.length, found: strs.length }, patterns, devices };
+        render(resultStore);
+      };
+
+      const render = (data) => {
+        dom.summary.classList.remove('hidden');
+        dom.summary.innerHTML = `
+          <div class="summary-chip">BYTES: ${data.meta.bytes}</div>
+          <div class="summary-chip">CHARS: ${data.meta.found}</div>
+          <div class="summary-chip">NODES: ${data.devices.length}</div>
+        `;
+
+        if (data.devices.length === 0) {
+          dom.list.innerHTML = `<div class="p-12 text-center opacity-30 theme-text-muted fluid-body italic font-medium">未探测到结构化字段数据</div>`;
+        } else {
+          dom.list.innerHTML = data.devices.map((dev, idx) => `
+            <div class="bg-theme-faint px-6 py-2 fluid-xs font-black theme-text-primary border-b border-[var(--line-divider)] flex items-center justify-between">
+              <span>DATA_STREAM_#${idx + 1}</span>
+              <span class="opacity-30 tracking-widest text-[10px]">VERIFIED_BLOCK</span>
+            </div>
+            ${Object.entries(dev).map(([k, v]) => v ? `
+              <div class="data-row">
+                <div class="data-key">${k}</div>
+                <div class="data-value">${v}</div>
+              </div>
+            ` : '').join('')}
+          `).join('');
+        }
+        dom.fields.textContent = JSON.stringify(data.patterns, null, 2);
+      };
+
+      dom.run.onclick = handleExtraction;
+      dom.reset.onclick = () => window.location.reload();
+      dom.copy.onclick = () => {
+        if (!resultStore) return;
+        navigator.clipboard.writeText(JSON.stringify(resultStore, null, 2));
+        dom.copy.textContent = "SUCCESS!";
+        setTimeout(() => dom.copy.textContent = "复制 JSON", 2000);
+      };
+      dom.input.oninput = () => {
+        const m = dom.input.value.match(/\d+/g) || [];
+        dom.count.textContent = m.length + " Bytes";
+      };
+
+      // --- SQLite Tool ---
+      const initSqlJs = async () => {
+        if (SQL) return SQL;
+        if (!window.initSqlJs) {
+          await new Promise((resolve, reject) => {
+            const s = document.createElement("script");
+            s.src = "https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js";
+            s.onload = resolve;
+            s.onerror = reject;
+            document.head.appendChild(s);
+          });
+        }
+        SQL = await window.initSqlJs({
+          locateFile: (f) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${f}`
+        });
+        return SQL;
+      };
+
+      const normalizeCell = (value) => {
+        if (value instanceof Uint8Array) {
+          return {
+            type: "blob",
+            byte_length: value.length,
+            decimal: Array.from(value).join(","),
+            latin1: new TextDecoder("latin1").decode(value)
+          };
+        }
+        return value;
+      };
+
+      const loadSQLiteFile = async (file) => {
+        if (!dom.sqliteStatus || !dom.sqliteTables) return;
+        try {
+          dom.sqliteStatus.textContent = `正在加载 ${file.name}...`;
+          await initSqlJs();
+          const buf = new Uint8Array(await file.arrayBuffer());
+          sqliteDb = new SQL.Database(buf);
+
+          const stmt = sqliteDb.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name");
+          const names = [];
+          while (stmt.step()) names.push(stmt.get()[0]);
+          stmt.free();
+
+          dom.sqliteTables.textContent = `表列表：${names.join(", ") || "无"}`;
+          dom.sqliteStatus.textContent = `加载完成：${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+        } catch (err) {
+          dom.sqliteStatus.textContent = `加载失败：${err?.message || err}`;
+        }
+      };
+
+      const runSQLiteSelectAll = () => {
+        if (!sqliteDb || !dom.sqliteTable || !dom.sqliteResult || !dom.sqliteStatus) {
+          if (dom.sqliteStatus) dom.sqliteStatus.textContent = "请先上传 SQLite 文件。";
+          return;
+        }
+        const table = dom.sqliteTable.value.trim();
+        if (!table) {
+          dom.sqliteStatus.textContent = "请输入表名。";
+          return;
+        }
+
+        try {
+          const safe = table.replace(/'/g, "''");
+          const sql = `SELECT * FROM '${safe}'`;
+          const stmt = sqliteDb.prepare(sql);
+          const columns = stmt.getColumnNames();
+          const rows = [];
+          while (stmt.step()) {
+            const row = stmt.get();
+            const obj = {};
+            columns.forEach((c, i) => {
+              obj[c] = normalizeCell(row[i]);
+            });
+            rows.push(obj);
+          }
+          stmt.free();
+
+          dom.sqliteResult.textContent = JSON.stringify({
+            query: sql,
+            columns,
+            row_count: rows.length,
+            rows
+          }, null, 2);
+          dom.sqliteStatus.textContent = `查询完成：${table}，共 ${rows.length} 条`;
+        } catch (err) {
+          dom.sqliteStatus.textContent = `查询失败：${err?.message || err}`;
+        }
+      };
+
+      if (dom.sqliteFile) {
+        dom.sqliteFile.addEventListener("change", (e) => {
+          const file = e.target?.files?.[0];
+          if (file) loadSQLiteFile(file);
+        });
+      }
+      if (dom.sqliteRun) dom.sqliteRun.addEventListener("click", runSQLiteSelectAll);
+    })();
+  </script>
+</MainGridLayout>
