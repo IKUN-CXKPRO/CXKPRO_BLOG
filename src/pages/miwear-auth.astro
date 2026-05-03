@@ -16,38 +16,19 @@ import { Icon } from "astro-icon/components";
       
       <div id="initStatus" class="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-gray-100 dark:bg-white/5 text-[10px] md:text-[12px] font-medium text-gray-500">
         <div class="w-2 h-2 rounded-full bg-yellow-400 mr-2 animate-pulse" id="statusDot"></div>
-        <span id="statusText">正在初始化 WASM 引擎...</span>
+        <span id="statusText">初始化核心引擎...</span>
       </div>
     </div>
 
-    <!-- 提取教程卡片 -->
+    <!-- 提取教程 -->
     <div class="card-base rounded-[var(--radius-large)] p-6 md:p-10 border border-[var(--line-divider)]">
-      <h2 class="text-xl md:text-2xl font-bold text-90 flex items-center mb-6">
-        <Icon name="material-symbols:android" class="mr-3 text-blue-400 text-2xl md:text-3xl" />
-        安卓端提取方法
-      </h2>
-      <div class="max-w-3xl">
-        <ol class="text-sm md:text-[16px] text-75 space-y-4 leading-relaxed list-decimal list-outside ml-5">
-          <li>打开小米运动健康 APP，点击右下角"我的" -> "关于"</li>
-          <li>连续点击 logo 弹出日志保存提示</li>
-          <li>找到文件 <code class="bg-[var(--line-divider)] px-1.5 py-0.5 rounded font-mono text-xs mx-1">Download/wearablelog/****.zip</code></li>
-          <li>上传该 ZIP 文件即可</li>
-        </ol>
-      </div>
+        <h2 class="text-xl md:text-2xl font-bold text-90 flex items-center mb-6"><Icon name="material-symbols:android" class="mr-3 text-blue-400 text-2xl md:text-3xl" />安卓端提取方法</h2>
+        <div class="max-w-3xl"><ol class="text-sm md:text-[16px] text-75 space-y-4 list-decimal ml-5"><li>小米运动健康 -> 我的 -> 关于 -> 连点Logo弹出日志</li><li>上传 Download/wearablelog/****.zip</li></ol></div>
     </div>
 
     <div class="card-base rounded-[var(--radius-large)] p-6 md:p-10 border border-[var(--line-divider)]">
-      <h2 class="text-xl md:text-2xl font-bold text-90 flex items-center mb-6">
-        <Icon name="material-symbols:phone-iphone" class="mr-3 text-blue-400 text-2xl md:text-3xl" />
-        iOS端提取方法
-      </h2>
-      <div class="max-w-3xl">
-        <ol class="text-sm md:text-[16px] text-75 space-y-4 leading-relaxed list-decimal list-outside ml-5">
-          <li>打开"文件"app，进入小米运动健康文件夹</li>
-          <li>路径: <code class="bg-[var(--line-divider)] px-1.5 py-0.5 rounded font-mono text-xs break-all">/MHWCahe/6284670/VirtualDevice_registerList/manifest.sqlite</code></li>
-          <li>上传该 <code class="font-mono">.sqlite</code> 文件</li>
-        </ol>
-      </div>
+        <h2 class="text-xl md:text-2xl font-bold text-90 flex items-center mb-6"><Icon name="material-symbols:phone-iphone" class="mr-3 text-blue-400 text-2xl md:text-3xl" />iOS端提取方法</h2>
+        <div class="max-w-3xl"><ol class="text-sm md:text-[16px] text-75 space-y-4 list-decimal ml-5"><li>文件App -> 小米运动健康 -> VirtualDevice_registerList</li><li>上传 manifest.sqlite 文件</li></ol></div>
     </div>
 
     <!-- 解析设置面板 -->
@@ -56,9 +37,7 @@ import { Icon } from "astro-icon/components";
         <Icon name="material-symbols:settings-suggest" class="mr-3 text-[var(--primary)] text-2xl md:text-3xl" />
         解析设置与高级选项
       </h2>
-      
       <div class="space-y-8">
-        <!-- 模式选择 -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div class="space-y-1">
             <p class="text-sm md:text-[16px] font-bold text-90">提取模式选择</p>
@@ -71,137 +50,186 @@ import { Icon } from "astro-icon/components";
           </div>
         </div>
 
-        <!-- 模式说明文字 -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-[var(--line-divider)] pt-6">
           <div class="flex gap-3">
             <Icon name="material-symbols:database-outline" class="text-[var(--primary)] text-xl shrink-0 mt-1" />
             <div class="space-y-1">
-              <p class="text-sm font-bold text-90">SQL 读取模式</p>
-              <p class="text-xs text-75 leading-relaxed">严格基于数据库表结构查询。目前SQL读取模式功能在本站上极不完善。</p>
+              <p class="text-sm font-bold text-90">SQL 读取模式（如果出现优先使用）</p>
+              <p class="text-xs text-75 leading-relaxed">执行标准 SQLite 查询。从 manifest 表解析 inline_data，准确度极高。</p>
             </div>
           </div>
           <div class="flex gap-3">
             <Icon name="material-symbols:search-check" class="text-[var(--primary)] text-xl shrink-0 mt-1" />
             <div class="space-y-1">
               <p class="text-sm font-bold text-90">硬扫描模式</p>
-              <p class="text-xs text-75 leading-relaxed">对文件二进制数据进行特征匹配扫描。比较完善的功能，兼容性极强，支持任何文件，但可能产生冗余干扰结果。</p>
+              <p class="text-xs text-75 leading-relaxed">全量二进制文本匹配。支持 S3/S4/手环9 等系列设备的名称识别。</p>
             </div>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="flex items-center justify-between p-5 bg-gray-100/50 dark:bg-white/5 rounded-2xl border border-[var(--line-divider)]">
-            <div class="space-y-0.5">
-              <p class="text-sm md:text-[16px] font-bold text-90">调试模式</p>
-              <p class="text-xs text-75 opacity-70">开启后将导出数据库表结构 Dump 数据</p>
-            </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" id="debugToggle" class="sr-only peer">
-              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--primary)]"></div>
-            </label>
+            <div class="space-y-0.5"><p class="text-sm md:text-[16px] font-bold text-90">调试模式</p><p class="text-[10px] text-75 opacity-70">开启后将显示二进制与 Dump</p></div>
+            <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="debugToggle" class="sr-only peer"><div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--primary)]"></div></label>
           </div>
           <div class="flex items-center justify-between p-5 bg-gray-100/50 dark:bg-white/5 rounded-2xl border border-[var(--line-divider)]">
-            <div class="space-y-0.5">
-              <p class="text-sm md:text-[16px] font-bold text-90">允许未知后缀</p>
-              <p class="text-xs text-75 opacity-70">开启后支持上传非标准文件进行硬读取解析</p>
-            </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" id="unsupportedToggle" checked class="sr-only peer">
-              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--primary)]"></div>
-            </label>
+            <div class="space-y-0.5"><p class="text-sm md:text-[16px] font-bold text-90">跨平台ZIP</p><p class="text-[10px] text-75 opacity-70">自动扫描嵌套 ZIP 包</p></div>
+            <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="crossZipToggle" class="sr-only peer"><div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--primary)]"></div></label>
+          </div>
+          <div class="flex items-center justify-between p-5 bg-gray-100/50 dark:bg-white/5 rounded-2xl border border-[var(--line-divider)]">
+            <div class="space-y-0.5"><p class="text-sm md:text-[16px] font-bold text-90">允许未知后缀</p><p class="text-[10px] text-75 opacity-70">允许上传任何后缀尝试扫描</p></div>
+            <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="unsupportedToggle" checked class="sr-only peer"><div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--primary)]"></div></label>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 上传区域 -->
+    <!-- 上传区 -->
     <div class="card-base rounded-[var(--radius-large)] p-6 md:p-8 space-y-6">
       <input type="file" id="fileInput" accept="*" class="hidden">
       <div id="uploadArea" class="border-4 border-dashed border-[var(--line-divider)] rounded-3xl p-8 md:p-16 text-center cursor-pointer transition-all duration-500 hover:border-[var(--primary)] hover:bg-[var(--primary)]/[0.03] group">
         <div class="pointer-events-none space-y-4">
           <Icon name="material-symbols:cloud-upload" class="text-5xl md:text-6xl mx-auto text-gray-300 group-hover:text-[var(--primary)]" />
-          <div>
-            <p class="text-lg md:text-2xl font-bold text-90">点击或拖拽文件上传</p>
-            <p class="text-xs md:text-sm text-gray-400 mt-2">支持 ZIP、SQLITE 及所有包含密钥的文件</p>
-          </div>
+          <div><p class="text-lg md:text-2xl font-bold text-90">点击或拖拽文件上传</p><p class="text-xs md:text-sm text-gray-400 mt-2">支持 ZIP、SQLITE 及嵌套日志文件</p></div>
         </div>
       </div>
-
       <div id="progressBox" class="hidden space-y-2">
-        <div class="flex justify-between text-xs font-bold text-75">
-          <span id="progressLabel">准备读取...</span>
-          <span id="progressPercent">0%</span>
-        </div>
-        <div class="w-full bg-gray-200 dark:bg-white/10 rounded-full h-2 md:h-3 overflow-hidden">
-          <div id="progressBar" class="bg-[var(--primary)] h-full transition-all duration-300 w-0"></div>
-        </div>
+        <div class="flex justify-between text-xs font-bold text-75"><span id="progressLabel">准备解析...</span><span id="progressPercent">0%</span></div>
+        <div class="w-full bg-gray-200 dark:bg-white/10 rounded-full h-2 md:h-3 overflow-hidden"><div id="progressBar" class="bg-[var(--primary)] h-full transition-all duration-300 w-0"></div></div>
       </div>
+      <div class="flex justify-center"><button id="mobileBtn" type="button" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 text-sm font-bold text-[var(--primary)] bg-[var(--primary)]/10 rounded-2xl border-2 border-[var(--primary)]/20 active:scale-95 transition-transform">从文件拾取器选择</button></div>
+    </div>
 
-      <div class="flex justify-center">
-        <button id="mobileBtn" type="button" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 text-sm font-bold text-[var(--primary)] bg-[var(--primary)]/10 rounded-2xl border-2 border-[var(--primary)]/20 active:scale-95 transition-transform">
-          <Icon name="material-symbols:touch-app" class="mr-2 text-xl" />从系统文件库选择
-        </button>
+    <!-- 结果区域 -->
+    <div id="resultBox" class="hidden space-y-6">
+      <div class="card-base rounded-[var(--radius-large)] p-6 border-l-8 border-[var(--primary)] shadow-lg">
+        <h2 class="text-xl md:text-2xl font-bold text-90 mb-6 flex items-center"><Icon name="material-symbols:robot" class="mr-3 text-[var(--primary)] text-3xl" />提取结果</h2>
+        <div id="autoResultContainer" class="grid grid-cols-1 gap-4"></div>
+      </div>
+      <div id="rawResultBox" class="hidden card-base rounded-[var(--radius-large)] p-6 md:p-8">
+        <h2 class="text-lg md:text-xl font-bold text-90 mb-4 flex items-center text-gray-400"><Icon name="material-symbols:database" class="mr-3 text-2xl" />调试与原始输出</h2>
+        <div id="debugOutput" class="mb-4 p-5 bg-red-50 dark:bg-red-900/10 text-red-500 rounded-2xl text-[10px] md:text-xs font-mono hidden whitespace-pre-wrap break-all"></div>
+        <div id="rawResultContainer" class="space-y-4"></div>
       </div>
     </div>
 
-    <!-- 结果显示区域 -->
-    <div id="resultBox" class="hidden space-y-6">
-      <div class="card-base rounded-[var(--radius-large)] p-6 border-l-8 border-[var(--primary)] shadow-lg">
-        <h2 class="text-xl md:text-2xl font-bold text-90 mb-6 flex items-center">
-          <Icon name="material-symbols:robot" class="mr-3 text-[var(--primary)] text-3xl" />提取结果
-        </h2>
-        <div id="autoResultContainer" class="grid grid-cols-1 gap-4"></div>
-      </div>
-
-      <div id="rawResultBox" class="hidden card-base rounded-[var(--radius-large)] p-6 md:p-8">
-        <h2 class="text-lg md:text-xl font-bold text-90 mb-4 flex items-center text-gray-400">
-          <Icon name="material-symbols:database" class="mr-3 text-2xl" />调试与原始输出
-        </h2>
-        <div id="debugOutput" class="mb-4 p-5 bg-red-50 dark:bg-red-900/10 text-red-500 rounded-2xl text-[10px] md:text-xs font-mono hidden whitespace-pre-wrap break-all leading-relaxed"></div>
-        <div id="rawResultContainer" class="space-y-4"></div>
-      </div>
+    <!-- 终端日志控制台 -->
+    <div class="card-base rounded-[var(--radius-large)] p-4 md:p-6 border border-[var(--line-divider)] shadow-2xl bg-[#0a0a0a]">
+        <div class="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
+            <div class="flex items-center gap-2">
+                <Icon name="material-symbols:terminal" class="text-[#4ade80]" />
+                <h2 class="text-xs font-bold text-white/80 uppercase tracking-widest font-mono">Operation Flow Console v2.0</h2>
+            </div>
+            <button id="clearLogBtn" class="text-[9px] px-3 py-1 bg-white/5 text-white/40 border border-white/10 rounded hover:bg-red-500/20 hover:text-red-400 transition-all font-mono">FLUSH_LOGS</button>
+        </div>
+        <div id="systemLogConsole" class="bg-[#050505] text-[#4ade80] rounded-lg p-4 h-80 overflow-y-auto font-mono text-[13px] md:text-[14px] space-y-2 scroll-smooth border border-white/5">
+            <div class="flex gap-2">
+                <span class="text-white/20 shrink-0 font-mono text-[11px] md:text-[12px]">[00:00:00.000]</span>
+                <span class="bg-green-500/10 text-[#4ade80] px-1.5 rounded text-[11px] font-bold">READY</span>
+                <span class="opacity-40 italic">等待操作指令...</span>
+            </div>
+        </div>
     </div>
   </div>
 
   <style is:global>
     .drag-over { border-color: var(--primary) !important; background-color: var(--card-bg) !important; }
-    .toast-msg { position: fixed; top: 40px; left: 50%; transform: translateX(-50%); padding: 10px 24px; background: #2d2d2d; color: #ffffff; border-radius: 50px; z-index: 9999; font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); animation: toastIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards; }
+    .toast-msg { position: fixed; top: 40px; left: 50%; transform: translateX(-50%); padding: 10px 24px; background: #2d2d2d; color: #ffffff; border-radius: 50px; z-index: 9999; font-size: 14px; shadow: 0 8px 24px rgba(0,0,0,0.2); animation: toastIn 0.4s forwards; }
     @keyframes toastIn { from { transform: translate(-50%, -40px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
     .debug-card { background: var(--card-bg); border: 1px solid var(--line-divider); border-radius: 1.25rem; padding: 1.25rem; }
     .debug-card pre { font-family: monospace; font-size: 0.75rem; white-space: pre-wrap; word-break: break-all; opacity: 0.8; line-height: 1.5; }
     .highlight-key { background-color: var(--primary); color: white !important; padding: 1px 4px; border-radius: 4px; font-weight: bold; }
+    #systemLogConsole::-webkit-scrollbar { width: 4px; }
+    #systemLogConsole::-webkit-scrollbar-thumb { background: rgba(74,222,128,0.2); border-radius: 10px; }
   </style>
 
   <script>
     declare global { interface Window { copyToClipboard: (text: string) => void; initSqlJs: any; } }
-    interface AuthResult { name: string; key: string; }
+    interface AuthResult { name: string; key: string; mac?: string; platform?: string; }
     interface DebugInfo { offset: number; content: string; }
 
     let JSZip: any = null;
     let SQL: any = null;
 
-    const setCookie = (name: string, value: string) => {
-      document.cookie = `${name}=${value};path=/;max-age=31536000`; // 1年
+    // --- 真实日志终端配置 ---
+    const tagStyles: Record<string, string> = {
+        WASM: 'bg-green-500/20 text-[#4ade80]',
+        FS: 'bg-blue-500/20 text-[#60a5fa]',
+        BROWSER: 'bg-white/10 text-white/40',
+        CONFIG: 'bg-cyan-500/20 text-[#22d3ee]',
+        SQL: 'bg-orange-500/20 text-orange-400',
+        INIT: 'bg-purple-500/20 text-[#f472b6]',
+        SUCCESS: 'bg-green-500/40 text-white font-bold',
+        ERROR: 'bg-red-500/40 text-white font-bold',
+        MATCH: 'text-[#22d3ee] border-l border-[#22d3ee]/30 pl-2'
     };
+
+    const terminal = (msg: string, tag: keyof typeof tagStyles = 'BROWSER', isDeviceMatch: boolean = false) => {
+        const consoleEl = document.getElementById('systemLogConsole');
+        if (!consoleEl) return;
+        const entry = document.createElement('div');
+        entry.className = "flex gap-2 items-start animate-in fade-in slide-in-from-left-1 duration-300";
+        const now = new Date();
+        const ms = now.getMilliseconds().toString().padStart(3, '0');
+        const time = `${now.toLocaleTimeString('en-GB', { hour12: false })}.${ms}`;
+        const tagClass = tagStyles[tag] || tagStyles.BROWSER;
+
+        if (isDeviceMatch) {
+            entry.innerHTML = `<span class="text-white/20 shrink-0 font-mono text-[11px] md:text-[12px]">[${time}]</span><span class="${tagClass} shrink-0 px-1.5 rounded text-[11px] font-bold">设备命中</span><span class="text-[#22d3ee] font-bold">${msg}</span>`;
+        } else {
+            entry.innerHTML = `<span class="text-white/20 shrink-0 font-mono text-[11px] md:text-[12px]">[${time}]</span><span class="${tagClass} shrink-0 px-1.5 rounded text-[11px] font-bold uppercase">${tag}</span><span class="break-all ${tag === 'ERROR' ? 'text-red-400' : tag === 'SUCCESS' ? 'text-green-300' : 'text-white/60'}">${msg}</span>`;
+        }
+        consoleEl.prepend(entry);
+    };
+
+    // 劫持 Console 接口
+    const hookConsole = () => {
+        const _log = console.log;
+        const _warn = console.warn;
+        const _err = console.error;
+        const _info = console.info;
+
+        console.log = (...args) => { _log(...args); terminal(args.join(' '), 'BROWSER'); };
+        console.info = (...args) => { _info(...args); terminal(args.join(' '), 'INIT'); };
+        console.warn = (...args) => { _warn(...args); terminal(args.join(' '), 'SQL'); };
+        console.error = (...args) => { _err(...args); terminal(args.join(' '), 'ERROR'); };
+    };
+
     const getCookie = (name: string) => {
       const value = `; ${document.cookie}`;
       const parts = value.split(`; ${name}=`);
       if (parts.length === 2) return parts.pop()?.split(';').shift();
+      return null;
     };
+
+    async function calculateFileHash(buffer: ArrayBuffer) {
+        terminal("开始计算二进制流 SHA-256 全量指纹...", "FS");
+        const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+        return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
 
     const showToast = (msg: string) => {
       const old = document.querySelector('.toast-msg');
       if (old) old.remove();
       const el = document.createElement('div');
-      el.className = 'toast-msg';
-      el.innerText = msg;
+      el.className = 'toast-msg'; el.innerText = msg;
       document.body.appendChild(el);
       setTimeout(() => el.remove(), 2500);
     };
 
+    const DEVICE_PATTERNS = [
+      { name: "小米手环9 Pro", label: "小米手环9 Pro" }, { name: "小米手环9", label: "小米手环9" },
+      { name: "小米手环10 Pro", label: "小米手环10 Pro" }, { name: "小米手环10", label: "小米手环10" },
+      { name: "Xiaomi Watch S4 41mm", label: "Xiaomi Watch S4 41mm" }, { name: "Xiaomi Watch S4 eSIM", label: "Xiaomi Watch S4 eSIM" },
+      { name: "Xiaomi Watch S4", label: "Xiaomi Watch S4" }, { name: "Xiaomi Watch S3 eSIM", label: "Xiaomi Watch S3 eSIM" },
+      { name: "Xiaomi Watch S3", label: "Xiaomi Watch S3" }, { name: "Xiaomi Watch S5 46mm eSIM", label: "Xiaomi Watch S5 46mm eSIM" },
+      { name: "Xiaomi Watch S5 46mm", label: "Xiaomi Watch S5 46mm" }, { name: "REDMI Watch 5 eSIM", label: "REDMI Watch 5 eSIM" },
+      { name: "REDMI Watch 5", label: "REDMI Watch 5" }, { name: "REDMI Watch 6", label: "REDMI Watch 6" }
+    ];
+
     async function initEngines() {
-      const statusText = document.getElementById('statusText');
-      const statusDot = document.getElementById('statusDot');
+      hookConsole();
+      terminal("正在拉取外部资源模块：sql-wasm.js / jszip.js...", "NETWORK");
       try {
         const [jszipModule] = await Promise.all([
           import('jszip'),
@@ -212,262 +240,262 @@ import { Icon } from "astro-icon/components";
           })
         ]);
         JSZip = jszipModule.default;
+        terminal("JSZip 处理库加载完成 (V3.10.1)", "FS");
+        
         SQL = await (window as any).initSqlJs({ locateFile: (f: string) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${f}` });
-        if (statusText) statusText.innerText = "引擎就绪 (WASM已缓存)";
-        if (statusDot) statusDot.className = "w-2 h-2 rounded-full bg-green-500 mr-2";
-      } catch (err) {
-        if (statusText) statusText.innerText = "引擎加载失败";
-      }
+        terminal("SQL.js WASM 运行时已初始化，等待内存挂载", "WASM");
+        
+        document.getElementById('statusText')!.innerText = "引擎就绪 (WASM已缓存)";
+        document.getElementById('statusDot')!.className = "w-2 h-2 rounded-full bg-green-500 mr-2";
+      } catch (err: any) { terminal(`引擎加载崩溃: ${err.message}`, "ERROR"); }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
       initEngines();
       const fileInput = document.getElementById('fileInput') as HTMLInputElement;
       const debugToggle = document.getElementById('debugToggle') as HTMLInputElement;
+      const crossZipToggle = document.getElementById('crossZipToggle') as HTMLInputElement;
       const unsupportedToggle = document.getElementById('unsupportedToggle') as HTMLInputElement;
       const parseModeRadios = document.getElementsByName('parseMode') as NodeListOf<HTMLInputElement>;
-      const progressBar = document.getElementById('progressBar');
-      const progressBox = document.getElementById('progressBox');
-      const progressLabel = document.getElementById('progressLabel');
-      const progressPercent = document.getElementById('progressPercent');
       const autoResultContainer = document.getElementById('autoResultContainer');
       const rawResultContainer = document.getElementById('rawResultContainer');
       const debugOutput = document.getElementById('debugOutput');
+      const rawResultBox = document.getElementById('rawResultBox');
 
-      // 初始化 Cookie 状态
-      if (getCookie('debugMode') === 'true') debugToggle.checked = true;
-      if (getCookie('allowUnsupported') === 'false') unsupportedToggle.checked = false;
-      
-      const savedMode = getCookie('parseMode');
-      if (savedMode) {
-        parseModeRadios.forEach(radio => {
-          if (radio.value === savedMode) radio.checked = true;
+      const cDebug = getCookie('debugMode') === 'true';
+      const cCross = getCookie('crossZip') === 'true';
+      const cUnsup = getCookie('allowUnsupported') !== 'false';
+      const cMode = getCookie('parseMode') || 'smart';
+
+      debugToggle.checked = cDebug;
+      crossZipToggle.checked = cCross;
+      unsupportedToggle.checked = cUnsup;
+      parseModeRadios.forEach(r => { if(r.value === cMode) r.checked = true; });
+
+      terminal(`载入持久化配置：调试(${cDebug}), 跨平台(${cCross}), 宽策略(${cUnsup}), 模式(${cMode})`, "CONFIG");
+
+      const handleToggleRefresh = (el: HTMLInputElement, cookieName: string, label: string) => {
+        el.addEventListener('change', () => {
+            document.cookie = `${cookieName}=${el.checked};path=/;max-age=31536000`;
+            terminal(`配置变更：[${label}] 已同步至存储。触发重载...`, "CONFIG");
+            showToast(`✓ ${label}已变更，重载中...`);
+            setTimeout(() => location.reload(), 800);
         });
-      }
-
-      debugToggle.addEventListener('change', () => {
-        setCookie('debugMode', String(debugToggle.checked));
-        showToast('✓ 调试设置已生效');
-      });
-      
-      unsupportedToggle.addEventListener('change', () => {
-        setCookie('allowUnsupported', String(unsupportedToggle.checked));
-        showToast('✓ 读取策略已生效');
-      });
-
-      parseModeRadios.forEach(radio => {
-        radio.addEventListener('change', () => {
-          if (radio.checked) {
-            setCookie('parseMode', radio.value);
-            let msg = "";
-            switch(radio.value) {
-                case "smart": msg = "切换至智能模式：SQL优先，失败转扫描"; break;
-                case "sql": msg = "切换至仅SQL模式：严格执行数据库读取"; break;
-                case "scan": msg = "切换至硬扫描模式：直接搜索二进制特征"; break;
-            }
-            showToast(`✓ ${msg}`);
-          }
-        });
-      });
-
-      const updateProgress = (v: number, t: string) => {
-        if (progressBox && progressBar && progressLabel && progressPercent) {
-          progressBox.classList.remove('hidden');
-          progressBar.style.width = `${v}%`;
-          progressLabel.innerText = t;
-          progressPercent.innerText = `${Math.round(v)}%`;
-        }
       };
+      handleToggleRefresh(debugToggle, 'debugMode', '调试模式');
+      handleToggleRefresh(crossZipToggle, 'crossZip', '跨平台ZIP');
+      handleToggleRefresh(unsupportedToggle, 'allowUnsupported', '读取策略');
 
-      window.copyToClipboard = async (t) => {
-        try { await navigator.clipboard.writeText(t); } 
-        catch {
-          const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta);
-          ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-        }
-        showToast('✓ 密钥已成功复制');
-      };
+      parseModeRadios.forEach(r => r.addEventListener('change', () => { 
+          if(r.checked){ 
+              document.cookie = `parseMode=${r.value};path=/;max-age=31536000`;
+              terminal(`模式变更：当前策略调整为 [${r.value}]`, "CONFIG");
+              showToast(`✓ 模式已切换`); 
+          } 
+      }));
 
-      // 严格 Android 逻辑
-      const parseAndroid = async (buf: ArrayBuffer) => {
-        updateProgress(50, "解压 ZIP 日志文件...");
-        const zip = await JSZip.loadAsync(buf);
-        const logKey = Object.keys(zip.files).find(f => f.toLowerCase().includes('xiaomifit.main.log')) || 
-                       Object.keys(zip.files).find(f => f.toLowerCase().endsWith('.log') && !zip.files[f].dir);
-        if (!logKey) throw new Error("ZIP 中未检测到相关日志");
-        const content = await zip.file(logKey)!.async('text');
-        const results: AuthResult[] = []; const seen = new Set<string>();
-        const jsonRegex = /({[^{}]*"productName"[^{}]*"token"[^{}]*})|({[^{}]*"token"[^{}]*"productName"[^{}]*})/g;
-        let m; while ((m = jsonRegex.exec(content))) {
-          try {
-            const o = JSON.parse(m[0]);
-            if (o.token && !seen.has(o.token)) { results.push({ name: o.productName || "Android设备", key: o.token }); seen.add(o.token); }
-          } catch {}
-        }
-        if (results.length === 0) {
-          const pRegex = /["']?productName["']?\s*[=:]\s*["']([^"']+)["']/g;
-          const tRegex = /["']?token["']?\s*[=:]\s*["']([^"']+)["']/g;
-          const pNames: string[] = [], tokens: string[] = [];
-          let pm, tm;
-          while ((pm = pRegex.exec(content))) pNames.push(pm[1]);
-          while ((tm = tRegex.exec(content))) tokens.push(tm[1]);
-          for (let i = 0; i < Math.max(pNames.length, tokens.length); i++) {
-            if (tokens[i] && !seen.has(tokens[i])) { results.push({ name: pNames[i] || "Android设备", key: tokens[i] }); seen.add(tokens[i]); }
-          }
+      document.getElementById('clearLogBtn')?.addEventListener('click', () => {
+          document.getElementById('systemLogConsole')!.innerHTML = '<div class="text-white/20 italic">[Buffer Flushed] 缓冲区已清空。</div>';
+      });
+
+      const parseAndroidFromContent = (content: string): AuthResult[] => {
+        terminal(`Android 引擎：分析文本序列 (流长度: ${content.length})`, "FS");
+        const results: AuthResult[] = []; const seenTokens = new Set<string>();
+        const tokenGlobalRegex = /"token"\s*[:=]\s*"([a-fA-F0-9]{32})"/gi;
+        let match;
+        
+        while ((match = tokenGlobalRegex.exec(content)) !== null) {
+            const token = match[1];
+            if (seenTokens.has(token)) continue;
+            const pos = match.index;
+            const context = content.substring(Math.max(0, pos - 2000), Math.min(content.length, pos + 500));
+            const nameSearchRegex = /"(product[Nn]ame|device[Nn]ame|model[Nn]ame|name)"\s*[:=]\s*"([^"]+)"/gi;
+            let deviceName = ""; let nameMatch;
+            while ((nameMatch = nameSearchRegex.exec(context)) !== null) { deviceName = nameMatch[2]; }
+            const macMatch = context.match(/([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}/);
+            
+            terminal(`${deviceName || 'Android设备'} | MAC: ${macMatch ? macMatch[0] : '无'} | Key: ${token.substring(0,8)}...`, "SUCCESS", true);
+            results.push({ name: deviceName || "Android设备", key: token, mac: macMatch ? macMatch[0] : undefined, platform: 'Android' });
+            seenTokens.add(token);
         }
         return results;
       };
 
-      const processGeneral = async (buf: ArrayBuffer, forceScan: boolean) => {
-        const mode = forceScan ? 'scan' : (document.querySelector('input[name="parseMode"]:checked') as HTMLInputElement).value;
-        const debugOn = debugToggle.checked;
-        const results: AuthResult[] = []; const debugs: DebugInfo[] = []; const seen = new Set<string>();
-        let debugLog = "";
-
-        if (debugOutput) { debugOutput.classList.add('hidden'); debugOutput.innerText = ""; }
-
-        // 仅在 SQL/智能模式下执行
-        if (mode !== 'scan') {
-          updateProgress(60, "SQL 引擎解析中...");
-          let db: any = null;
+      const processSQL = (u8: Uint8Array, isWal: boolean = false): {results: AuthResult[], log: string} => {
+          let results: AuthResult[] = []; let log = "";
           try {
-            const u8 = new Uint8Array(buf);
-            db = new SQL.Database(u8);
-            const allTables: string[] = [];
-            const tableStmt = db.prepare("SELECT name FROM sqlite_master WHERE type='table'");
-            while(tableStmt.step()) allTables.push(tableStmt.get()[0]);
-            tableStmt.free();
-            debugLog += `[SQL探测] 发现表: ${allTables.join(', ') || '空'}\n`;
-
-            if (allTables.includes('VirtualDevice_registerList')) {
-              const stmt = db.prepare("SELECT name, encrypt_key FROM VirtualDevice_registerList");
-              while (stmt.step()) {
-                const row = stmt.getAsObject();
-                if (row.encrypt_key) { results.push({ name: String(row.name || "iOS设备"), key: String(row.encrypt_key) }); seen.add(String(row.encrypt_key)); }
-              }
-              stmt.free();
-            }
-
-            if (results.length === 0) {
-              debugLog += `[深挖] 正在尝试从其它表中提取 AuthKey...\n`;
-              for (const table of allTables) {
-                try {
-                  const pragma = db.prepare(`PRAGMA table_info("${table}")`);
-                  const columns: string[] = [];
-                  while(pragma.step()) columns.push(pragma.getAsObject().name as string);
-                  pragma.free();
-                  const keyCol = columns.find(c => c.toLowerCase().includes('key') || c.toLowerCase().includes('token'));
-                  if (keyCol) {
-                    const nameCol = columns.find(c => c.toLowerCase().includes('name')) || keyCol;
-                    const stmt = db.prepare(`SELECT "${nameCol}" as n, "${keyCol}" as k FROM "${table}" WHERE "${keyCol}" IS NOT NULL`);
-                    while(stmt.step()) {
-                      const r = stmt.getAsObject();
-                      const val = String(r.k);
-                      if (val.length >= 16 && !seen.has(val)) { results.push({ name: `[探测] ${table}`, key: val }); seen.add(val); }
-                    }
-                    stmt.free();
+              terminal(`SQL 引擎：挂载字节块 (Size: ${u8.length})`, "SQL");
+              const db = new SQL.Database(u8);
+              const tables: string[] = [];
+              const tableStmt = db.prepare("SELECT name FROM sqlite_master WHERE type='table'");
+              while(tableStmt.step()) tables.push(tableStmt.get()[0] as string); tableStmt.free();
+              terminal(`SQL探测：发现表格 [${tables.join(', ')}]`, "SQL");
+              
+              if (tables.includes('manifest')) {
+                  terminal("执行查询语句：SELECT inline_data FROM manifest WHERE inline_data NOT NULL", "SQL");
+                  const stmt = db.prepare("SELECT inline_data FROM manifest WHERE inline_data IS NOT NULL");
+                  while (stmt.step()) {
+                      const blob = stmt.get()[0] as Uint8Array;
+                      if (blob) {
+                          const rawStr = new TextDecoder('latin1').decode(blob);
+                          const keyM = rawStr.match(/[a-fA-F0-9]{32}/);
+                          const macM = rawStr.match(/([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}/);
+                          let nm = "iOS设备"; for (const p of DEVICE_PATTERNS) if (rawStr.includes(p.name)) { nm = p.label; break; }
+                          if (keyM) {
+                              terminal(`${nm} | MAC: ${macM ? macM[0] : '无'} | Key: ${keyM[0].substring(0,8)}...`, "SUCCESS", true);
+                              results.push({ name: nm, key: keyM[0], mac: macM ? macM[0] : undefined, platform: isWal ? 'SQLite-wal' : 'iOS (SQL模式)' });
+                          }
+                      }
                   }
-                } catch(e) {}
+                  stmt.free();
               }
-            }
+              db.close();
+          } catch(e: any) { terminal(`SQL崩溃：${e.message}`, "ERROR"); }
+          return { results, log };
+      };
 
-            if (results.length === 0 && mode === 'sql') {
-                debugLog += `\n⚠ [SQL严格模式] 未发现匹配记录。请尝试切换到“硬扫描”模式尝试解析原始数据。\n`;
-            }
-
-            if (debugOn && allTables.length > 0) {
-              debugLog += `\n--- 调试数据 Dump (前3行) ---\n`;
-              for (const table of allTables.slice(0, 8)) {
-                try {
-                  const stmt = db.prepare(`SELECT * FROM "${table}" LIMIT 3`);
-                  debugLog += `表 [${table}]: `;
-                  while(stmt.step()) debugLog += JSON.stringify(stmt.getAsObject()) + " ";
-                  debugLog += "\n"; stmt.free();
-                } catch(e) {}
-              }
-            }
-          } catch (e: any) { debugLog += `[SQL错误] ${e.message}\n请确认上传的是正确的数据库文件。\n`; }
-          finally { if (db) db.close(); }
-        }
-
-        if (debugLog && debugOutput && mode !== 'scan') {
-          debugOutput.classList.remove('hidden'); debugOutput.innerText = debugLog;
-        }
-
-        // 硬扫描逻辑 (如果是仅SQL模式且没搜到，这里不会执行)
-        if (mode === 'scan' || (mode === 'smart' && results.length === 0)) {
-          updateProgress(80, "执行全局二进制硬扫描...");
-          const u8 = new Uint8Array(buf); let raw = ""; const CHUNK = 0x8000;
-          for (let i = 0; i < u8.length; i += CHUNK) raw += Array.from(u8.subarray(i, i + CHUNK)).map(b => (b >= 32 && b <= 126) ? String.fromCharCode(b) : ".").join("");
-          
-          const anchors = ["encrypt_key", "auth_key", "peripheral_id"];
+      const processScan = (u8: Uint8Array, label: string = '硬扫描'): {results: AuthResult[], debugs: DebugInfo[]} => {
+          terminal(`全量特征匹配：启动策略 [${label}]...`, "FS");
+          const results: AuthResult[] = []; const debugs: DebugInfo[] = []; const seen = new Set<string>();
+          const raw = new TextDecoder('latin1').decode(u8);
+          const anchors = ["encrypt_key", "auth_key", "peripheral_id", "token"];
           anchors.forEach(anchor => {
             let pos = raw.indexOf(anchor);
             while (pos !== -1) {
-              const win = raw.substring(Math.max(0, pos - 400), Math.min(raw.length, pos + 800));
-              const hexMatches = win.match(/[a-fA-F0-9]{32}/g);
-              hexMatches?.forEach(k => { if (!seen.has(k)) { results.push({ name: "扫描结果", key: k }); seen.add(k); } });
+              const win = raw.substring(Math.max(0, pos - 500), Math.min(raw.length, pos + 500));
+              const hexM = win.match(/[a-fA-F0-9]{32}/g);
+              if (hexM) hexM.forEach(k => {
+                if (!seen.has(k)) {
+                  let nm = "扫描记录"; for (const p of DEVICE_PATTERNS) if (win.includes(p.name)) { nm = p.label; break; }
+                  terminal(`特征命中：[${anchor}] 偏移 ${pos}`, "SUCCESS");
+                  results.push({ name: nm, key: k, platform: label });
+                  seen.add(k);
+                }
+              });
               debugs.push({ offset: pos, content: win });
               pos = raw.indexOf(anchor, pos + 1);
             }
           });
-        }
-        return { results, debugs };
+          return { results, debugs };
+      };
+
+      const processZipLevel = async (zip: any, depth = 0): Promise<{results: AuthResult[], debugs: DebugInfo[], log: string}> => {
+          let results: AuthResult[] = []; let debugs: DebugInfo[] = []; let log = "";
+          const files = Object.keys(zip.files);
+          terminal(`递归遍历第 ${depth} 层目录，包含 ${files.length} 个条目`, "FS");
+
+          const logKey = files.find(f => f.toLowerCase().includes('main.log') || f.toLowerCase().endsWith('.log'));
+          if (logKey) {
+              terminal(`解压 Android 日志：${logKey}`, "FS");
+              const content = await zip.file(logKey)!.async('text');
+              results.push(...parseAndroidFromContent(content));
+          }
+          const sqlKey = files.find(f => f.toLowerCase().endsWith('manifest.sqlite'));
+          if (sqlKey) {
+              terminal(`挂载 iOS 数据库：${sqlKey}`, "FS");
+              const sqlBuf = await zip.file(sqlKey)!.async('uint8array');
+              const sRes = processSQL(sqlBuf); results.push(...sRes.results); log += sRes.log;
+              const mode = (document.querySelector('input[name="parseMode"]:checked') as HTMLInputElement).value;
+              if (sRes.results.length === 0 || mode === 'scan' || mode === 'smart') {
+                  const sc = processScan(sqlBuf, 'ZIP扫描'); results.push(...sc.results); debugs.push(...sc.debugs);
+              }
+          }
+          if (crossZipToggle.checked && depth < 2) {
+              const nZips = files.filter(f => f.toLowerCase().endsWith('.zip') && !zip.files[f].dir);
+              for (const nz of nZips) {
+                  terminal(`解开嵌套压缩包：${nz}`, "FS");
+                  try {
+                      const nzBuf = await zip.file(nz)!.async('uint8array');
+                      const r = await processZipLevel(await JSZip.loadAsync(nzBuf.buffer), depth + 1);
+                      results.push(...r.results); debugs.push(...r.debugs); log += r.log;
+                  } catch {}
+              }
+          }
+          return { results, debugs, log };
       };
 
       const handleFile = async (f: File) => {
         if (!f || !JSZip || !SQL) return;
         const name = f.name.toLowerCase();
-        updateProgress(10, `读取文件: ${f.name}`);
+        terminal(`[UI事件] 导入文件：[${f.name}] 大小：${(f.size/1024).toFixed(1)}KB`, "INIT");
+        
+        const isStandard = ['zip', 'sqlite', 'sqlite-wal', 'db', 'sqlitedb'].some(v => name.endsWith(v));
+        if (!unsupportedToggle.checked && !isStandard) {
+            terminal(`策略拦截：文件扩展名 .${name.split('.').pop()} 受策略限制，已中止解析。`, "ERROR");
+            return;
+        }
+
         const reader = new FileReader();
         reader.onload = async () => {
           try {
-            const buf = reader.result as ArrayBuffer;
-            let list: AuthResult[] = []; let debugs: DebugInfo[] = [];
-            const isZip = name.endsWith('.zip');
-            const isSqlite = name.endsWith('.sqlite') || name.endsWith('.db') || name.endsWith('.sqlitedb');
+            const buf = new Uint8Array(reader.result as ArrayBuffer);
+            const hash = await calculateFileHash(buf.buffer);
+            terminal(`SHA256校验完毕：[${hash}]`, "FS");
 
-            if (isZip) list = await parseAndroid(buf);
-            else if (isSqlite) {
-              const r = await processGeneral(buf, false);
-              list = r.results; debugs = r.debugs;
-            } else if (unsupportedToggle.checked) {
-              const r = await processGeneral(buf, true);
-              list = r.results; debugs = r.debugs;
-            } else { throw new Error("后缀不受支持。若要强制读取，请开启'允许未知后缀'开关。"); }
+            let fRes: AuthResult[] = []; let fDbg: DebugInfo[] = []; let fLog = "";
+            if (name.endsWith('.zip')) {
+                const r = await processZipLevel(await JSZip.loadAsync(buf.buffer));
+                fRes = r.results; fDbg = r.debugs; fLog = r.log;
+            } else if (name.endsWith('.sqlite-wal')) {
+                terminal("WAL 模式：跳过 SQLite 标准 Header 校验...", "SQL");
+                const sR = processSQL(buf, true); fRes = sR.results; fLog = sR.log;
+                const sc = processScan(buf, 'SQLite-wal'); fRes.push(...sc.results); fDbg = sc.debugs;
+            } else {
+                const magic = String.fromCharCode(...buf.slice(0, 15));
+                if (magic !== "SQLite format 3" && (name.endsWith('.sqlite') || name.endsWith('.db'))) {
+                    terminal("警告：SQLite 头校验不匹配，文件可能加密或受损。转入特征扫描模式。", "SQL");
+                    const sc = processScan(buf); fRes = sc.results; fDbg = sc.debugs;
+                } else {
+                    const sR = processSQL(buf); fRes = sR.results; fLog = sR.log;
+                    const sc = processScan(buf); fRes.push(...sc.results); fDbg = sc.debugs;
+                }
+            }
 
-            updateProgress(100, "解析完成");
-            renderUI(list, debugs);
-            setTimeout(() => progressBox?.classList.add('hidden'), 1500);
-          } catch (e: any) { updateProgress(0, `失败: ${e.message}`); }
+            const unique = fRes.filter(v => v.key && v.key !== "undefined").filter((v, i, a) => a.findIndex(t => t.key === v.key) === i);
+            terminal(`解析流水线关闭。成功提取 ${unique.length} 台设备。`, "SUCCESS");
+            renderUI(unique, fDbg, fLog);
+          } catch (e: any) { terminal(`运行时致命崩溃：${e.message}`, "ERROR"); }
         };
         reader.readAsArrayBuffer(f);
       };
 
-      const renderUI = (list: AuthResult[], debugs: DebugInfo[]) => {
-        if (!autoResultContainer || !rawResultContainer) return;
+      const renderUI = (list: AuthResult[], debugs: DebugInfo[], dLog: string) => {
+        if (!autoResultContainer || !rawResultContainer || !rawResultBox || !debugOutput) return;
         autoResultContainer.innerHTML = list.length ? list.map(i => `
-          <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-[var(--primary)]/[0.04] p-5 rounded-2xl border border-[var(--primary)]/10">
-            <div class="w-full text-center md:text-left overflow-hidden">
-              <div class="text-[10px] font-black text-[var(--primary)] uppercase mb-1 opacity-70">${i.name}</div>
-              <div class="font-mono text-sm md:text-lg font-black break-all text-90 select-all leading-tight">${i.key}</div>
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-[var(--primary)]/[0.04] p-5 rounded-2xl border border-[var(--primary)]/10">
+              <div class="w-full text-center md:text-left overflow-hidden">
+                <div class="flex items-center justify-center md:justify-start gap-2 mb-1">
+                    <span class="text-[9px] px-2 py-0.5 rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-black uppercase">${i.platform}</span>
+                    <div class="text-sm md:text-lg font-black text-90 opacity-90">${i.name}</div>
+                </div>
+                ${i.mac ? `<div class="text-[10px] md:text-xs font-bold text-75 opacity-60 mb-2 uppercase tracking-wider">${i.mac}</div>` : ''}
+                <div class="font-mono text-sm md:text-xl font-black break-all text-90 select-all leading-tight">${i.key}</div>
+              </div>
+              <button onclick="copyToClipboard('${i.key}')" class="shrink-0 w-full md:w-auto px-6 py-3 bg-[var(--primary)] text-white rounded-xl text-sm font-bold active:scale-95 shadow-md">复制</button>
             </div>
-            <button onclick="copyToClipboard('${i.key}')" class="shrink-0 w-full md:w-auto px-6 py-3 bg-[var(--primary)] text-white rounded-xl text-sm font-bold active:scale-95 shadow-md transition-all">复制</button>
-          </div>
-        `).join('') : '<div class="p-8 text-center opacity-40 italic">未检测到有效结果，请确认文件路径或切换模式</div>';
+        `).join('') : '<div class="p-8 text-center opacity-40 italic">解析完毕：未检测到密钥</div>';
         
+        debugOutput.innerText = dLog; debugOutput.classList.toggle('hidden', !dLog);
         rawResultContainer.innerHTML = debugs.map(d => `<div class="debug-card"><div class="text-[10px] opacity-30 mb-1">OFFSET: ${d.offset}</div><pre>${d.content.replace(/[a-fA-F0-9]{32}/g, m => `<span class="highlight-key">${m}</span>`)}</pre></div>`).join('');
         document.getElementById('resultBox')?.classList.remove('hidden');
-        document.getElementById('rawResultBox')?.classList.toggle('hidden', debugs.length === 0 && (debugOutput ? debugOutput.classList.contains('hidden') : true));
+        rawResultBox.classList.toggle('hidden', !debugToggle.checked);
         document.getElementById('resultBox')?.scrollIntoView({ behavior: 'smooth' });
       };
 
-      document.getElementById('uploadArea')?.addEventListener('click', () => fileInput.click());
-      document.getElementById('mobileBtn')?.addEventListener('click', () => fileInput.click());
-      fileInput.onchange = (e: any) => handleFile(e.target.files[0]);
-      document.getElementById('uploadArea')?.addEventListener('dragover', (e) => { e.preventDefault(); (e.currentTarget as HTMLElement).classList.add('drag-over'); });
-      document.getElementById('uploadArea')?.addEventListener('dragleave', (e) => (e.currentTarget as HTMLElement).classList.remove('drag-over'));
-      document.getElementById('uploadArea')?.addEventListener('drop', (e: any) => { e.preventDefault(); (e.currentTarget as HTMLElement).classList.remove('drag-over'); handleFile(e.dataTransfer.files[0]); });
+      const uArea = document.getElementById('uploadArea');
+      const mBtn = document.getElementById('mobileBtn');
+      uArea?.addEventListener('click', () => { terminal("点击触发：请求本地文件系统句柄", "INIT"); fileInput.click(); });
+      mBtn?.addEventListener('click', () => { terminal("点击触发：调用系统文件拾取器", "INIT"); fileInput.click(); });
+      fileInput.onchange = (e: any) => { if (e.target.files.length > 0) handleFile(e.target.files[0]); };
+      uArea?.addEventListener('dragover', (e) => { e.preventDefault(); uArea.classList.add('drag-over'); });
+      uArea?.addEventListener('dragleave', () => uArea.classList.remove('drag-over'));
+      uArea?.addEventListener('drop', (e: any) => { 
+          e.preventDefault(); uArea.classList.remove('drag-over'); 
+          if (e.dataTransfer?.files.length > 0) {
+              terminal(`拖放捕获：接收到物理文件 [${e.dataTransfer.files[0].name}]`, "INIT");
+              handleFile(e.dataTransfer.files[0]); 
+          }
+      });
     });
   </script>
 </MainGridLayout>
