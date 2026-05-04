@@ -16,7 +16,7 @@ import { Icon } from "astro-icon/components";
       
       <div id="initStatus" class="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-gray-100 dark:bg-white/5 text-[10px] md:text-[12px] font-medium text-gray-500">
         <div class="w-2 h-2 rounded-full bg-yellow-400 mr-2 animate-pulse" id="statusDot"></div>
-        <span id="statusText">正在初始化核心引擎...</span>
+        <span id="statusText">正在初始化核心引擎... 如果一直这样请刷新</span>
       </div>
     </div>
 
@@ -28,7 +28,7 @@ import { Icon } from "astro-icon/components";
 
     <div class="card-base rounded-[var(--radius-large)] p-6 md:p-10 border border-[var(--line-divider)]">
         <h2 class="text-xl md:text-2xl font-bold text-90 flex items-center mb-6"><Icon name="material-symbols:phone-iphone" class="mr-3 text-blue-400 text-2xl md:text-3xl" />iOS端提取方法</h2>
-        <div class="max-w-3xl"><ol class="text-sm md:text-[16px] text-75 space-y-4 list-decimal ml-5"><li>文件App -> 小米运动健康 -> \MHWCahe\6284670\VirtualDevice_registerList\manifest.sqlite</li><li>上传 manifest.sqlite 文件</li></ol></div>
+        <div class="max-w-3xl"><ol class="text-sm md:text-[16px] text-75 space-y-4 list-decimal ml-5"><li>文件App -> 小米运动健康 -> \MHWCahe\你的帐号ID\VirtualDevice_registerList\manifest.sqlite</li><li>上传 manifest.sqlite 文件</li></ol></div>
     </div>
 
     <!-- 解析设置面板 -->
@@ -54,8 +54,8 @@ import { Icon } from "astro-icon/components";
           <div class="flex gap-3">
             <Icon name="material-symbols:database-outline" class="text-[var(--primary)] text-xl shrink-0 mt-1" />
             <div class="space-y-1">
-              <p class="text-sm font-bold text-90">SQL 读取模式（优先使用）</p>
-              <p class="text-xs text-75 leading-relaxed">基于 manifest 表解析。准确度最高，自动关联 MAC 地址。</p>
+              <p class="text-sm font-bold text-90">SQL 读取模式</p>
+              <p class="text-xs text-75 leading-relaxed">基于 manifest 表解析。实验性功能，自动关联 MAC 地址。</p>
             </div>
           </div>
           <div class="flex gap-3">
@@ -126,6 +126,9 @@ import { Icon } from "astro-icon/components";
       <div class="card-base rounded-[var(--radius-large)] p-6 border-l-8 border-[var(--primary)] shadow-lg">
         <h2 class="text-xl md:text-2xl font-bold text-90 mb-6 flex items-center"><Icon name="material-symbols:robot" class="mr-3 text-[var(--primary)] text-3xl" />提取结果</h2>
         <div id="autoResultContainer" class="grid grid-cols-1 gap-4"></div>
+        <div class="mt-4 text-[11px] md:text-xs text-75 opacity-75">
+          提示：如果你发现有一个密钥是SQL读取和硬扫描都命中的，可以优先尝试这个AuthKey
+        </div>
       </div>
     </div>
 
@@ -149,7 +152,7 @@ import { Icon } from "astro-icon/components";
 
     <div id="rawResultBox" class="hidden card-base rounded-[var(--radius-large)] p-6 md:p-8">
       <h2 class="text-lg md:text-xl font-bold text-90 mb-4 flex items-center text-gray-400"><Icon name="material-symbols:database" class="mr-3 text-2xl" />调试与原始输出</h2>
-      <div id="debugOutput" class="mb-4 p-5 bg-red-50 dark:bg-red-900/10 text-red-500 rounded-2xl text-[10px] md:text-xs font-mono hidden whitespace-pre-wrap break-all"></div>
+      <div id="debugOutput" class="mb-4 p-5 bg-[var(--primary)]/10 text-[var(--primary)] rounded-2xl text-[10px] md:text-xs font-mono hidden whitespace-pre-wrap break-all border border-[var(--primary)]/20"></div>
       <div id="rawResultContainer" class="space-y-4"></div>
     </div>
   </div>
@@ -163,7 +166,7 @@ import { Icon } from "astro-icon/components";
     .toast-msg { position: fixed; top: 40px; left: 50%; transform: translateX(-50%); padding: 10px 24px; background: #2d2d2d; color: #ffffff; border-radius: 50px; z-index: 9999; font-size: 14px; shadow: 0 8px 24px rgba(0,0,0,0.2); animation: toastIn 0.4s forwards; }
     @keyframes toastIn { from { transform: translate(-50%, -40px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
     .debug-card { background: var(--card-bg); border: 1px solid var(--line-divider); border-radius: 1.25rem; padding: 1.25rem; }
-    .debug-card pre { font-family: monospace; font-size: 0.75rem; white-space: pre-wrap; word-break: break-all; opacity: 0.8; line-height: 1.5; }
+    .debug-card pre { font-family: monospace; font-size: 0.75rem; white-space: pre-wrap; word-break: break-all; opacity: 0.9; line-height: 1.5; color: var(--primary); }
     .highlight-key { background-color: var(--primary); color: white !important; padding: 1px 4px; border-radius: 4px; font-weight: bold; }
     #systemLogConsole::-webkit-scrollbar { width: 4px; }
     #systemLogConsole::-webkit-scrollbar-thumb { background: rgba(74,222,128,0.2); border-radius: 10px; }
@@ -271,7 +274,8 @@ import { Icon } from "astro-icon/components";
       { name: "Xiaomi Watch S4", label: "Xiaomi Watch S4" }, { name: "Xiaomi Watch S3 eSIM", label: "Xiaomi Watch S3 eSIM" },
       { name: "Xiaomi Watch S3", label: "Xiaomi Watch S3" }, { name: "Xiaomi Watch S5 46mm eSIM", label: "Xiaomi Watch S5 46mm eSIM" },
       { name: "Xiaomi Watch S5 46mm", label: "Xiaomi Watch S5 46mm" }, { name: "REDMI Watch 5 eSIM", label: "REDMI Watch 5 eSIM" },
-      { name: "REDMI Watch 5", label: "REDMI Watch 5" }, { name: "REDMI Watch 6", label: "REDMI Watch 6" }
+      { name: "REDMI Watch 5", label: "REDMI Watch 5" }, { name: "REDMI Watch 6", label: "REDMI Watch 6" },
+      { name: "Redmi Watch 3", label: "REDMI Watch 3" }, { name: "REDMI Watch 3", label: "REDMI Watch 3" }
     ];
 
     async function initEngines() {
@@ -402,6 +406,7 @@ import { Icon } from "astro-icon/components";
               const db = new SQL.Database(u8);
               const tables: string[] = [];
               const isDebug = (document.getElementById('debugToggle') as HTMLInputElement)?.checked;
+              const sqlJsonRows: AuthResult[] = [];
               const tableStmt = db.prepare("SELECT name FROM sqlite_master WHERE type='table'");
               while(tableStmt.step()) tables.push(tableStmt.get()[0] as string); tableStmt.free();
               if (isDebug) {
@@ -430,13 +435,21 @@ import { Icon } from "astro-icon/components";
 
                           if (keyM) {
                               terminal(`提取到记录：${nm} (通过 Plist)`, "SUCCESS");
-                              results.push({ name: nm, key: keyM[0], mac: macM ? macM[0] : undefined, platform: isWal ? 'SQLite-wal' : 'iOS (SQL模式)' });
+                              const extracted: AuthResult = { name: nm, key: keyM[0], mac: macM ? macM[0] : undefined, platform: isWal ? 'SQLite-wal' : 'iOS (SQL模式)' };
+                              results.push(extracted);
+                              sqlJsonRows.push(extracted);
                           }
+
                       }
                   }
                   stmt.free();
               } else if (isDebug) {
                   log += "[SQL] 未找到 manifest 表。\n";
+              }
+              if (sqlJsonRows.length > 0) {
+                  log += `\n[SQL] 提取结果 JSON(完整)\n${JSON.stringify(sqlJsonRows, null, 2)}\n`;
+              } else if (isDebug) {
+                  log += "\n[SQL] 提取结果 JSON(完整)\n[]\n";
               }
               db.close();
           } catch(e: any) { terminal(`数据库读取失败: ${e.message}`, "ERROR"); }
@@ -495,8 +508,8 @@ import { Icon } from "astro-icon/components";
                       terminal("仅硬扫描模式未命中 ZIP 内数据库，请切换到 SQL 模式或智能模式后重试。", "NETWORK");
                   }
               } else {
-                  const sRes = processSQL(sqlBuf); results.push(...sRes.results); log += sRes.log;
                   const sc = processScan(sqlBuf, 'ZIP扫描'); results.push(...sc.results); debugs.push(...sc.debugs);
+                  const sRes = processSQL(sqlBuf); results.push(...sRes.results); log += sRes.log;
               }
           }
           if (crossZipToggle.checked && depth < 2) {
@@ -550,8 +563,8 @@ import { Icon } from "astro-icon/components";
                         terminal("仅硬扫描模式未命中结果，请切换到 SQL 模式或智能模式后重试。", "NETWORK");
                     }
                 } else {
-                    const sR = processSQL(buf, true); fRes = sR.results; fLog = sR.log;
                     const sc = processScan(buf, 'SQLite-wal'); fRes.push(...sc.results); fDbg = sc.debugs;
+                    const sR = processSQL(buf, true); fRes.push(...sR.results); fLog = sR.log;
                 }
             } else {
                 const magic = String.fromCharCode(...buf.slice(0, 15));
@@ -580,14 +593,27 @@ import { Icon } from "astro-icon/components";
                             terminal("仅硬扫描模式未命中结果，请切换到 SQL 模式或智能模式后重试。", "NETWORK");
                         }
                     } else {
-                        const sR = processSQL(buf); fRes = sR.results; fLog = sR.log;
-                        const sc = processScan(buf); fRes.push(...sc.results); fDbg = sc.debugs;
+                        const sc = processScan(buf); fRes = sc.results; fDbg = sc.debugs;
+                        const sR = processSQL(buf); fRes.push(...sR.results); fLog = sR.log;
                     }
                 }
             }
 
             updateProgress(100, "解析完成");
-            const unique = fRes.filter(v => v.key && v.key !== "undefined").filter((v, i, a) => a.findIndex(t => t.key === v.key) === i);
+            const dedupKeepMultiSource = (items: AuthResult[]) => {
+              const seen = new Set<string>();
+              const out: AuthResult[] = [];
+              for (const item of items) {
+                if (!item.key || item.key === "undefined") continue;
+                const source = item.platform || 'unknown';
+                const sig = `${item.key}::${source}`;
+                if (seen.has(sig)) continue;
+                seen.add(sig);
+                out.push(item);
+              }
+              return out;
+            };
+            const unique = dedupKeepMultiSource(fRes);
             terminal(`事务提交：共发现 ${unique.length} 台设备密钥。`, "SUCCESS");
             unique.forEach(d => terminal(`${d.name} | MAC: ${d.mac || '暂无'} | Key: ${d.key.substring(0,12)}...`, "DEVICE", "device"));
             renderUI(unique, fDbg, fLog);
@@ -599,17 +625,15 @@ import { Icon } from "astro-icon/components";
 
       const renderUI = (list: AuthResult[], debugs: DebugInfo[], dLog: string) => {
         if (!autoResultContainer || !rawResultContainer || !rawResultBox || !debugOutput) return;
-        const currentMode = (document.querySelector('input[name="parseMode"]:checked') as HTMLInputElement)?.value || 'smart';
         autoResultContainer.innerHTML = list.length ? list.map(i => `
             <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-[var(--primary)]/[0.04] p-5 rounded-2xl border border-[var(--primary)]/10">
               <div class="w-full text-center md:text-left overflow-hidden">
                 <div class="flex items-center justify-center md:justify-start gap-2 mb-1">
                     <span class="text-[9px] px-2 py-0.5 rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-black uppercase">${i.platform}</span>
-                    ${currentMode === 'smart' && String(i.platform || '').includes('SQL模式') ? `<span class="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-black uppercase">优先尝试</span>` : ''}
                     <div class="text-sm md:text-lg font-black text-90 opacity-90">${i.name}</div>
                 </div>
                 ${i.mac ? `<div class="text-[10px] md:text-xs font-bold text-75 opacity-60 mb-2 uppercase tracking-wider">${i.mac}</div>` : ''}
-                <div class="font-mono text-sm md:text-xl font-black break-all text-90 select-all leading-tight">${i.key}</div>
+                <div class="font-mono text-sm md:text-xl font-black break-all whitespace-pre-wrap text-90 select-all leading-tight">${i.key}</div>
               </div>
               <button onclick="copyToClipboard('${i.key}')" class="shrink-0 w-full md:w-auto px-6 py-3 bg-[var(--primary)] text-white rounded-xl text-sm font-bold active:scale-95 shadow-md">复制</button>
             </div>
