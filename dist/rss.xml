@@ -1,4 +1,60 @@
-<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>CXKPRO_BLOG</title><description>主页</description><link>https://ikun-cxkpro.top/</link><language>zh_CN</language><item><title>（附脚本）win10/11禁止更新(延长更新时间到9999天)</title><link>https://ikun-cxkpro.top/posts/%E9%99%84%E8%84%9A%E6%9C%ACwin10%E7%A6%81%E6%AD%A2%E6%9B%B4%E6%96%B0%E5%BB%B6%E9%95%BF%E6%9B%B4%E6%96%B0%E6%97%B6%E9%97%B4%E5%88%B09999%E5%A4%A9/</link><guid isPermaLink="true">https://ikun-cxkpro.top/posts/%E9%99%84%E8%84%9A%E6%9C%ACwin10%E7%A6%81%E6%AD%A2%E6%9B%B4%E6%96%B0%E5%BB%B6%E9%95%BF%E6%9B%B4%E6%96%B0%E6%97%B6%E9%97%B4%E5%88%B09999%E5%A4%A9/</guid><description>（附脚本）win10禁止更新(延长更新时间到9999天)</description><pubDate>Sat, 06 Dec 2025 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;教程&lt;/h2&gt;
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>CXKPRO_BLOG</title><description>主页</description><link>https://ikun-cxkpro.top/</link><language>zh_CN</language><item><title>ESXI8配置ESXI直通</title><link>https://ikun-cxkpro.top/posts/esxi8%E9%85%8D%E7%BD%AEesxi%E7%9B%B4%E9%80%9A/</link><guid isPermaLink="true">https://ikun-cxkpro.top/posts/esxi8%E9%85%8D%E7%BD%AEesxi%E7%9B%B4%E9%80%9A/</guid><pubDate>Sun, 03 May 2026 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;登录ESXI&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&quot;./images/ESXI8%E9%85%8D%E7%BD%AEESXI%E7%9B%B4%E9%80%9A/image1.png&quot; alt=&quot;image1&quot; /&gt;&lt;/p&gt;
+&lt;h2&gt;更改ESXI配置文件&lt;/h2&gt;
+&lt;h3&gt;进入维护模式&amp;amp;&amp;amp;开启SSH&lt;/h3&gt;
+&lt;p&gt;在&lt;code&gt;管理&lt;/code&gt;-&amp;gt;&lt;code&gt;硬件&lt;/code&gt;的PCI设备中找到待&lt;code&gt;NVIDIA&lt;/code&gt;的&lt;code&gt;PCI&lt;/code&gt;设备
+&lt;img src=&quot;./images/ESXI8%E9%85%8D%E7%BD%AEESXI%E7%9B%B4%E9%80%9A/image2.png&quot; alt=&quot;image2&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;勾选待&lt;code&gt;NVIDIA&lt;/code&gt;的&lt;code&gt;PCI&lt;/code&gt;设备，然后选择&lt;code&gt;切换直通&lt;/code&gt;
+&lt;img src=&quot;./images/ESXI8%E9%85%8D%E7%BD%AEESXI%E7%9B%B4%E9%80%9A/image3.png&quot; alt=&quot;image3&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;切换直通后，会显示：
+&lt;img src=&quot;./images/ESXI8%E9%85%8D%E7%BD%AEESXI%E7%9B%B4%E9%80%9A/image4.png&quot; alt=&quot;image4&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;进入维护模式：&lt;code&gt;主机&lt;/code&gt;-&amp;gt;&lt;code&gt;操作&lt;/code&gt;-&amp;gt;&lt;code&gt;进入维护模式&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;./images/ESXI8%E9%85%8D%E7%BD%AEESXI%E7%9B%B4%E9%80%9A/image5.png&quot; alt=&quot;image5&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;然后在&lt;code&gt;管理&lt;/code&gt;→&lt;code&gt;服务&lt;/code&gt;，开启&lt;code&gt;SSH&lt;/code&gt;服务&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;./images/ESXI8%E9%85%8D%E7%BD%AEESXI%E7%9B%B4%E9%80%9A/image6.png&quot; alt=&quot;image6&quot; /&gt;&lt;/p&gt;
+&lt;h2&gt;进入SSH&lt;/h2&gt;
+&lt;p&gt;打开终端并使用SSH连接到服务器&lt;/p&gt;
+&lt;p&gt;此时，你需要记住显卡的PCI地址。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;./images/ESXI8%E9%85%8D%E7%BD%AEESXI%E7%9B%B4%E9%80%9A/image7.png&quot; alt=&quot;image7&quot; /&gt;&lt;/p&gt;
+&lt;h1&gt;修改配置文件&lt;/h1&gt;
+&lt;p&gt;输入&lt;code&gt;vi /etc/vmware/esx.conf&lt;/code&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;vi /etc/vmware/esx.conf
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;在最后一行添加 &lt;code&gt;/device/0000:01:00.0/owner = “passthru”&lt;/code&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;/device/0000:01:00.0/owner = “passthru”
+
+# 将”0000:01:00.0″改为你显卡的PCI设备路径
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;修改完成后，输入&lt;code&gt;“wq“&lt;/code&gt;保存&lt;/p&gt;
+&lt;p&gt;退出之后，输入&lt;code&gt;vi /etc/vmware/passthru.map&lt;/code&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;vi /etc/vmware/passthru.map
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;在&lt;code&gt;# NVIDIA&lt;/code&gt;处，添加以下内容：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;10de ffff bridge false
+10de ffff link false
+10de ffff d3d0 false
+10de 11c6 bridge false
+10de 11c6 link false
+10de 11c6 d3d0 false
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;输入&lt;code&gt;“wq“&lt;/code&gt;保存&lt;/p&gt;
+&lt;p&gt;然后重新引导ESXI&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;reboot
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;重启之后，我们就可以添加虚拟机了&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;./images/ESXI8%E9%85%8D%E7%BD%AEESXI%E7%9B%B4%E9%80%9A/image8.png&quot; alt=&quot;image8&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;虚拟机兼容性推荐为ESXI6.7版本（不能选高版本！！）&lt;/p&gt;
+&lt;p&gt;然后内存→预留所有客户机内存(全部锁定)，必须勾选&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;./images/ESXI8%E9%85%8D%E7%BD%AEESXI%E7%9B%B4%E9%80%9A/image9.png&quot; alt=&quot;image9&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;还需要添加一条规则。&lt;/p&gt;
+&lt;p&gt;进入&lt;code&gt;虚拟机选项&lt;/code&gt; → &lt;code&gt;高级&lt;/code&gt; → &lt;code&gt;编辑配置&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;./images/ESXI8%E9%85%8D%E7%BD%AEESXI%E7%9B%B4%E9%80%9A/image10.png&quot; alt=&quot;image10&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;在配置参数里面添加以下内容：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;hypervisor.cpuid.v0 = FALSE
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&quot;./images/ESXI8%E9%85%8D%E7%BD%AEESXI%E7%9B%B4%E9%80%9A/image11.png&quot; alt=&quot;image11&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;配置完之后，在虚拟机里面添加PCI设备，添加完成后正常安装系统，然后把显卡驱动装上即可食用。&lt;/p&gt;
+</content:encoded></item><item><title>（附脚本）win10/11禁止更新(延长更新时间到9999天)</title><link>https://ikun-cxkpro.top/posts/%E9%99%84%E8%84%9A%E6%9C%ACwin10%E7%A6%81%E6%AD%A2%E6%9B%B4%E6%96%B0%E5%BB%B6%E9%95%BF%E6%9B%B4%E6%96%B0%E6%97%B6%E9%97%B4%E5%88%B09999%E5%A4%A9/</link><guid isPermaLink="true">https://ikun-cxkpro.top/posts/%E9%99%84%E8%84%9A%E6%9C%ACwin10%E7%A6%81%E6%AD%A2%E6%9B%B4%E6%96%B0%E5%BB%B6%E9%95%BF%E6%9B%B4%E6%96%B0%E6%97%B6%E9%97%B4%E5%88%B09999%E5%A4%A9/</guid><description>（附脚本）win10禁止更新(延长更新时间到9999天)</description><pubDate>Sat, 06 Dec 2025 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;教程&lt;/h2&gt;
 &lt;ol&gt;
 &lt;li&gt;
 &lt;p&gt;添加注册表值win+R，运行，输入regedit&lt;/p&gt;
