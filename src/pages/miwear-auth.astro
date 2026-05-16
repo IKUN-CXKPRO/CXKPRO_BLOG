@@ -173,57 +173,92 @@ import { Icon } from "astro-icon/components";
   </style>
 
   <script>
-    declare global { interface Window { copyToClipboard: (text: string) => void; initSqlJs: any; } }
-    interface AuthResult { name: string; key: string; mac?: string; platform?: string; }
-    interface DebugInfo { offset: number; content: string; }
+    declare global {
+      interface Window {
+        copyToClipboard: (text: string) => void;
+        initSqlJs: any;
+      }
+    }
 
-    let JSZip: any = null;
-    let SQL: any = null;
-    let consoleHooked = false;
-    let engineInitializing = false;
+    interface AuthResult {
+      name: string;
+      key: string;
+      mac?: string;
+      platform?: string;
+    }
 
-    const setCookie = (name: string, value: string) => { document.cookie = `${name}=${value};path=/;max-age=31536000`; };
+    interface DebugInfo {
+      offset: number;
+      content: string;
+    }
+
+    type ParseMode = 'smart' | 'sql' | 'scan';
+
+    const byId = <T extends HTMLElement>(id: string): T | null => document.getElementById(id) as T | null;
+    const getInputValue = (name: string, fallback = ''): string => {
+      const input = document.querySelector(`input[name="${name}"]:checked`) as HTMLInputElement | null;
+      return input?.value ?? fallback;
+    };
+
+    const setCookie = (name: string, value: string) => {
+      document.cookie = `${name}=${value};path=/;max-age=31536000`;
+    };
+
     const getCookie = (name: string) => {
       const value = `; ${document.cookie}`;
       const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop()?.split(';').shift();
-      return null;
+      return parts.length === 2 ? parts.pop()?.split(';').shift() ?? null : null;
     };
 
-    // --- 终端日志核心 (字号已通过 CSS 上调) ---
-    const tagStyles: Record<string, string> = {
-        WASM: 'bg-green-500/20 text-[#4ade80]',
-        FS: 'bg-blue-500/20 text-[#60a5fa]',
-        BROWSER: 'bg-white/10 text-white/40',
-        CONFIG: 'bg-cyan-500/20 text-[#22d3ee]',
-        NETWORK: 'bg-yellow-500/20 text-[#facc15]',
-        INIT: 'bg-purple-500/20 text-[#f472b6]',
-        SUCCESS: 'bg-green-500/40 text-white font-bold',
-        ERROR: 'bg-red-500/40 text-white font-bold',
-        DEVICE: 'text-[#22d3ee] border-l border-[#22d3ee]/30 pl-2'
+    const tagStyles = {
+      WASM: 'bg-green-500/20 text-[#4ade80]',
+      FS: 'bg-blue-500/20 text-[#60a5fa]',
+      BROWSER: 'bg-white/10 text-white/40',
+      CONFIG: 'bg-cyan-500/20 text-[#22d3ee]',
+      NETWORK: 'bg-yellow-500/20 text-[#facc15]',
+      INIT: 'bg-purple-500/20 text-[#f472b6]',
+      SUCCESS: 'bg-green-500/40 text-white font-bold',
+      ERROR: 'bg-red-500/40 text-white font-bold',
+      DEVICE: 'text-[#22d3ee] border-l border-[#22d3ee]/30 pl-2'
+    } as const;
+
+    const tagLabels: Record<string, string> = {
+      WASM: '解析引擎',
+      FS: '文件系统',
+      BROWSER: '浏览器',
+      CONFIG: '配置',
+      NETWORK: '网络',
+      INIT: '系统',
+      SUCCESS: '命中',
+      ERROR: '错误',
+      DEVICE: '匹配'
+    };
+
+    const parseModeLabelMap: Record<ParseMode, string> = {
+      smart: '智能模式',
+      sql: '仅 SQL',
+      scan: '硬扫描'
     };
 
     const terminal = (msg: string, tag: keyof typeof tagStyles = 'BROWSER', type: 'text' | 'device' = 'text') => {
-        const consoleEl = document.getElementById('systemLogConsole');
-        if (!consoleEl) return;
-        const entry = document.createElement('div');
-        entry.className = "flex gap-2 items-start animate-in fade-in slide-in-from-left-1 duration-300";
-        const now = new Date();
-        const ms = now.getMilliseconds().toString().padStart(3, '0');
-        const time = `${now.toLocaleTimeString('en-GB', { hour12: false })}.${ms}`;
-        
-        const tagClass = tagStyles[tag] || tagStyles.BROWSER;
-        const tagMap: Record<string, string> = {
-            WASM: '解析引擎', FS: '文件系统', BROWSER: '浏览器', CONFIG: '配置',
-            NETWORK: '网络', INIT: '系统', SUCCESS: '命中', ERROR: '错误', DEVICE: '匹配'
-        };
+      const consoleEl = byId<HTMLDivElement>('systemLogConsole');
+      if (!consoleEl) return;
 
-        if (type === 'device') {
-            entry.innerHTML = `<span class="text-white/20 shrink-0 font-mono text-[11px] md:text-[12px]">[${time}]</span><span class="${tagClass} shrink-0 px-1.5 rounded text-[11px] font-bold">设备识别</span><span class="text-[#22d3ee] font-bold">${msg}</span>`;
-        } else {
-            entry.innerHTML = `<span class="text-white/20 shrink-0 font-mono text-[11px] md:text-[12px]">[${time}]</span><span class="${tagClass} shrink-0 px-1.5 rounded text-[11px] font-bold uppercase">${tagMap[tag] || tag}</span><span class="break-all ${tag === 'ERROR' ? 'text-red-400' : tag === 'SUCCESS' ? 'text-green-300' : 'text-white/60'}">${msg}</span>`;
-        }
-        consoleEl.prepend(entry);
+      const entry = document.createElement('div');
+      entry.className = 'flex gap-2 items-start animate-in fade-in slide-in-from-left-1 duration-300';
+
+      const now = new Date();
+      const time = `${now.toLocaleTimeString('en-GB', { hour12: false })}.${now.getMilliseconds().toString().padStart(3, '0')}`;
+      const tagClass = tagStyles[tag] ?? tagStyles.BROWSER;
+      const label = type === 'device' ? '设备识别' : tagLabels[tag] ?? tag;
+      const contentClass = tag === 'ERROR' ? 'text-red-400' : tag === 'SUCCESS' ? 'text-green-300' : 'text-white/60';
+
+      entry.innerHTML = `
+        <span class="text-white/20 shrink-0 font-mono text-[11px] md:text-[12px]">[${time}]</span>
+        <span class="${tagClass} shrink-0 px-1.5 rounded text-[11px] font-bold ${type === 'device' ? '' : 'uppercase'}">${label}</span>
+        <span class="break-all ${contentClass}">${msg}</span>
+      `;
+      consoleEl.prepend(entry);
     };
 
     const stringifyConsoleArgs = (args: any[]) => args.map((arg) => {
@@ -232,568 +267,680 @@ import { Icon } from "astro-icon/components";
       try { return JSON.stringify(arg); } catch { return String(arg); }
     }).join(' ');
 
-    // 全局劫持 Console + 浏览器运行时错误
     const hookConsole = () => {
-        if (consoleHooked) return;
-        const _log = console.log;
-        const _warn = console.warn;
-        const _err = console.error;
-        const _info = console.info;
+      if ((console as any)._hooked) return;
 
-        console.log = (...args) => { _log(...args); terminal(stringifyConsoleArgs(args), 'BROWSER'); };
-        console.info = (...args) => { _info(...args); terminal(stringifyConsoleArgs(args), 'INIT'); };
-        console.warn = (...args) => { _warn(...args); terminal(stringifyConsoleArgs(args), 'NETWORK'); };
-        console.error = (...args) => { _err(...args); terminal(stringifyConsoleArgs(args), 'ERROR'); };
+      const original = {
+        log: console.log,
+        info: console.info,
+        warn: console.warn,
+        error: console.error
+      };
 
-        window.addEventListener('error', (event) => {
-          const msg = `${event.message} @ ${event.filename || 'inline'}:${event.lineno || 0}:${event.colno || 0}`;
-          terminal(`运行时错误: ${msg}`, 'ERROR');
-        });
-        window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
-          const reason = event.reason instanceof Error ? `${event.reason.name}: ${event.reason.message}` : String(event.reason);
-          terminal(`未处理 Promise 拒绝: ${reason}`, 'ERROR');
-        });
-        consoleHooked = true;
+      console.log = (...args) => { original.log(...args); terminal(stringifyConsoleArgs(args), 'BROWSER'); };
+      console.info = (...args) => { original.info(...args); terminal(stringifyConsoleArgs(args), 'INIT'); };
+      console.warn = (...args) => { original.warn(...args); terminal(stringifyConsoleArgs(args), 'NETWORK'); };
+      console.error = (...args) => { original.error(...args); terminal(stringifyConsoleArgs(args), 'ERROR'); };
+
+      window.addEventListener('error', (event) => {
+        terminal(`运行时错误: ${event.message} @ ${event.filename || 'inline'}:${event.lineno || 0}:${event.colno || 0}`, 'ERROR');
+      });
+
+      window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+        const reason = event.reason instanceof Error ? `${event.reason.name}: ${event.reason.message}` : String(event.reason);
+        terminal(`未处理 Promise 拒绝: ${reason}`, 'ERROR');
+      });
+
+      (console as any)._hooked = true;
     };
 
     const setInitStatus = (text: string, dotClass: string) => {
-      const statusTextEl = document.getElementById('statusText');
-      const statusDotEl = document.getElementById('statusDot');
-      if (statusTextEl) statusTextEl.innerText = text;
-      if (statusDotEl) statusDotEl.className = dotClass;
+      const statusText = byId<HTMLSpanElement>('statusText');
+      const statusDot = byId<HTMLDivElement>('statusDot');
+      if (statusText) statusText.innerText = text;
+      if (statusDot) statusDot.className = dotClass;
     };
 
     async function calculateFileHash(buffer: ArrayBuffer) {
-        terminal("计算二进制 SHA-256 全量校验和...", "FS");
-        const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-        return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+      terminal('计算二进制 SHA-256 全量校验和...', 'FS');
+      const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+      return Array.from(new Uint8Array(hashBuffer)).map((b) => b.toString(16).padStart(2, '0')).join('');
     }
 
     const showToast = (msg: string) => {
-      const old = document.querySelector('.toast-msg');
-      if (old) old.remove();
+      document.querySelector('.toast-msg')?.remove();
       const el = document.createElement('div');
-      el.className = 'toast-msg'; el.innerText = msg;
+      el.className = 'toast-msg';
+      el.innerText = msg;
       document.body.appendChild(el);
       setTimeout(() => el.remove(), 2500);
     };
 
     const DEVICE_PATTERNS = [
-      { name: "小米手环9 Pro", label: "小米手环9 Pro" }, { name: "小米手环9", label: "小米手环9" },
-      { name: "小米手环10 Pro", label: "小米手环10 Pro" }, { name: "小米手环10", label: "小米手环10" },
-      { name: "Xiaomi Watch S4 41mm", label: "Xiaomi Watch S4 41mm" }, { name: "Xiaomi Watch S4 eSIM", label: "Xiaomi Watch S4 eSIM" },
-      { name: "Xiaomi Watch S4", label: "Xiaomi Watch S4" }, { name: "Xiaomi Watch S3 eSIM", label: "Xiaomi Watch S3 eSIM" },
-      { name: "Xiaomi Watch S3", label: "Xiaomi Watch S3" }, { name: "Xiaomi Watch S5 46mm eSIM", label: "Xiaomi Watch S5 46mm eSIM" },
-      { name: "Xiaomi Watch S5 46mm", label: "Xiaomi Watch S5 46mm" }, { name: "REDMI Watch 5 eSIM", label: "REDMI Watch 5 eSIM" },
-      { name: "REDMI Watch 5", label: "REDMI Watch 5" }, { name: "REDMI Watch 6", label: "REDMI Watch 6" },
-      { name: "Redmi Watch 3", label: "REDMI Watch 3" }, { name: "REDMI Watch 3", label: "REDMI Watch 3" }
+      { name: '小米手环9 Pro', label: '小米手环9 Pro' },
+      { name: '小米手环9', label: '小米手环9' },
+      { name: '小米手环10 Pro', label: '小米手环10 Pro' },
+      { name: '小米手环10', label: '小米手环10' },
+      { name: 'Xiaomi Watch S4 41mm', label: 'Xiaomi Watch S4 41mm' },
+      { name: 'Xiaomi Watch S4 eSIM', label: 'Xiaomi Watch S4 eSIM' },
+      { name: 'Xiaomi Watch S4', label: 'Xiaomi Watch S4' },
+      { name: 'Xiaomi Watch S3 eSIM', label: 'Xiaomi Watch S3 eSIM' },
+      { name: 'Xiaomi Watch S3', label: 'Xiaomi Watch S3' },
+      { name: 'Xiaomi Watch S5 46mm eSIM', label: 'Xiaomi Watch S5 46mm eSIM' },
+      { name: 'Xiaomi Watch S5 46mm', label: 'Xiaomi Watch S5 46mm' },
+      { name: 'REDMI Watch 5 eSIM', label: 'REDMI Watch 5 eSIM' },
+      { name: 'REDMI Watch 5', label: 'REDMI Watch 5' },
+      { name: 'REDMI Watch 6', label: 'REDMI Watch 6' },
+      { name: 'Redmi Watch 3', label: 'REDMI Watch 3' },
+      { name: 'Redmi Watch 3', label: 'REDMI Watch 3' }
     ];
+
+    let JSZip: any = null;
+    let SQL: any = null;
+    let engineInitializing = false;
+
+    const buildToggleHandler = (id: string, cookieName: string, label: string) => {
+      const checkbox = byId<HTMLInputElement>(id);
+      if (!checkbox) return;
+      checkbox.addEventListener('change', () => {
+        setCookie(cookieName, String(checkbox.checked));
+        terminal(`配置变更：[${label}] 已保存，正在刷新页面...`, 'CONFIG');
+        showToast(`✓ ${label}已变更，重载中...`);
+        setTimeout(() => location.reload(), 800);
+      });
+    };
+
+    const getDebugEnabled = () => byId<HTMLInputElement>('debugToggle')?.checked ?? false;
+    const getCrossZipEnabled = () => byId<HTMLInputElement>('crossZipToggle')?.checked ?? false;
+    const getUnsupportedEnabled = () => byId<HTMLInputElement>('unsupportedToggle')?.checked ?? false;
+    const getParseMode = (): ParseMode => getInputValue('parseMode', 'smart') as ParseMode;
+
+    const loadConfigFromCookies = () => {
+      return {
+        debugMode: getCookie('debugMode') === 'true',
+        crossZip: getCookie('crossZip') === 'true',
+        allowUnsupported: getCookie('allowUnsupported') !== 'false',
+        parseMode: getCookie('parseMode') || 'smart'
+      } as const;
+    };
 
     async function initEngines() {
       if (engineInitializing) return;
       engineInitializing = true;
       hookConsole();
-      terminal("正在初始化解析组件...", "NETWORK");
-      setInitStatus("正在重新初始化核心引擎...", "w-2 h-2 rounded-full bg-yellow-400 mr-2 animate-pulse");
+      terminal('正在初始化解析组件...', 'NETWORK');
+      setInitStatus('正在重新初始化核心引擎...', 'w-2 h-2 rounded-full bg-yellow-400 mr-2 animate-pulse');
+
       try {
         const [jszipModule] = await Promise.all([
           import('jszip'),
-          new Promise((res, rej) => {
-            const s = document.createElement('script');
-            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js';
-            s.onload = res; s.onerror = rej; document.head.appendChild(s);
+          new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
           })
         ]);
+
         JSZip = jszipModule.default;
-        terminal("JSZip 组件加载完成 (v3.10.1)", "FS");
-        
+        terminal('JSZip 组件加载完成 (v3.10.1)', 'FS');
+
         SQL = await (window as any).initSqlJs({ locateFile: (f: string) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${f}` });
-        terminal("SQL-WASM 就绪，SQLite 解析能力已启用", "WASM");
-        
-        setInitStatus("引擎就绪 (WASM已缓存，点击可重试)", "w-2 h-2 rounded-full bg-green-500 mr-2");
-      } catch (err: any) {
-        terminal(`初始化失败: ${err.message}`, "ERROR");
-        setInitStatus("初始化失败，点击重试", "w-2 h-2 rounded-full bg-red-500 mr-2");
+        terminal('SQL-WASM 就绪，SQLite 解析能力已启用', 'WASM');
+
+        setInitStatus('引擎就绪 (WASM已缓存，点击可重试)', 'w-2 h-2 rounded-full bg-green-500 mr-2');
+      } catch (error: any) {
+        terminal(`初始化失败: ${error?.message ?? String(error)}`, 'ERROR');
+        setInitStatus('初始化失败，点击重试', 'w-2 h-2 rounded-full bg-red-500 mr-2');
       } finally {
         engineInitializing = false;
       }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const cDebug = getCookie('debugMode') === 'true';
-      const cCross = getCookie('crossZip') === 'true';
-      const cUnsup = getCookie('allowUnsupported') !== 'false';
-      const cMode = getCookie('parseMode') || 'smart';
+    const renderResults = (list: AuthResult[], debugs: DebugInfo[], debugLog: string) => {
+      const autoResultContainer = byId<HTMLDivElement>('autoResultContainer');
+      const rawResultContainer = byId<HTMLDivElement>('rawResultContainer');
+      const rawResultBox = byId<HTMLDivElement>('rawResultBox');
+      const debugOutput = byId<HTMLDivElement>('debugOutput');
+      if (!autoResultContainer || !rawResultContainer || !rawResultBox || !debugOutput) return;
 
-      const terminalCard = document.getElementById('terminalCard');
-      if (terminalCard && !cDebug) {
-        (terminalCard as HTMLElement).style.display = 'none';
-      }
-
-      initEngines();
-      const initStatus = document.getElementById('initStatus');
-      if (initStatus) {
-        (initStatus as HTMLElement).style.cursor = 'pointer';
-        (initStatus as HTMLElement).style.transition = 'opacity 0.2s ease';
-        initStatus.addEventListener('mouseenter', () => ((initStatus as HTMLElement).style.opacity = '0.8'));
-        initStatus.addEventListener('mouseleave', () => ((initStatus as HTMLElement).style.opacity = '1'));
-      }
-      initStatus?.setAttribute('title', '点击重新初始化引擎');
-      initStatus?.addEventListener('click', () => {
-        if (engineInitializing) {
-          terminal("初始化进行中，请稍候...", "INIT");
-          return;
-        }
-        terminal("收到手动刷新指令，重新初始化中...", "INIT");
-        initEngines();
-      });
-
-      const fileInput = document.getElementById('fileInput') as HTMLInputElement;
-      const debugToggle = document.getElementById('debugToggle') as HTMLInputElement;
-      const crossZipToggle = document.getElementById('crossZipToggle') as HTMLInputElement;
-      const unsupportedToggle = document.getElementById('unsupportedToggle') as HTMLInputElement;
-      const parseModeRadios = document.getElementsByName('parseMode') as NodeListOf<HTMLInputElement>;
-      const autoResultContainer = document.getElementById('autoResultContainer');
-      const rawResultContainer = document.getElementById('rawResultContainer');
-      const debugOutput = document.getElementById('debugOutput');
-      const rawResultBox = document.getElementById('rawResultBox');
-
-      debugToggle.checked = cDebug;
-      crossZipToggle.checked = cCross;
-      unsupportedToggle.checked = cUnsup;
-      parseModeRadios.forEach(r => { if(r.value === cMode) r.checked = true; });
-
-      terminal(`载入配置：调试(${cDebug}), 跨平台(${cCross}), 全解析(${cUnsup}), 模式(${cMode})`, "CONFIG");
-
-      const handleToggleRefresh = (el: HTMLInputElement, cookieName: string, label: string) => {
-        el.addEventListener('change', () => {
-            setCookie(cookieName, String(el.checked));
-            terminal(`配置变更：[${label}] 已保存，正在刷新页面...`, "CONFIG");
-            showToast(`✓ ${label}已变更，重载中...`);
-            setTimeout(() => location.reload(), 800);
-        });
-      };
-      handleToggleRefresh(debugToggle, 'debugMode', '调试模式');
-      handleToggleRefresh(crossZipToggle, 'crossZip', '跨平台ZIP支持');
-      handleToggleRefresh(unsupportedToggle, 'allowUnsupported', '读取策略');
-
-      parseModeRadios.forEach(r => r.addEventListener('change', () => { 
-          if(r.checked){ 
-              const modeLabelMap: Record<string, string> = {
-                smart: '智能模式',
-                sql: '仅 SQL',
-                scan: '硬扫描'
-              };
-              const modeLabel = modeLabelMap[r.value] || r.value;
-              setCookie('parseMode', r.value); 
-              terminal(`解析策略已切换为：${modeLabel} (${r.value})`, "CONFIG");
-              showToast(`✓ 已切换到${modeLabel}`); 
-          } 
-      }));
-
-      document.getElementById('clearLogBtn')?.addEventListener('click', () => {
-          document.getElementById('systemLogConsole')!.innerHTML = '<div class="text-white/20 italic">[缓冲区已刷新] 日志服务重置完成。</div>';
-      });
-
-      const updateProgress = (v: number, t: string) => {
-        const pb = document.getElementById('progressBox');
-        if (pb) {
-            pb.classList.remove('hidden');
-            document.getElementById('progressBar')!.style.width = `${v}%`;
-            document.getElementById('progressLabel')!.innerText = t;
-            document.getElementById('progressPercent')!.innerText = `${Math.round(v)}%`;
-        }
-      };
-
-      window.copyToClipboard = async (t) => {
-        try { await navigator.clipboard.writeText(t); } 
-        catch { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
-        terminal(`用户成功复制了密钥 ${t.substring(0,8)}...`, "SUCCESS");
-        showToast('✓ 密钥已复制');
-      };
-
-      const parseAndroidFromContent = (content: string): AuthResult[] => {
-        terminal(`扫描 Android 字节序列 (流长度: ${content.length})`, "FS");
-        const results: AuthResult[] = []; const seenTokens = new Set<string>();
-        const tokenGlobalRegex = /"token"\s*[:=]\s*"([a-fA-F0-9]{32})"/gi;
-        let match;
-        
-        while ((match = tokenGlobalRegex.exec(content)) !== null) {
-            const token = match[1];
-            if (seenTokens.has(token)) continue;
-            const pos = match.index;
-            const context = content.substring(Math.max(0, pos - 2000), Math.min(content.length, pos + 500));
-            const nameSearchRegex = /"(product[Nn]ame|device[Nn]ame|model[Nn]ame|name)"\s*[:=]\s*"([^"]+)"/gi;
-            let deviceName = ""; let nameMatch;
-            while ((nameMatch = nameSearchRegex.exec(context)) !== null) { deviceName = nameMatch[2]; }
-            const macMatch = context.match(/([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}/);
-            
-            if (!deviceName || deviceName.toLowerCase() === "null") {
-                for (const p of DEVICE_PATTERNS) if (context.includes(p.name)) { deviceName = p.label; break; }
-            }
-
-            results.push({ name: deviceName || "Android设备", key: token, mac: macMatch ? macMatch[0] : undefined, platform: 'Android' });
-            seenTokens.add(token);
-            terminal(`识别设备：${deviceName || '通用型号'} | MAC: ${macMatch ? macMatch[0] : '未知'}`, "DEVICE", "device");
-        }
-        return results;
-      };
-
-      const processSQL = (u8: Uint8Array, isWal: boolean = false): {results: AuthResult[], log: string} => {
-          let results: AuthResult[] = []; let log = "";
-          try {
-              terminal(`SQL: 读取数据库快照 (${(u8.length/1024).toFixed(1)}KB)`, "WASM");
-              const db = new SQL.Database(u8);
-              const tables: string[] = [];
-              const isDebug = (document.getElementById('debugToggle') as HTMLInputElement)?.checked;
-              const sqlJsonRows: AuthResult[] = [];
-              const tableStmt = db.prepare("SELECT name FROM sqlite_master WHERE type='table'");
-              while(tableStmt.step()) tables.push(tableStmt.get()[0] as string); tableStmt.free();
-              if (isDebug) {
-                  log += `[SQL] 表清单: ${tables.join(', ') || '无'}\n`;
-                  log += `\n[SQL] 原始 SQLite 十进制内容(完整)\n${Array.from(u8).join(',')}\n`;
-              }
-              
-              if (tables.includes('manifest')) {
-                  const stmt = db.prepare("SELECT inline_data FROM manifest WHERE inline_data IS NOT NULL");
-                  let rowIndex = 0;
-                  while (stmt.step()) {
-                      const blob = stmt.get()[0] as Uint8Array;
-                      if (blob) {
-                          rowIndex += 1;
-                          const rawStr = new TextDecoder('latin1').decode(blob);
-                          const keyM = rawStr.match(/[a-fA-F0-9]{32}/);
-                          const macM = rawStr.match(/([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}/);
-                          let nm = "iOS设备"; for (const p of DEVICE_PATTERNS) if (rawStr.includes(p.name)) { nm = p.label; break; }
-
-                          if (isDebug) {
-                              const header = String.fromCharCode(...blob.slice(0, 8));
-                              const isBplist = header === 'bplist00';
-                              log += `\n[manifest.row ${rowIndex}] bytes=${blob.length} type=${isBplist ? 'Apple Binary Property List (bplist00)' : 'binary'}\n`;
-                              log += `[manifest.row ${rowIndex}] wasm-extracted-decimal(full)\n${Array.from(blob).join(',')}\n`;
-                          }
-
-                          if (keyM) {
-                              terminal(`提取到记录：${nm} (通过 Plist)`, "SUCCESS");
-                              const extracted: AuthResult = { name: nm, key: keyM[0], mac: macM ? macM[0] : undefined, platform: isWal ? 'SQLite-wal' : 'iOS (SQL模式)' };
-                              results.push(extracted);
-                              sqlJsonRows.push(extracted);
-                          }
-
-                      }
-                  }
-                  stmt.free();
-              } else if (isDebug) {
-                  log += "[SQL] 未找到 manifest 表。\n";
-              }
-              if (sqlJsonRows.length > 0) {
-                  log += `\n[SQL] 提取结果 JSON(完整)\n${JSON.stringify(sqlJsonRows, null, 2)}\n`;
-              } else if (isDebug) {
-                  log += "\n[SQL] 提取结果 JSON(完整)\n[]\n";
-              }
-              db.close();
-          } catch(e: any) { terminal(`数据库读取失败: ${e.message}`, "ERROR"); }
-          return { results, log };
-      };
-
-      const processScan = (u8: Uint8Array, label: string = '硬扫描'): {results: AuthResult[], debugs: DebugInfo[]} => {
-          terminal(`全量特征提取启动 [${label}]...`, "FS");
-          const results: AuthResult[] = []; const debugs: DebugInfo[] = []; const seen = new Set<string>();
-          const raw = new TextDecoder('latin1').decode(u8);
-          const anchors = ["encrypt_key", "auth_key", "peripheral_id", "token"];
-          anchors.forEach(anchor => {
-            let pos = raw.indexOf(anchor);
-            while (pos !== -1) {
-              const win = raw.substring(Math.max(0, pos - 500), Math.min(raw.length, pos + 500));
-              const hexM = win.match(/[a-fA-F0-9]{32}/g);
-              if (hexM) hexM.forEach(k => {
-                if (!seen.has(k)) {
-                  let nm = "扫描记录"; for (const p of DEVICE_PATTERNS) if (win.includes(p.name)) { nm = p.label; break; }
-                  terminal(`特征命中：${k.substring(0,12)}... [${anchor}]`, "SUCCESS");
-                  results.push({ name: nm, key: k, platform: label });
-                  seen.add(k);
-                }
-              });
-              debugs.push({ offset: pos, content: win });
-              pos = raw.indexOf(anchor, pos + 1);
-            }
-          });
-          return { results, debugs };
-      };
-
-      const processZipLevel = async (zip: any, depth = 0): Promise<{results: AuthResult[], debugs: DebugInfo[], log: string}> => {
-          let results: AuthResult[] = []; let debugs: DebugInfo[] = []; let log = "";
-          const files = Object.keys(zip.files);
-          const mode = (document.querySelector('input[name="parseMode"]:checked') as HTMLInputElement).value;
-          terminal(`遍历压缩包第 ${depth} 层 (${files.length} 个文件)`, "FS");
-
-          const logKey = files.find(f => f.toLowerCase().includes('main.log') || f.toLowerCase().endsWith('.log'));
-          if (logKey) {
-              terminal(`发现 Android 目标：[${logKey}]`, "FS");
-              const content = await zip.file(logKey)!.async('text');
-              results.push(...parseAndroidFromContent(content));
-          }
-          const sqlKey = files.find(f => f.toLowerCase().endsWith('manifest.sqlite'));
-          if (sqlKey) {
-              terminal(`发现 iOS 目标：[${sqlKey}]`, "FS");
-              const sqlBuf = await zip.file(sqlKey)!.async('uint8array');
-              if (mode === 'sql') {
-                  const sRes = processSQL(sqlBuf); results.push(...sRes.results); log += sRes.log;
-                  if (sRes.results.length === 0) {
-                      terminal("仅 SQL 模式未命中 ZIP 内数据库，请切换到硬扫描模式或智能模式后重试。", "NETWORK");
-                  }
-              } else if (mode === 'scan') {
-                  const sc = processScan(sqlBuf, 'ZIP扫描'); results.push(...sc.results); debugs.push(...sc.debugs);
-                  if (sc.results.length === 0) {
-                      terminal("仅硬扫描模式未命中 ZIP 内数据库，请切换到 SQL 模式或智能模式后重试。", "NETWORK");
-                  }
-              } else {
-                  const sc = processScan(sqlBuf, 'ZIP扫描'); results.push(...sc.results); debugs.push(...sc.debugs);
-                  const sRes = processSQL(sqlBuf); results.push(...sRes.results); log += sRes.log;
-              }
-          }
-          if (crossZipToggle.checked && depth < 2) {
-              const nZips = files.filter(f => f.toLowerCase().endsWith('.zip') && !zip.files[f].dir);
-              for (const nz of nZips) {
-                  terminal(`由于开启了跨平台，正在解开子包：${nz}`, "INIT");
-                  try {
-                      const nzBuf = await zip.file(nz)!.async('uint8array');
-                      const r = await processZipLevel(await JSZip.loadAsync(nzBuf.buffer), depth + 1);
-                      results.push(...r.results); debugs.push(...r.debugs); log += r.log;
-                  } catch {}
-              }
-          }
-          return { results, debugs, log };
-      };
-
-      const handleFile = async (f: File) => {
-        if (!f || !JSZip || !SQL) return;
-        const name = f.name.toLowerCase();
-        const parseMode = (document.querySelector('input[name="parseMode"]:checked') as HTMLInputElement).value;
-        terminal(`导入成功：[${f.name}] 大小：${(f.size/1024).toFixed(1)}KB`, "INIT");
-        
-        const isStandard = ['zip', 'sqlite', 'sqlite-wal', 'db', 'sqlitedb'].some(v => name.endsWith(v));
-        if (!unsupportedToggle.checked && !isStandard) {
-            terminal(`策略拦截：扩展名 .${name.split('.').pop()} 不在安全读取列表中。`, "ERROR");
-            return;
-        }
-
-        updateProgress(10, "读取物理扇区...");
-        const reader = new FileReader();
-        reader.onload = async () => {
-          try {
-            const buf = new Uint8Array(reader.result as ArrayBuffer);
-            const hash = await calculateFileHash(buf.buffer);
-            terminal(`指纹校验成功 (SHA256): ${hash.substring(0,32)}...`, "FS");
-
-            let fRes: AuthResult[] = []; let fDbg: DebugInfo[] = []; let fLog = "";
-            if (name.endsWith('.zip')) {
-                const r = await processZipLevel(await JSZip.loadAsync(buf.buffer));
-                fRes = r.results; fDbg = r.debugs; fLog = r.log;
-            } else if (name.endsWith('.sqlite-wal')) {
-                terminal("WAL 缓存模式：强制检索 manifest 区域...", "NETWORK");
-                if (parseMode === 'sql') {
-                    const sR = processSQL(buf, true); fRes = sR.results; fLog = sR.log;
-                    if (sR.results.length === 0) {
-                        terminal("仅 SQL 模式未命中结果，请切换到硬扫描模式或智能模式后重试。", "NETWORK");
-                    }
-                } else if (parseMode === 'scan') {
-                    const sc = processScan(buf, 'SQLite-wal'); fRes.push(...sc.results); fDbg = sc.debugs;
-                    if (sc.results.length === 0) {
-                        terminal("仅硬扫描模式未命中结果，请切换到 SQL 模式或智能模式后重试。", "NETWORK");
-                    }
-                } else {
-                    const sc = processScan(buf, 'SQLite-wal'); fRes.push(...sc.results); fDbg = sc.debugs;
-                    const sR = processSQL(buf, true); fRes.push(...sR.results); fLog = sR.log;
-                }
-            } else {
-                const magic = String.fromCharCode(...buf.slice(0, 15));
-                if (magic !== "SQLite format 3" && (name.endsWith('.sqlite') || name.endsWith('.db'))) {
-                    if (parseMode === 'sql') {
-                        terminal("仅 SQL 模式检测到非标准 SQLite 文件，未执行硬扫描。请切换到硬扫描模式或智能模式。", "NETWORK");
-                    } else if (parseMode === 'scan') {
-                        terminal("警告：文件非标准库格式。执行二进制硬匹配方案。", "NETWORK");
-                        const sc = processScan(buf); fRes = sc.results; fDbg = sc.debugs;
-                        if (sc.results.length === 0) {
-                            terminal("仅硬扫描模式未命中结果，请切换到 SQL 模式或智能模式后重试。", "NETWORK");
-                        }
-                    } else {
-                        terminal("警告：文件非标准库格式。执行二进制硬匹配方案。", "NETWORK");
-                        const sc = processScan(buf); fRes = sc.results; fDbg = sc.debugs;
-                    }
-                } else {
-                    if (parseMode === 'sql') {
-                        const sR = processSQL(buf); fRes = sR.results; fLog = sR.log;
-                        if (sR.results.length === 0) {
-                            terminal("仅 SQL 模式未命中结果，请切换到硬扫描模式或智能模式后重试。", "NETWORK");
-                        }
-                    } else if (parseMode === 'scan') {
-                        const sc = processScan(buf); fRes.push(...sc.results); fDbg = sc.debugs;
-                        if (sc.results.length === 0) {
-                            terminal("仅硬扫描模式未命中结果，请切换到 SQL 模式或智能模式后重试。", "NETWORK");
-                        }
-                    } else {
-                        const sc = processScan(buf); fRes = sc.results; fDbg = sc.debugs;
-                        const sR = processSQL(buf); fRes.push(...sR.results); fLog = sR.log;
-                    }
-                }
-            }
-
-            updateProgress(100, "解析完成");
-            const dedupKeepMultiSource = (items: AuthResult[]) => {
-              const seen = new Set<string>();
-              const out: AuthResult[] = [];
-              for (const item of items) {
-                if (!item.key || item.key === "undefined") continue;
-                const source = item.platform || 'unknown';
-                const sig = `${item.key}::${source}`;
-                if (seen.has(sig)) continue;
-                seen.add(sig);
-                out.push(item);
-              }
-              return out;
-            };
-            const unique = dedupKeepMultiSource(fRes);
-            terminal(`事务提交：共发现 ${unique.length} 台设备密钥。`, "SUCCESS");
-            unique.forEach(d => terminal(`${d.name} | MAC: ${d.mac || '暂无'} | Key: ${d.key.substring(0,12)}...`, "DEVICE", "device"));
-            renderUI(unique, fDbg, fLog);
-            setTimeout(() => document.getElementById('progressBox')?.classList.add('hidden'), 1500);
-          } catch (e: any) { terminal(`处理失败: ${e.message}`, "ERROR"); }
-        };
-        reader.readAsArrayBuffer(f);
-      };
-
-      const renderUI = (list: AuthResult[], debugs: DebugInfo[], dLog: string) => {
-        if (!autoResultContainer || !rawResultContainer || !rawResultBox || !debugOutput) return;
-        autoResultContainer.innerHTML = list.length ? list.map(i => `
+      autoResultContainer.innerHTML = list.length
+        ? list.map((item) => `
             <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-[var(--primary)]/[0.04] p-5 rounded-2xl border border-[var(--primary)]/10">
               <div class="w-full text-center md:text-left overflow-hidden">
                 <div class="flex items-center justify-center md:justify-start gap-2 mb-1">
-                    <span class="text-[9px] px-2 py-0.5 rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-black uppercase">${i.platform}</span>
-                    <div class="text-sm md:text-lg font-black text-90 opacity-90">${i.name}</div>
+                  <span class="text-[9px] px-2 py-0.5 rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-black uppercase">${item.platform}</span>
+                  <div class="text-sm md:text-lg font-black text-90 opacity-90">${item.name}</div>
                 </div>
-                ${i.mac ? `<div class="text-[10px] md:text-xs font-bold text-75 opacity-60 mb-2 uppercase tracking-wider">${i.mac}</div>` : ''}
-                <div class="font-mono text-sm md:text-xl font-black break-all whitespace-pre-wrap text-90 select-all leading-tight">${i.key}</div>
+                ${item.mac ? `<div class="text-[10px] md:text-xs font-bold text-75 opacity-60 mb-2 uppercase tracking-wider">${item.mac}</div>` : ''}
+                <div class="font-mono text-sm md:text-xl font-black break-all whitespace-pre-wrap text-90 select-all leading-tight">${item.key}</div>
               </div>
-              <button onclick="copyToClipboard('${i.key}')" class="shrink-0 w-full md:w-auto px-6 py-3 bg-[var(--primary)] text-white rounded-xl text-sm font-bold active:scale-95 shadow-md">复制</button>
+              <button onclick="copyToClipboard('${item.key}')" class="shrink-0 w-full md:w-auto px-6 py-3 bg-[var(--primary)] text-white rounded-xl text-sm font-bold active:scale-95 shadow-md">复制</button>
             </div>
-        `).join('') : '<div class="p-8 text-center opacity-40 italic">未检测到结果</div>';
-        
-        debugOutput.innerText = dLog; debugOutput.classList.toggle('hidden', !dLog);
-        rawResultContainer.innerHTML = debugs.map(d => `<div class="debug-card"><div class="text-[10px] opacity-30 mb-1">OFFSET: ${d.offset}</div><pre>${d.content.replace(/[a-fA-F0-9]{32}/g, m => `<span class="highlight-key">${m}</span>`)}</pre></div>`).join('');
-        document.getElementById('resultBox')?.classList.remove('hidden');
-        rawResultBox.classList.toggle('hidden', !debugToggle.checked);
-        document.getElementById('resultBox')?.scrollIntoView({ behavior: 'smooth' });
-      };
+          `).join('')
+        : '<div class="p-8 text-center opacity-40 italic">未检测到结果</div>';
 
-      const uploadArea = document.getElementById('uploadArea');
-      const mobileBtn = document.getElementById('mobileBtn');
-      const strictAccept = ".zip,.sqlite,.sqlite-wal,.db,.sqlitedb,.log,.txt,application/zip,application/octet-stream,application/x-sqlite3,text/plain";
-      let dragDepth = 0;
-      let lastDragOverLogAt = 0;
-      const pickerAcceptTypes = [
-        {
-          description: '日志与数据库文件',
-          accept: {
-            'application/zip': ['.zip'],
-            'application/x-sqlite3': ['.sqlite', '.sqlite-wal', '.db', '.sqlitedb'],
-            'application/octet-stream': ['.sqlite', '.sqlite-wal', '.db', '.sqlitedb'],
-            'text/plain': ['.log', '.txt']
+      debugOutput.innerText = debugLog;
+      debugOutput.classList.toggle('hidden', !debugLog);
+      rawResultContainer.innerHTML = debugs.map((info) => `
+          <div class="debug-card">
+            <div class="text-[10px] opacity-30 mb-1">OFFSET: ${info.offset}</div>
+            <pre>${info.content.replace(/[a-fA-F0-9]{32}/g, (m) => `<span class="highlight-key">${m}</span>`)}</pre>
+          </div>
+        `).join('');
+
+      byId<HTMLDivElement>('resultBox')?.classList.remove('hidden');
+      rawResultBox.classList.toggle('hidden', !getDebugEnabled());
+      byId<HTMLDivElement>('resultBox')?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    const parseAndroidFromContent = (content: string): AuthResult[] => {
+      terminal(`扫描 Android 字节序列 (流长度: ${content.length})`, 'FS');
+      const results: AuthResult[] = [];
+      const seen = new Set<string>();
+      const tokenRegex = /"token"\s*[:=]\s*"([a-fA-F0-9]{32})"/gi;
+      let match: RegExpExecArray | null;
+
+      while ((match = tokenRegex.exec(content)) !== null) {
+        const token = match[1];
+        if (seen.has(token)) continue;
+
+        const context = content.substring(Math.max(0, match.index - 2000), Math.min(content.length, match.index + 500));
+        const nameRegex = /"(product[Nn]ame|device[Nn]ame|model[Nn]ame|name)"\s*[:=]\s*"([^"]+)"/gi;
+        let deviceName = '';
+        let nameMatch: RegExpExecArray | null;
+
+        while ((nameMatch = nameRegex.exec(context)) !== null) {
+          deviceName = nameMatch[2];
+        }
+
+        const macMatch = context.match(/([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}/);
+        if (!deviceName || deviceName.toLowerCase() === 'null') {
+          for (const pattern of DEVICE_PATTERNS) {
+            if (context.includes(pattern.name)) {
+              deviceName = pattern.label;
+              break;
+            }
           }
         }
-      ];
 
-      const pickFile = async () => {
-        const hasNativePicker = typeof (window as any).showOpenFilePicker === 'function';
-        terminal(`文件选择请求：策略=${unsupportedToggle.checked ? '宽松(允许未知后缀)' : '严格白名单'}`, "CONFIG");
-        if (hasNativePicker) {
-          try {
-            terminal("点击事件：打开系统文件选择器...", "INIT");
-            const allowUnknown = unsupportedToggle.checked;
-            const pickerOptions: any = {
-              multiple: false
-            };
-            if (!allowUnknown) {
-              pickerOptions.types = pickerAcceptTypes;
-              pickerOptions.excludeAcceptAllOption = true;
+        results.push({
+          name: deviceName || 'Android设备',
+          key: token,
+          mac: macMatch?.[0],
+          platform: 'Android'
+        });
+
+        terminal(`识别设备：${deviceName || '通用型号'} | MAC: ${macMatch?.[0] ?? '未知'}`, 'DEVICE', 'device');
+        seen.add(token);
+      }
+
+      return results;
+    };
+
+    const processSQL = (u8: Uint8Array, isWal = false): { results: AuthResult[]; log: string } => {
+      const results: AuthResult[] = [];
+      let log = '';
+      try {
+        terminal(`SQL: 读取数据库快照 (${(u8.length / 1024).toFixed(1)}KB)`, 'WASM');
+        const db = new SQL.Database(u8);
+        const tables: string[] = [];
+        const isDebug = getDebugEnabled();
+
+        const tableStmt = db.prepare("SELECT name FROM sqlite_master WHERE type='table'");
+        while (tableStmt.step()) tables.push(tableStmt.get()[0] as string);
+        tableStmt.free();
+
+        if (isDebug) {
+          log += `[SQL] 表清单: ${tables.join(', ') || '无'}\n`;
+          log += `\n[SQL] 原始 SQLite 十进制内容(完整)\n${Array.from(u8).join(',')}\n`;
+        }
+
+        if (tables.includes('manifest')) {
+          const stmt = db.prepare('SELECT inline_data FROM manifest WHERE inline_data IS NOT NULL');
+          let rowIndex = 0;
+
+          while (stmt.step()) {
+            const blob = stmt.get()[0] as Uint8Array;
+            if (!blob) continue;
+
+            rowIndex += 1;
+            const rawStr = new TextDecoder('latin1').decode(blob);
+            const keyM = rawStr.match(/[a-fA-F0-9]{32}/);
+            const macM = rawStr.match(/([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}/);
+            let nm = 'iOS设备';
+
+            for (const pattern of DEVICE_PATTERNS) {
+              if (rawStr.includes(pattern.name)) {
+                nm = pattern.label;
+                break;
+              }
             }
-            const [handle] = await (window as any).showOpenFilePicker({
-              ...pickerOptions
-            });
-            if (!handle) {
-              terminal("文件选择器未返回文件句柄。", "NETWORK");
+
+            if (isDebug) {
+              const header = String.fromCharCode(...blob.slice(0, 8));
+              const isBplist = header === 'bplist00';
+              log += `
+[manifest.row ${rowIndex}] bytes=${blob.length} type=${isBplist ? 'Apple Binary Property List (bplist00)' : 'binary'}
+`;
+              log += `[manifest.row ${rowIndex}] wasm-extracted-decimal(full)
+${Array.from(blob).join(',')}
+`;
+            }
+
+            if (keyM) {
+              terminal(`提取到记录：${nm} (通过 Plist)`, 'SUCCESS');
+              results.push({ name: nm, key: keyM[0], mac: macM?.[0], platform: isWal ? 'SQLite-wal' : 'iOS (SQL模式)' });
+            }
+          }
+
+          stmt.free();
+        } else if (isDebug) {
+          log += '[SQL] 未找到 manifest 表。\n';
+        }
+
+        if (results.length > 0) {
+          log += `\n[SQL] 提取结果 JSON(完整)\n${JSON.stringify(results, null, 2)}\n`;
+        } else if (isDebug) {
+          log += '\n[SQL] 提取结果 JSON(完整)\n[]\n';
+        }
+
+        db.close();
+      } catch (error: any) {
+        terminal(`数据库读取失败: ${error?.message ?? String(error)}`, 'ERROR');
+      }
+
+      return { results, log };
+    };
+
+    const processScan = (u8: Uint8Array, label = '硬扫描'): { results: AuthResult[]; debugs: DebugInfo[] } => {
+      terminal(`全量特征提取启动 [${label}]...`, 'FS');
+      const results: AuthResult[] = [];
+      const debugs: DebugInfo[] = [];
+      const seen = new Set<string>();
+      const raw = new TextDecoder('latin1').decode(u8);
+      const anchors = ['encrypt_key', 'auth_key', 'peripheral_id', 'token'];
+
+      anchors.forEach((anchor) => {
+        let pos = raw.indexOf(anchor);
+        while (pos !== -1) {
+          const windowText = raw.substring(Math.max(0, pos - 500), Math.min(raw.length, pos + 500));
+          const matches = windowText.match(/[a-fA-F0-9]{32}/g) || [];
+
+          matches.forEach((key) => {
+            if (seen.has(key)) return;
+            seen.add(key);
+
+            let nm = '扫描记录';
+            for (const pattern of DEVICE_PATTERNS) {
+              if (windowText.includes(pattern.name)) {
+                nm = pattern.label;
+                break;
+              }
+            }
+
+            terminal(`特征命中：${key.substring(0, 12)}... [${anchor}]`, 'SUCCESS');
+            results.push({ name: nm, key, platform: label });
+          });
+
+          debugs.push({ offset: pos, content: windowText });
+          pos = raw.indexOf(anchor, pos + anchor.length);
+        }
+      });
+
+      return { results, debugs };
+    };
+
+    const processZipLevel = async (zip: any, depth = 0): Promise<{ results: AuthResult[]; debugs: DebugInfo[]; log: string }> => {
+      const results: AuthResult[] = [];
+      const debugs: DebugInfo[] = [];
+      let log = '';
+      const files = Object.keys(zip.files);
+      const mode = getParseMode();
+
+      terminal(`遍历压缩包第 ${depth} 层 (${files.length} 个文件)`, 'FS');
+
+      const logKey = files.find((f) => f.toLowerCase().includes('main.log') || f.toLowerCase().endsWith('.log'));
+      if (logKey) {
+        terminal(`发现 Android 目标：[${logKey}]`, 'FS');
+        const content = await zip.file(logKey)!.async('text');
+        results.push(...parseAndroidFromContent(content));
+      }
+
+      const sqlKey = files.find((f) => f.toLowerCase().endsWith('manifest.sqlite'));
+      if (sqlKey) {
+        terminal(`发现 iOS 目标：[${sqlKey}]`, 'FS');
+        const sqlBuf = await zip.file(sqlKey)!.async('uint8array');
+        const executeSql = () => {
+          const response = processSQL(sqlBuf);
+          results.push(...response.results);
+          log += response.log;
+        };
+
+        if (mode === 'sql') {
+          executeSql();
+          if (!results.length) terminal('仅 SQL 模式未命中 ZIP 内数据库，请切换到硬扫描模式或智能模式后重试。', 'NETWORK');
+        } else if (mode === 'scan') {
+          const scanned = processScan(sqlBuf, 'ZIP扫描');
+          results.push(...scanned.results);
+          debugs.push(...scanned.debugs);
+          if (!scanned.results.length) terminal('仅硬扫描模式未命中 ZIP 内数据库，请切换到 SQL 模式或智能模式后重试。', 'NETWORK');
+        } else {
+          const scanned = processScan(sqlBuf, 'ZIP扫描');
+          results.push(...scanned.results);
+          debugs.push(...scanned.debugs);
+          executeSql();
+        }
+      }
+
+      if (getCrossZipEnabled() && depth < 2) {
+        const nestedZips = files.filter((file) => file.toLowerCase().endsWith('.zip') && !zip.files[file].dir);
+        for (const nested of nestedZips) {
+          terminal(`由于开启了跨平台，正在解开子包：${nested}`, 'INIT');
+          try {
+            const nestedBuf = await zip.file(nested)!.async('uint8array');
+            const nestedResult = await processZipLevel(await JSZip.loadAsync(nestedBuf.buffer), depth + 1);
+            results.push(...nestedResult.results);
+            debugs.push(...nestedResult.debugs);
+            log += nestedResult.log;
+          } catch {
+            // ignore nested read errors
+          }
+        }
+      }
+
+      return { results, debugs, log };
+    };
+
+    const fileHasSafeExtension = (name: string) => ['zip', 'sqlite', 'sqlite-wal', 'db', 'sqlitedb'].some((ext) => name.endsWith(ext));
+
+    const handleFile = async (file: File) => {
+      if (!file || !JSZip || !SQL) return;
+      const fileName = file.name.toLowerCase();
+      const parseMode = getParseMode();
+
+      terminal(`导入成功：[${file.name}] 大小：${(file.size / 1024).toFixed(1)}KB`, 'INIT');
+
+      if (!getUnsupportedEnabled() && !fileHasSafeExtension(fileName)) {
+        terminal(`策略拦截：扩展名 .${fileName.split('.').pop()} 不在安全读取列表中。`, 'ERROR');
+        return;
+      }
+
+      updateProgress(10, '读取物理扇区...');
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const buffer = new Uint8Array(reader.result as ArrayBuffer);
+          const hash = await calculateFileHash(buffer.buffer);
+          terminal(`指纹校验成功 (SHA256): ${hash.substring(0, 32)}...`, 'FS');
+
+          let results: AuthResult[] = [];
+          let debugs: DebugInfo[] = [];
+          let log = '';
+
+          const processNumericFile = async () => {
+            if (fileName.endsWith('.zip')) {
+              const zip = await JSZip.loadAsync(buffer.buffer);
+              const response = await processZipLevel(zip);
+              results = response.results;
+              debugs = response.debugs;
+              log = response.log;
               return;
             }
-            const file = await handle.getFile();
-            if (file) {
-              terminal(`文件选择器已返回文件：[${file.name}]`, "FS");
-              await handleFile(file);
-            } else {
-              terminal("文件选择器返回空文件对象。", "NETWORK");
+
+            if (fileName.endsWith('.sqlite-wal')) {
+              terminal('WAL 缓存模式：强制检索 manifest 区域...', 'NETWORK');
+              if (parseMode === 'sql') {
+                const response = processSQL(buffer, true);
+                results = response.results;
+                log = response.log;
+                if (!results.length) terminal('仅 SQL 模式未命中结果，请切换到硬扫描模式或智能模式后重试。', 'NETWORK');
+              } else if (parseMode === 'scan') {
+                const response = processScan(buffer, 'SQLite-wal');
+                results = response.results;
+                debugs = response.debugs;
+                if (!results.length) terminal('仅硬扫描模式未命中结果，请切换到 SQL 模式或智能模式后重试。', 'NETWORK');
+              } else {
+                const scanResponse = processScan(buffer, 'SQLite-wal');
+                results = scanResponse.results;
+                debugs = scanResponse.debugs;
+                const sqlResponse = processSQL(buffer, true);
+                results.push(...sqlResponse.results);
+                log = sqlResponse.log;
+              }
+              return;
             }
+
+            const isSQLiteFile = fileName.endsWith('.sqlite') || fileName.endsWith('.db');
+            const magic = String.fromCharCode(...buffer.slice(0, 15));
+
+            if (isSQLiteFile && magic !== 'SQLite format 3') {
+              if (parseMode === 'sql') {
+                terminal('仅 SQL 模式检测到非标准 SQLite 文件，未执行硬扫描。请切换到硬扫描模式或智能模式。', 'NETWORK');
+              } else if (parseMode === 'scan') {
+                terminal('警告：文件非标准库格式。执行二进制硬匹配方案。', 'NETWORK');
+                const scanResponse = processScan(buffer);
+                results = scanResponse.results;
+                debugs = scanResponse.debugs;
+                if (!results.length) terminal('仅硬扫描模式未命中结果，请切换到 SQL 模式或智能模式后重试。', 'NETWORK');
+              } else {
+                terminal('警告：文件非标准库格式。执行二进制硬匹配方案。', 'NETWORK');
+                const scanResponse = processScan(buffer);
+                results = scanResponse.results;
+                debugs = scanResponse.debugs;
+              }
+              return;
+            }
+
+            if (parseMode === 'sql') {
+              const response = processSQL(buffer);
+              results = response.results;
+              log = response.log;
+              if (!results.length) terminal('仅 SQL 模式未命中结果，请切换到硬扫描模式或智能模式后重试。', 'NETWORK');
+            } else if (parseMode === 'scan') {
+              const response = processScan(buffer);
+              results = response.results;
+              debugs = response.debugs;
+              if (!results.length) terminal('仅硬扫描模式未命中结果，请切换到 SQL 模式或智能模式后重试。', 'NETWORK');
+            } else {
+              const scanResponse = processScan(buffer);
+              results = scanResponse.results;
+              debugs = scanResponse.debugs;
+              const sqlResponse = processSQL(buffer);
+              results.push(...sqlResponse.results);
+              log = sqlResponse.log;
+            }
+          };
+
+          await processNumericFile();
+
+          const unique = Array.from(new Map(results.filter((item) => item.key && item.key !== 'undefined')
+            .map((item) => [`${item.key}::${item.platform ?? 'unknown'}`, item])).values());
+
+          terminal(`事务提交：共发现 ${unique.length} 台设备密钥。`, 'SUCCESS');
+          unique.forEach((item) => terminal(`${item.name} | MAC: ${item.mac ?? '暂无'} | Key: ${item.key.substring(0, 12)}...`, 'DEVICE', 'device'));
+          renderResults(unique, debugs, log);
+          setTimeout(() => byId<HTMLDivElement>('progressBox')?.classList.add('hidden'), 1500);
+        } catch (error: any) {
+          terminal(`处理失败: ${error?.message ?? String(error)}`, 'ERROR');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    };
+
+    const updateProgress = (value: number, text: string) => {
+      const progressBox = byId<HTMLDivElement>('progressBox');
+      if (!progressBox) return;
+      progressBox.classList.remove('hidden');
+      byId<HTMLDivElement>('progressBar')!.style.width = `${value}%`;
+      byId<HTMLDivElement>('progressLabel')!.innerText = text;
+      byId<HTMLDivElement>('progressPercent')!.innerText = `${Math.round(value)}%`;
+    };
+
+    const buildFilePicker = async () => {
+      const fileInput = byId<HTMLInputElement>('fileInput');
+      if (!fileInput) return;
+
+      terminal(`文件选择请求：策略=${getUnsupportedEnabled() ? '宽松(允许未知后缀)' : '严格白名单'}`, 'CONFIG');
+
+      if (typeof (window as any).showOpenFilePicker === 'function') {
+        try {
+          terminal('点击事件：打开系统文件选择器...', 'INIT');
+          const pickerOptions: any = { multiple: false };
+          if (!getUnsupportedEnabled()) {
+            pickerOptions.types = [
+              {
+                description: '日志与数据库文件',
+                accept: {
+                  'application/zip': ['.zip'],
+                  'application/x-sqlite3': ['.sqlite', '.sqlite-wal', '.db', '.sqlitedb'],
+                  'application/octet-stream': ['.sqlite', '.sqlite-wal', '.db', '.sqlitedb'],
+                  'text/plain': ['.log', '.txt']
+                }
+              }
+            ];
+            pickerOptions.excludeAcceptAllOption = true;
+          }
+
+          const [handle] = await (window as any).showOpenFilePicker(pickerOptions);
+          if (!handle) {
+            terminal('文件选择器未返回文件句柄。', 'NETWORK');
             return;
-          } catch (err: any) {
-            if (err?.name === 'AbortError') {
-              terminal("文件选择已取消。", "NETWORK");
-            } else {
-              terminal(`文件选择器异常: ${err?.message || err}`, "ERROR");
-            }
           }
-        }
 
-        terminal("回退到标准文件输入组件...", "INIT");
-        fileInput.accept = unsupportedToggle.checked ? "" : strictAccept;
-        fileInput.value = '';
-        fileInput.click();
-      };
-
-      uploadArea?.addEventListener('click', () => { terminal("上传区域点击：准备拉起文件选择器。", "INIT"); pickFile(); });
-      mobileBtn?.addEventListener('click', () => { terminal("按钮点击：准备拉起文件选择器。", "INIT"); pickFile(); });
-      fileInput.onchange = (e: any) => {
-        const files = e.target?.files;
-        if (files?.length > 0) {
-          terminal(`标准输入组件已选择文件：[${files[0].name}]`, "FS");
-          handleFile(files[0]);
-        } else {
-          terminal("标准输入组件触发变更，但未选择文件。", "NETWORK");
-        }
-      };
-      uploadArea?.addEventListener('dragenter', (e: any) => {
-        e.preventDefault();
-        dragDepth += 1;
-        if (dragDepth === 1) {
-          terminal("拖拽进入上传区域。", "INIT");
-          uploadArea.classList.add('drag-over');
-        }
-      });
-      uploadArea?.addEventListener('dragover', (e: any) => {
-        e.preventDefault();
-        const now = Date.now();
-        if (e.dataTransfer?.types?.includes('Files') && now - lastDragOverLogAt > 800) {
-          terminal("拖拽悬停：检测到文件载荷。", "FS");
-          lastDragOverLogAt = now;
-        }
-        uploadArea.classList.add('drag-over');
-      });
-      uploadArea?.addEventListener('dragleave', (e: any) => {
-        e.preventDefault();
-        dragDepth = Math.max(0, dragDepth - 1);
-        if (dragDepth === 0) {
-          terminal("拖拽离开上传区域。", "INIT");
-          uploadArea.classList.remove('drag-over');
-        }
-      });
-      uploadArea?.addEventListener('drop', (e: any) => { 
-          e.preventDefault();
-          dragDepth = 0;
-          uploadArea.classList.remove('drag-over'); 
-          if (e.dataTransfer?.files.length > 0) {
-              terminal(`拖放事件：成功捕获文件 [${e.dataTransfer.files[0].name}]`, "INIT");
-              handleFile(e.dataTransfer.files[0]); 
+          const file = await handle.getFile();
+          if (file) {
+            terminal(`文件选择器已返回文件：[${file.name}]`, 'FS');
+            await handleFile(file);
+          }
+          return;
+        } catch (error: any) {
+          if (error?.name === 'AbortError') {
+            terminal('文件选择已取消。', 'NETWORK');
           } else {
-              terminal("拖放事件：未检测到可处理文件。", "NETWORK");
+            terminal(`文件选择器异常: ${error?.message ?? String(error)}`, 'ERROR');
           }
+        }
+      }
+
+      terminal('回退到标准文件输入组件...', 'INIT');
+      fileInput.accept = getUnsupportedEnabled() ? '' : '.zip,.sqlite,.sqlite-wal,.db,.sqlitedb,.log,.txt,application/zip,application/octet-stream,application/x-sqlite3,text/plain';
+      fileInput.value = '';
+      fileInput.click();
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const config = loadConfigFromCookies();
+      const terminalCard = byId<HTMLDivElement>('terminalCard');
+      if (terminalCard && !config.debugMode) terminalCard.style.display = 'none';
+
+      initEngines();
+
+      const initStatus = byId<HTMLDivElement>('initStatus');
+      if (initStatus) {
+        initStatus.style.cursor = 'pointer';
+        initStatus.style.transition = 'opacity 0.2s ease';
+        initStatus.addEventListener('mouseenter', () => { initStatus.style.opacity = '0.8'; });
+        initStatus.addEventListener('mouseleave', () => { initStatus.style.opacity = '1'; });
+        initStatus.setAttribute('title', '点击重新初始化引擎');
+        initStatus.addEventListener('click', () => {
+          if (engineInitializing) {
+            terminal('初始化进行中，请稍候...', 'INIT');
+            return;
+          }
+          terminal('收到手动刷新指令，重新初始化中...', 'INIT');
+          initEngines();
+        });
+      }
+
+      const debugToggle = byId<HTMLInputElement>('debugToggle');
+      const crossZipToggle = byId<HTMLInputElement>('crossZipToggle');
+      const unsupportedToggle = byId<HTMLInputElement>('unsupportedToggle');
+      const parseModeRadios = Array.from(document.getElementsByName('parseMode')) as HTMLInputElement[];
+      const fileInput = byId<HTMLInputElement>('fileInput');
+      const uploadArea = byId<HTMLDivElement>('uploadArea');
+      const mobileBtn = byId<HTMLButtonElement>('mobileBtn');
+
+      if (debugToggle) debugToggle.checked = config.debugMode;
+      if (crossZipToggle) crossZipToggle.checked = config.crossZip;
+      if (unsupportedToggle) unsupportedToggle.checked = config.allowUnsupported;
+      parseModeRadios.forEach((radio) => { if (radio.value === config.parseMode) radio.checked = true; });
+
+      terminal(`载入配置：调试(${config.debugMode}), 跨平台(${config.crossZip}), 全解析(${config.allowUnsupported}), 模式(${config.parseMode})`, 'CONFIG');
+
+      buildToggleHandler('debugToggle', 'debugMode', '调试模式');
+      buildToggleHandler('crossZipToggle', 'crossZip', '跨平台ZIP支持');
+      buildToggleHandler('unsupportedToggle', 'allowUnsupported', '读取策略');
+
+      parseModeRadios.forEach((radio) => radio.addEventListener('change', () => {
+        if (!radio.checked) return;
+        setCookie('parseMode', radio.value);
+        terminal(`解析策略已切换为：${parseModeLabelMap[radio.value as ParseMode] ?? radio.value} (${radio.value})`, 'CONFIG');
+        showToast(`✓ 已切换到${parseModeLabelMap[radio.value as ParseMode] ?? radio.value}`);
+      }));
+
+      byId<HTMLButtonElement>('clearLogBtn')?.addEventListener('click', () => {
+        byId<HTMLDivElement>('systemLogConsole')!.innerHTML = '<div class="text-white/20 italic">[缓冲区已刷新] 日志服务重置完成。</div>';
       });
+
+      if (uploadArea) uploadArea.addEventListener('click', () => { terminal('上传区域点击：准备拉起文件选择器。', 'INIT'); buildFilePicker(); });
+      if (mobileBtn) mobileBtn.addEventListener('click', () => { terminal('按钮点击：准备拉起文件选择器。', 'INIT'); buildFilePicker(); });
+      if (fileInput) {
+        fileInput.onchange = (event: Event) => {
+          const target = event.target as HTMLInputElement;
+          const files = target.files;
+          if (files?.length) {
+            terminal(`标准输入组件已选择文件：[${files[0].name}]`, 'FS');
+            handleFile(files[0]);
+            return;
+          }
+          terminal('标准输入组件触发变更，但未选择文件。', 'NETWORK');
+        };
+      }
+
+      let dragDepth = 0;
+      let lastDragOverLogAt = 0;
+      const dragHandlers = new Map([
+        ['dragenter', (event: DragEvent) => {
+          event.preventDefault();
+          dragDepth += 1;
+          if (dragDepth === 1) {
+            terminal('拖拽进入上传区域。', 'INIT');
+            uploadArea?.classList.add('drag-over');
+          }
+        }],
+        ['dragover', (event: DragEvent) => {
+          event.preventDefault();
+          const now = Date.now();
+          if (event.dataTransfer?.types.includes('Files') && now - lastDragOverLogAt > 800) {
+            terminal('拖拽悬停：检测到文件载荷。', 'FS');
+            lastDragOverLogAt = now;
+          }
+          uploadArea?.classList.add('drag-over');
+        }],
+        ['dragleave', (event: DragEvent) => {
+          event.preventDefault();
+          dragDepth = Math.max(0, dragDepth - 1);
+          if (dragDepth === 0) {
+            terminal('拖拽离开上传区域。', 'INIT');
+            uploadArea?.classList.remove('drag-over');
+          }
+        }],
+        ['drop', (event: DragEvent) => {
+          event.preventDefault();
+          dragDepth = 0;
+          uploadArea?.classList.remove('drag-over');
+          if (event.dataTransfer?.files.length) {
+            terminal(`拖放事件：成功捕获文件 [${event.dataTransfer.files[0].name}]`, 'INIT');
+            handleFile(event.dataTransfer.files[0]);
+          } else {
+            terminal('拖放事件：未检测到可处理文件。', 'NETWORK');
+          }
+        }]
+      ] as const);
+
+      dragHandlers.forEach((handler, eventName) => uploadArea?.addEventListener(eventName, handler as EventListener));
     });
-  </script>
+</script>
 </MainGridLayout>
