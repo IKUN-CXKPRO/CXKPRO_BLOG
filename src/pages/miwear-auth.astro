@@ -16,7 +16,7 @@ import { Icon } from "astro-icon/components";
       
       <div id="initStatus" class="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-gray-100 dark:bg-white/5 text-[10px] md:text-[12px] font-medium text-gray-500">
         <div class="w-2 h-2 rounded-full bg-yellow-400 mr-2 animate-pulse" id="statusDot"></div>
-        <span id="statusText">正在初始化核心引擎... 如果一直这样请刷新</span>
+        <span id="statusText">正在初始化核心引擎... 如果一直这样请点击我刷新</span>
       </div>
     </div>
 
@@ -133,7 +133,7 @@ import { Icon } from "astro-icon/components";
     </div>
 
     <!-- 终端日志控制台 (字号已上调) -->
-    <div class="card-base rounded-[var(--radius-large)] p-4 md:p-6 border border-[var(--line-divider)] shadow-2xl bg-[#0a0a0a]">
+    <div id="terminalCard" class="card-base rounded-[var(--radius-large)] p-4 md:p-6 border border-[var(--line-divider)] shadow-2xl bg-[#0a0a0a]">
         <div class="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
             <div class="flex items-center gap-2">
                 <Icon name="material-symbols:terminal" class="text-[#4ade80]" />
@@ -179,6 +179,8 @@ import { Icon } from "astro-icon/components";
 
     let JSZip: any = null;
     let SQL: any = null;
+    let consoleHooked = false;
+    let engineInitializing = false;
 
     const setCookie = (name: string, value: string) => { document.cookie = `${name}=${value};path=/;max-age=31536000`; };
     const getCookie = (name: string) => {
@@ -232,6 +234,7 @@ import { Icon } from "astro-icon/components";
 
     // 全局劫持 Console + 浏览器运行时错误
     const hookConsole = () => {
+        if (consoleHooked) return;
         const _log = console.log;
         const _warn = console.warn;
         const _err = console.error;
@@ -250,6 +253,14 @@ import { Icon } from "astro-icon/components";
           const reason = event.reason instanceof Error ? `${event.reason.name}: ${event.reason.message}` : String(event.reason);
           terminal(`未处理 Promise 拒绝: ${reason}`, 'ERROR');
         });
+        consoleHooked = true;
+    };
+
+    const setInitStatus = (text: string, dotClass: string) => {
+      const statusTextEl = document.getElementById('statusText');
+      const statusDotEl = document.getElementById('statusDot');
+      if (statusTextEl) statusTextEl.innerText = text;
+      if (statusDotEl) statusDotEl.className = dotClass;
     };
 
     async function calculateFileHash(buffer: ArrayBuffer) {
@@ -279,8 +290,11 @@ import { Icon } from "astro-icon/components";
     ];
 
     async function initEngines() {
+      if (engineInitializing) return;
+      engineInitializing = true;
       hookConsole();
       terminal("正在初始化解析组件...", "NETWORK");
+      setInitStatus("正在重新初始化核心引擎...", "w-2 h-2 rounded-full bg-yellow-400 mr-2 animate-pulse");
       try {
         const [jszipModule] = await Promise.all([
           import('jszip'),
@@ -296,13 +310,44 @@ import { Icon } from "astro-icon/components";
         SQL = await (window as any).initSqlJs({ locateFile: (f: string) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${f}` });
         terminal("SQL-WASM 就绪，SQLite 解析能力已启用", "WASM");
         
-        document.getElementById('statusText')!.innerText = "引擎就绪 (WASM已缓存)";
-        document.getElementById('statusDot')!.className = "w-2 h-2 rounded-full bg-green-500 mr-2";
-      } catch (err: any) { terminal(`初始化失败: ${err.message}`, "ERROR"); }
+        setInitStatus("引擎就绪 (WASM已缓存，点击可重试)", "w-2 h-2 rounded-full bg-green-500 mr-2");
+      } catch (err: any) {
+        terminal(`初始化失败: ${err.message}`, "ERROR");
+        setInitStatus("初始化失败，点击重试", "w-2 h-2 rounded-full bg-red-500 mr-2");
+      } finally {
+        engineInitializing = false;
+      }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      const cDebug = getCookie('debugMode') === 'true';
+      const cCross = getCookie('crossZip') === 'true';
+      const cUnsup = getCookie('allowUnsupported') !== 'false';
+      const cMode = getCookie('parseMode') || 'smart';
+
+      const terminalCard = document.getElementById('terminalCard');
+      if (terminalCard && !cDebug) {
+        (terminalCard as HTMLElement).style.display = 'none';
+      }
+
       initEngines();
+      const initStatus = document.getElementById('initStatus');
+      if (initStatus) {
+        (initStatus as HTMLElement).style.cursor = 'pointer';
+        (initStatus as HTMLElement).style.transition = 'opacity 0.2s ease';
+        initStatus.addEventListener('mouseenter', () => ((initStatus as HTMLElement).style.opacity = '0.8'));
+        initStatus.addEventListener('mouseleave', () => ((initStatus as HTMLElement).style.opacity = '1'));
+      }
+      initStatus?.setAttribute('title', '点击重新初始化引擎');
+      initStatus?.addEventListener('click', () => {
+        if (engineInitializing) {
+          terminal("初始化进行中，请稍候...", "INIT");
+          return;
+        }
+        terminal("收到手动刷新指令，重新初始化中...", "INIT");
+        initEngines();
+      });
+
       const fileInput = document.getElementById('fileInput') as HTMLInputElement;
       const debugToggle = document.getElementById('debugToggle') as HTMLInputElement;
       const crossZipToggle = document.getElementById('crossZipToggle') as HTMLInputElement;
@@ -312,11 +357,6 @@ import { Icon } from "astro-icon/components";
       const rawResultContainer = document.getElementById('rawResultContainer');
       const debugOutput = document.getElementById('debugOutput');
       const rawResultBox = document.getElementById('rawResultBox');
-
-      const cDebug = getCookie('debugMode') === 'true';
-      const cCross = getCookie('crossZip') === 'true';
-      const cUnsup = getCookie('allowUnsupported') !== 'false';
-      const cMode = getCookie('parseMode') || 'smart';
 
       debugToggle.checked = cDebug;
       crossZipToggle.checked = cCross;
