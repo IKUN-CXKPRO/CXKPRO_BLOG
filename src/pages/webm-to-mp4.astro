@@ -1,0 +1,321 @@
+---
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { Icon } from "astro-icon/components";
+---
+
+<MainGridLayout title="WEBM 转 MP4" description="本地浏览器转码，支持压缩率调节">
+  <div class="onload-animation space-y-6">
+    <section class="card-base rounded-[var(--radius-large)] p-8">
+      <div class="flex items-center gap-4">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-cyan-500/15 rounded-2xl">
+          <Icon name="material-symbols:movie-edit-outline" class="text-cyan-500 text-3xl" />
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-90">WEBM 转 MP4</h1>
+          <p class="text-75 mt-2">本地处理，不上传文件。可调压缩率，兼顾清晰度与体积。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card-base rounded-[var(--radius-large)] p-6 space-y-5">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
+          <label class="block text-sm font-medium text-90 mb-2">输入 WEBM 文件</label>
+          <input id="fileInput" type="file" accept="video/webm,.webm" class="w-full px-4 py-3 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg text-90" />
+          <p class="text-xs text-60 mt-2">单文件上限 3GB，建议优先使用时长较短的视频。</p>
+        </div>
+
+        <div>
+          <label for="crfSlider" class="block text-sm font-medium text-90 mb-2">
+            压缩率（CRF）：<span id="crfValue" class="font-mono text-[var(--primary)]">23</span>
+          </label>
+          <input id="crfSlider" type="range" min="18" max="35" value="23" class="w-full" />
+          <div class="flex justify-between text-xs text-60 mt-1">
+            <span>清晰优先</span>
+            <span>体积优先</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="md:col-span-1">
+          <label class="block text-sm font-medium text-90 mb-2">WASM 核心来源</label>
+          <select id="coreSource" class="w-full px-4 py-3 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg text-90">
+            <option value="embedded">站内内置（推荐）</option>
+            <option value="cdn">CDN</option>
+            <option value="custom">自定义 URL</option>
+          </select>
+        </div>
+        <div id="customCoreGroup" class="md:col-span-2 hidden grid grid-cols-1 md:grid-cols-2 gap-3">
+          <input id="customCoreJs" type="url" placeholder="ffmpeg-core.js URL" class="w-full px-4 py-3 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg text-90" />
+          <input id="customCoreWasm" type="url" placeholder="ffmpeg-core.wasm URL" class="w-full px-4 py-3 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg text-90" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-90 mb-2">编码器</label>
+            <select id="encoderSelect" class="w-full px-4 py-3 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg text-90">
+              <option value="h264">H.264（兼容性优先）</option>
+              <option value="h265">H.265（更高压缩率）</option>
+            </select>
+          </div>
+          <div class="p-4 rounded-lg bg-[var(--card-bg)] border border-[var(--line-divider)] text-xs text-60">
+            提示：H.265 压缩更强，但某些老设备兼容性较弱。
+          </div>
+        </div>
+        <div>
+          <p class="block text-sm font-medium text-90 mb-2">运行日志</p>
+          <div id="logBox" class="h-32 md:h-full min-h-[8rem] p-3 rounded-lg bg-[var(--card-bg)] border border-[var(--line-divider)] text-xs text-75 font-mono overflow-auto"></div>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <button id="startBtn" class="btn-primary px-5 py-2.5 rounded-lg font-medium">
+          <Icon name="material-symbols:play-arrow" class="inline mr-1" />开始转换
+        </button>
+        <button id="downloadBtn" disabled class="btn-secondary px-5 py-2.5 rounded-lg font-medium opacity-50 cursor-not-allowed">
+          <Icon name="material-symbols:download" class="inline mr-1" />下载 MP4
+        </button>
+      </div>
+
+      <div class="space-y-2">
+        <div class="flex justify-between text-xs text-75">
+          <span id="statusText">等待文件</span>
+          <span id="progressText">0%</span>
+        </div>
+        <div class="h-2 rounded-full bg-[var(--line-divider)] overflow-hidden">
+          <div id="progressBar" class="h-full bg-[var(--primary)] w-0 transition-all duration-300"></div>
+        </div>
+      </div>
+
+      <div id="resultBox" class="hidden p-4 rounded-lg bg-[var(--card-bg)] border border-[var(--line-divider)]">
+        <p class="text-sm text-90">转换完成</p>
+        <p id="resultMeta" class="text-xs text-60 mt-1"></p>
+      </div>
+    </section>
+  </div>
+
+  <style>
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover {
+      filter: brightness(0.95);
+    }
+    .btn-secondary {
+      background: var(--btn-regular-bg);
+      color: var(--btn-content);
+      border: 1px solid var(--line-divider);
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      height: 6px;
+      background: var(--line-divider);
+      border-radius: 999px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      background: var(--primary);
+      cursor: pointer;
+    }
+  </style>
+
+  <script>
+    type FFmpegType = {
+      load: (options: { coreURL: string; wasmURL: string }) => Promise<void>;
+      writeFile: (name: string, data: Uint8Array) => Promise<void>;
+      readFile: (name: string) => Promise<Uint8Array>;
+      exec: (args: string[]) => Promise<void>;
+      on: (event: "progress", cb: (payload: { progress: number }) => void) => void;
+    };
+
+    const MAX_FILE_SIZE = 3 * 1024 * 1024 * 1024;
+    const fileInput = document.getElementById("fileInput") as HTMLInputElement;
+    const crfSlider = document.getElementById("crfSlider") as HTMLInputElement;
+    const crfValue = document.getElementById("crfValue") as HTMLSpanElement;
+    const coreSource = document.getElementById("coreSource") as HTMLSelectElement;
+    const encoderSelect = document.getElementById("encoderSelect") as HTMLSelectElement;
+    const customCoreGroup = document.getElementById("customCoreGroup") as HTMLDivElement;
+    const customCoreJs = document.getElementById("customCoreJs") as HTMLInputElement;
+    const customCoreWasm = document.getElementById("customCoreWasm") as HTMLInputElement;
+    const startBtn = document.getElementById("startBtn") as HTMLButtonElement;
+    const downloadBtn = document.getElementById("downloadBtn") as HTMLButtonElement;
+    const statusText = document.getElementById("statusText") as HTMLSpanElement;
+    const progressText = document.getElementById("progressText") as HTMLSpanElement;
+    const progressBar = document.getElementById("progressBar") as HTMLDivElement;
+    const resultBox = document.getElementById("resultBox") as HTMLDivElement;
+    const resultMeta = document.getElementById("resultMeta") as HTMLParagraphElement;
+    const logBox = document.getElementById("logBox") as HTMLDivElement;
+
+    let ffmpeg: FFmpegType | null = null;
+    let loadedSourceKey = "";
+    let outputBlobUrl = "";
+    let outputFileName = "";
+
+    const setProgress = (value: number) => {
+      const pct = Math.max(0, Math.min(100, Math.floor(value * 100)));
+      progressBar.style.width = `${pct}%`;
+      progressText.textContent = `${pct}%`;
+    };
+
+    const setStatus = (text: string) => {
+      statusText.textContent = text;
+    };
+
+    const appendLog = (text: string) => {
+      const ts = new Date().toLocaleTimeString("zh-CN", { hour12: false });
+      logBox.innerHTML += `[${ts}] ${text}<br>`;
+      logBox.scrollTop = logBox.scrollHeight;
+    };
+
+    const toggleDownload = (enabled: boolean) => {
+      downloadBtn.disabled = !enabled;
+      downloadBtn.classList.toggle("opacity-50", !enabled);
+      downloadBtn.classList.toggle("cursor-not-allowed", !enabled);
+    };
+
+    const resolveCoreURLs = () => {
+      if (coreSource.value === "embedded") {
+        return {
+          sourceKey: "embedded",
+          coreURL: "/assets/ffmpeg/ffmpeg-core.js",
+          wasmURL: "/assets/ffmpeg/ffmpeg-core.wasm"
+        };
+      }
+      if (coreSource.value === "custom") {
+        return {
+          sourceKey: `custom:${customCoreJs.value}|${customCoreWasm.value}`,
+          coreURL: customCoreJs.value.trim(),
+          wasmURL: customCoreWasm.value.trim()
+        };
+      }
+      return {
+        sourceKey: "cdn",
+        coreURL: "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm/ffmpeg-core.js",
+        wasmURL: "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm/ffmpeg-core.wasm"
+      };
+    };
+
+    const ensureFfmpeg = async () => {
+      const core = resolveCoreURLs();
+      if (ffmpeg && loadedSourceKey === core.sourceKey) return ffmpeg;
+
+      setStatus("正在加载本地转码核心...");
+      appendLog(`加载 ffmpeg 实例（${core.sourceKey}）`);
+      const ffmpegModule = await import("@ffmpeg/ffmpeg");
+      const instance = new ffmpegModule.FFmpeg() as FFmpegType;
+      instance.on("progress", ({ progress }) => setProgress(progress));
+
+      await instance.load({
+        coreURL: core.coreURL,
+        wasmURL: core.wasmURL
+      });
+      ffmpeg = instance;
+      loadedSourceKey = core.sourceKey;
+      appendLog("ffmpeg 核心加载完成");
+      return instance;
+    };
+
+    const humanSize = (size: number) => {
+      if (size < 1024) return `${size} B`;
+      if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+      return `${(size / (1024 * 1024)).toFixed(2)} MB`;
+    };
+
+    crfSlider.addEventListener("input", () => {
+      crfValue.textContent = crfSlider.value;
+    });
+
+    coreSource.addEventListener("change", () => {
+      customCoreGroup.classList.toggle("hidden", coreSource.value !== "custom");
+      appendLog(`核心来源切换为：${coreSource.value}`);
+    });
+
+    startBtn.addEventListener("click", async () => {
+      const file = fileInput.files?.[0];
+      if (!file) {
+        setStatus("请先选择 WEBM 文件");
+        return;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        setStatus(`文件过大，当前 ${humanSize(file.size)}，上限 3GB`);
+        return;
+      }
+      if (coreSource.value === "custom" && (!customCoreJs.value.trim() || !customCoreWasm.value.trim())) {
+        setStatus("请填写自定义 core.js 和 core.wasm URL");
+        return;
+      }
+
+      appendLog(`开始处理文件：${file.name} (${humanSize(file.size)})`);
+      toggleDownload(false);
+      resultBox.classList.add("hidden");
+      setProgress(0);
+
+      try {
+        startBtn.disabled = true;
+        setStatus("准备转码...");
+
+        const worker = await ensureFfmpeg();
+        const inputName = "input.webm";
+        outputFileName = file.name.replace(/\.webm$/i, "") + ".mp4";
+        const outputName = "output.mp4";
+        const useH265 = encoderSelect.value === "h265";
+        appendLog(`编码器：${useH265 ? "H.265" : "H.264"}，CRF：${crfSlider.value}`);
+
+        const fileBuffer = new Uint8Array(await file.arrayBuffer());
+        await worker.writeFile(inputName, fileBuffer);
+
+        setStatus("转码中（本地处理）...");
+        await worker.exec([
+          "-i", inputName,
+          "-c:v", useH265 ? "libx265" : "libx264",
+          "-crf", crfSlider.value,
+          "-preset", "medium",
+          "-c:a", "aac",
+          "-b:a", "128k",
+          "-movflags", "+faststart",
+          outputName
+        ]);
+
+        const output = await worker.readFile(outputName);
+        const outputBuffer = output.buffer.slice(output.byteOffset, output.byteOffset + output.byteLength);
+        const blob = new Blob([outputBuffer], { type: "video/mp4" });
+
+        if (outputBlobUrl) URL.revokeObjectURL(outputBlobUrl);
+        outputBlobUrl = URL.createObjectURL(blob);
+
+        resultMeta.textContent = `输入：${humanSize(file.size)}，输出：${humanSize(blob.size)}，CRF：${crfSlider.value}`;
+        resultBox.classList.remove("hidden");
+        setStatus("转换完成，可下载");
+        appendLog(`转换完成，输出大小：${humanSize(blob.size)}`);
+        setProgress(1);
+        toggleDownload(true);
+      } catch (error) {
+        console.error(error);
+        appendLog(`转换失败：${error instanceof Error ? error.message : String(error)}`);
+        setStatus("转换失败，请更换文件后重试");
+      } finally {
+        startBtn.disabled = false;
+      }
+    });
+
+    downloadBtn.addEventListener("click", () => {
+      if (!outputBlobUrl) return;
+      const a = document.createElement("a");
+      a.href = outputBlobUrl;
+      a.download = outputFileName || "output.mp4";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      appendLog(`下载已触发：${a.download}`);
+    });
+
+    appendLog("工具已就绪，等待选择文件");
+  </script>
+</MainGridLayout>
