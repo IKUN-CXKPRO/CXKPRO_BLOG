@@ -37,6 +37,13 @@ import { Icon } from "astro-icon/components";
         </div>
       </div>
 
+      <div id="previewWrap" class="hidden">
+        <p class="block text-sm font-medium text-90 mb-2">WEBM 预览</p>
+        <div class="rounded-lg border border-[var(--line-divider)] bg-[var(--card-bg)] p-3">
+          <video id="previewPlayer" class="w-full rounded-md bg-black max-h-[22rem]" controls playsinline preload="metadata"></video>
+        </div>
+      </div>
+
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="md:col-span-1">
           <label class="block text-sm font-medium text-90 mb-2">WASM 核心来源</label>
@@ -61,13 +68,29 @@ import { Icon } from "astro-icon/components";
               <option value="h265">H.265（更高压缩率）</option>
             </select>
           </div>
+          <div>
+            <label class="block text-sm font-medium text-90 mb-2">转码速度策略</label>
+            <select id="speedPresetSelect" class="w-full px-4 py-3 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg text-90">
+              <option value="ultrafast">极速（画质与体积优先级最低）</option>
+              <option value="veryfast" selected>推荐（速度优先）</option>
+              <option value="faster">均衡</option>
+              <option value="medium">画质优先（较慢）</option>
+            </select>
+          </div>
+          <label class="flex items-center gap-2 text-sm text-90">
+            <input id="verboseLogToggle" type="checkbox" class="accent-[var(--primary)]" />
+            <span>详细日志（关闭可减少界面输出）</span>
+          </label>
+          <div class="p-4 rounded-lg bg-[var(--card-bg)] border border-[var(--line-divider)] text-xs text-60">
+            提示：已自动开启多线程转码，速度根据设备性能优化。
+          </div>
           <div class="p-4 rounded-lg bg-[var(--card-bg)] border border-[var(--line-divider)] text-xs text-60">
             提示：H.265 压缩更强，但某些老设备兼容性较弱。
           </div>
         </div>
         <div>
           <p class="block text-sm font-medium text-90 mb-2">运行日志</p>
-          <div id="logBox" class="h-32 md:h-full min-h-[8rem] p-3 rounded-lg bg-[var(--card-bg)] border border-[var(--line-divider)] text-xs text-75 font-mono overflow-auto"></div>
+          <div id="logBox" class="h-44 md:h-56 p-3 rounded-lg bg-[var(--card-bg)] border border-[var(--line-divider)] text-xs text-75 font-mono overflow-y-auto overflow-x-hidden break-words"></div>
         </div>
       </div>
 
@@ -127,20 +150,21 @@ import { Icon } from "astro-icon/components";
   </style>
 
   <script>
-    type FFmpegType = {
-      load: (options: { coreURL: string; wasmURL: string }) => Promise<void>;
-      writeFile: (name: string, data: Uint8Array) => Promise<void>;
-      readFile: (name: string) => Promise<Uint8Array>;
-      exec: (args: string[]) => Promise<void>;
-      on: (event: "progress", cb: (payload: { progress: number }) => void) => void;
-    };
+    import localCoreURL from "@ffmpeg/core?url";
+    import localWasmURL from "@ffmpeg/core/wasm?url";
+
+    type FFmpegType = any;
 
     const MAX_FILE_SIZE = 3 * 1024 * 1024 * 1024;
     const fileInput = document.getElementById("fileInput") as HTMLInputElement;
     const crfSlider = document.getElementById("crfSlider") as HTMLInputElement;
     const crfValue = document.getElementById("crfValue") as HTMLSpanElement;
+    const previewWrap = document.getElementById("previewWrap") as HTMLDivElement;
+    const previewPlayer = document.getElementById("previewPlayer") as HTMLVideoElement;
     const coreSource = document.getElementById("coreSource") as HTMLSelectElement;
     const encoderSelect = document.getElementById("encoderSelect") as HTMLSelectElement;
+    const speedPresetSelect = document.getElementById("speedPresetSelect") as HTMLSelectElement;
+    const verboseLogToggle = document.getElementById("verboseLogToggle") as HTMLInputElement;
     const customCoreGroup = document.getElementById("customCoreGroup") as HTMLDivElement;
     const customCoreJs = document.getElementById("customCoreJs") as HTMLInputElement;
     const customCoreWasm = document.getElementById("customCoreWasm") as HTMLInputElement;
@@ -157,6 +181,11 @@ import { Icon } from "astro-icon/components";
     let loadedSourceKey = "";
     let outputBlobUrl = "";
     let outputFileName = "";
+    let previewUrl = "";
+    let ffmpegLoadPromise: Promise<FFmpegType> | null = null;
+    let ffmpegLoadingSince = 0;
+    let transcodeStartedAt = 0;
+    let lastProgressLogTs = 0;
 
     const setProgress = (value: number) => {
       const pct = Math.max(0, Math.min(100, Math.floor(value * 100)));
@@ -172,6 +201,12 @@ import { Icon } from "astro-icon/components";
       const ts = new Date().toLocaleTimeString("zh-CN", { hour12: false });
       logBox.innerHTML += `[${ts}] ${text}<br>`;
       logBox.scrollTop = logBox.scrollHeight;
+      console.log(`[webm-to-mp4] ${text}`);
+    };
+
+    const elapsed = () => {
+      if (!transcodeStartedAt) return "0.0s";
+      return `${((performance.now() - transcodeStartedAt) / 1000).toFixed(1)}s`;
     };
 
     const toggleDownload = (enabled: boolean) => {
@@ -184,8 +219,8 @@ import { Icon } from "astro-icon/components";
       if (coreSource.value === "embedded") {
         return {
           sourceKey: "embedded",
-          coreURL: "/assets/ffmpeg/ffmpeg-core.js",
-          wasmURL: "/assets/ffmpeg/ffmpeg-core.wasm"
+          coreURL: localCoreURL,
+          wasmURL: localWasmURL
         };
       }
       if (coreSource.value === "custom") {
@@ -202,24 +237,98 @@ import { Icon } from "astro-icon/components";
       };
     };
 
+    const withTimeout = async <T,>(promise: Promise<T>, ms: number, label: string): Promise<T> => {
+      let timer: number | null = null;
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timer = window.setTimeout(() => reject(new Error(`${label} 超时（>${ms / 1000}s）`)), ms);
+      });
+      try {
+        return await Promise.race([promise, timeoutPromise]);
+      } finally {
+        if (timer) clearTimeout(timer);
+      }
+    };
+
     const ensureFfmpeg = async () => {
       const core = resolveCoreURLs();
       if (ffmpeg && loadedSourceKey === core.sourceKey) return ffmpeg;
+      if (ffmpegLoadPromise) {
+        const loadingFor = Date.now() - ffmpegLoadingSince;
+        if (loadingFor < 30000) {
+          appendLog(`复用正在加载的 ffmpeg 实例（${Math.floor(loadingFor / 1000)}s）`);
+          return ffmpegLoadPromise;
+        }
+        appendLog("检测到旧加载任务长时间未完成，触发重试");
+        ffmpegLoadPromise = null;
+      }
 
-      setStatus("正在加载本地转码核心...");
-      appendLog(`加载 ffmpeg 实例（${core.sourceKey}）`);
-      const ffmpegModule = await import("@ffmpeg/ffmpeg");
-      const instance = new ffmpegModule.FFmpeg() as FFmpegType;
-      instance.on("progress", ({ progress }) => setProgress(progress));
+      ffmpegLoadPromise = (async () => {
+        setStatus("正在加载本地转码核心...");
+        appendLog(`加载 ffmpeg 实例（${core.sourceKey}）`);
+        ffmpegLoadingSince = Date.now();
+        // @ts-ignore: dynamic ffmpeg import may not have local type declarations
+        const ffmpegModule = await import("@ffmpeg/ffmpeg") as any;
+        const instance = new ffmpegModule.FFmpeg() as FFmpegType;
+        instance.on("progress", (payload: { progress: number }) => setProgress(payload.progress));
+        instance.on("log", (payload: { type: string; message: string }) => {
+          const { type, message } = payload;
+          if (message?.trim()) {
+            const m = message.trim();
+            if (m.includes("frame=") || m.includes("fps=") || m.includes("time=") || m.includes("speed=")) {
+              if (verboseLogToggle.checked) {
+                appendLog(`[ffmpeg-${type}] ${m}`);
+              } else {
+                const now = Date.now();
+                if (now - lastProgressLogTs > 1000) {
+                  lastProgressLogTs = now;
+                  appendLog(`[ffmpeg-${type}] ${m}`);
+                }
+              }
+              return;
+            }
+            if (m.toLowerCase().includes("error")) {
+              appendLog(`[ffmpeg-${type}] ${m}`);
+              console.error("[webm-to-mp4] ffmpeg-error-line", m);
+              return;
+            }
+            if (m.startsWith("Input #") || m.startsWith("Output #") || m.startsWith("Stream #")) {
+              appendLog(`[ffmpeg-${type}] ${m}`);
+              return;
+            }
+          }
+        });
 
-      await instance.load({
-        coreURL: core.coreURL,
-        wasmURL: core.wasmURL
-      });
-      ffmpeg = instance;
-      loadedSourceKey = core.sourceKey;
-      appendLog("ffmpeg 核心加载完成");
-      return instance;
+        loadedSourceKey = core.sourceKey;
+        try {
+          await withTimeout(instance.load({
+            coreURL: core.coreURL,
+            wasmURL: core.wasmURL
+          }), 15000, `加载 ${core.sourceKey} 核心`);
+        } catch (error) {
+          if (core.sourceKey === "embedded") {
+            appendLog("站内内置核心加载失败，自动回退到 CDN");
+            const fallback = {
+              coreURL: "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm/ffmpeg-core.js",
+              wasmURL: "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm/ffmpeg-core.wasm"
+            };
+            await withTimeout(instance.load(fallback), 20000, "加载 CDN 核心");
+            loadedSourceKey = "cdn-fallback";
+          } else {
+            throw error;
+          }
+        }
+        ffmpeg = instance;
+        appendLog("ffmpeg 核心加载完成");
+        setStatus("核心已就绪，等待转换");
+        return instance;
+      })();
+
+      try {
+        return await ffmpegLoadPromise;
+      } finally {
+        ffmpegLoadPromise = null;
+        ffmpegLoadingSince = 0;
+      }
     };
 
     const humanSize = (size: number) => {
@@ -234,21 +343,64 @@ import { Icon } from "astro-icon/components";
 
     coreSource.addEventListener("change", () => {
       customCoreGroup.classList.toggle("hidden", coreSource.value !== "custom");
+      ffmpeg = null;
+      loadedSourceKey = "";
       appendLog(`核心来源切换为：${coreSource.value}`);
+      warmupFfmpeg();
+    });
+
+    const warmupFfmpeg = () => {
+      ensureFfmpeg().catch((error) => {
+        console.error(error);
+        appendLog(`核心预加载失败：${error instanceof Error ? error.message : String(error)}`);
+        setStatus("核心加载失败，可重试转换");
+      });
+    };
+
+    const updatePreview = (file: File | null) => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        previewUrl = "";
+      }
+      if (!file) {
+        previewPlayer.removeAttribute("src");
+        previewPlayer.load();
+        previewWrap.classList.add("hidden");
+        return;
+      }
+      previewUrl = URL.createObjectURL(file);
+      previewPlayer.src = previewUrl;
+      previewWrap.classList.remove("hidden");
+      appendLog(`预览已就绪：${file.name}`);
+    };
+
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files?.[0] ?? null;
+      updatePreview(file);
+      if (file) {
+        console.info("[webm-to-mp4] file-selected", {
+          name: file.name,
+          size: file.size,
+          type: file.type
+        });
+      }
     });
 
     startBtn.addEventListener("click", async () => {
       const file = fileInput.files?.[0];
       if (!file) {
         setStatus("请先选择 WEBM 文件");
+        console.warn("[webm-to-mp4] no-file-selected");
         return;
       }
       if (file.size > MAX_FILE_SIZE) {
         setStatus(`文件过大，当前 ${humanSize(file.size)}，上限 3GB`);
+        console.warn("[webm-to-mp4] file-too-large", { size: file.size });
         return;
       }
       if (coreSource.value === "custom" && (!customCoreJs.value.trim() || !customCoreWasm.value.trim())) {
         setStatus("请填写自定义 core.js 和 core.wasm URL");
+        console.warn("[webm-to-mp4] custom-core-missing-url");
         return;
       }
 
@@ -259,33 +411,62 @@ import { Icon } from "astro-icon/components";
 
       try {
         startBtn.disabled = true;
+        transcodeStartedAt = performance.now();
         setStatus("准备转码...");
+        appendLog("阶段 1/4：准备任务");
 
         const worker = await ensureFfmpeg();
         const inputName = "input.webm";
         outputFileName = file.name.replace(/\.webm$/i, "") + ".mp4";
         const outputName = "output.mp4";
         const useH265 = encoderSelect.value === "h265";
-        appendLog(`编码器：${useH265 ? "H.265" : "H.264"}，CRF：${crfSlider.value}`);
+        const speedPreset = speedPresetSelect.value || "veryfast";
+        const effectiveCrf = Number(crfSlider.value);
+        const audioBitrate = "128k";
+        const threadCount = Math.max(1, Math.min(8, navigator.hardwareConcurrency || 2));
+        appendLog(`编码器：${useH265 ? "H.265" : "H.264"}，CRF：${effectiveCrf}，预设：${speedPreset}，线程：${threadCount}`);
 
         const fileBuffer = new Uint8Array(await file.arrayBuffer());
+        setStatus("写入输入文件...");
+        appendLog(`阶段 2/4：写入输入文件（${humanSize(fileBuffer.byteLength)}）`);
         await worker.writeFile(inputName, fileBuffer);
+        if (worker.deleteFile) {
+          try {
+            await worker.deleteFile(outputName);
+          } catch {
+            // ignore missing output file
+          }
+        }
 
         setStatus("转码中（本地处理）...");
-        await worker.exec([
+        appendLog("阶段 3/4：执行 ffmpeg 转码");
+        console.info("[webm-to-mp4] transcode-start", {
+          encoder: useH265 ? "libx265" : "libx264",
+          crf: effectiveCrf,
+          preset: speedPreset,
+          threads: threadCount,
+          coreSource: coreSource.value
+        });
+        const args = [
+          "-y",
           "-i", inputName,
           "-c:v", useH265 ? "libx265" : "libx264",
-          "-crf", crfSlider.value,
-          "-preset", "medium",
+          "-crf", String(effectiveCrf),
+          "-preset", speedPreset,
+          "-threads", String(threadCount),
           "-c:a", "aac",
-          "-b:a", "128k",
+          "-b:a", audioBitrate,
           "-movflags", "+faststart",
           outputName
-        ]);
+        ];
 
-        const output = await worker.readFile(outputName);
-        const outputBuffer = output.buffer.slice(output.byteOffset, output.byteOffset + output.byteLength);
-        const blob = new Blob([outputBuffer], { type: "video/mp4" });
+        await worker.exec(args);
+
+        appendLog(`阶段 3/4 完成，耗时 ${elapsed()}`);
+        appendLog("阶段 4/4：读取输出文件");
+        const output = await worker.readFile(outputName) as Uint8Array;
+        const normalized = new Uint8Array(Array.from(output));
+        const blob = new Blob([normalized as any], { type: "video/mp4" });
 
         if (outputBlobUrl) URL.revokeObjectURL(outputBlobUrl);
         outputBlobUrl = URL.createObjectURL(blob);
@@ -293,15 +474,17 @@ import { Icon } from "astro-icon/components";
         resultMeta.textContent = `输入：${humanSize(file.size)}，输出：${humanSize(blob.size)}，CRF：${crfSlider.value}`;
         resultBox.classList.remove("hidden");
         setStatus("转换完成，可下载");
-        appendLog(`转换完成，输出大小：${humanSize(blob.size)}`);
+        appendLog(`转换完成，输出大小：${humanSize(blob.size)}，总耗时 ${elapsed()}`);
+        console.info("[webm-to-mp4] transcode-success", { outputSize: blob.size });
         setProgress(1);
         toggleDownload(true);
       } catch (error) {
         console.error(error);
-        appendLog(`转换失败：${error instanceof Error ? error.message : String(error)}`);
+        appendLog(`转换失败（${elapsed()}）：${error instanceof Error ? error.message : String(error)}`);
         setStatus("转换失败，请更换文件后重试");
       } finally {
         startBtn.disabled = false;
+        transcodeStartedAt = 0;
       }
     });
 
@@ -314,8 +497,14 @@ import { Icon } from "astro-icon/components";
       a.click();
       a.remove();
       appendLog(`下载已触发：${a.download}`);
+      console.info("[webm-to-mp4] download-triggered", { name: a.download });
     });
 
-    appendLog("工具已就绪，等待选择文件");
+    appendLog("工具已就绪，开始预加载 ffmpeg...");
+    if ("requestIdleCallback" in window) {
+      (window as Window & { requestIdleCallback: (cb: () => void) => number }).requestIdleCallback(() => warmupFfmpeg());
+    } else {
+      setTimeout(() => warmupFfmpeg(), 0);
+    }
   </script>
 </MainGridLayout>

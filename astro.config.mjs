@@ -183,6 +183,9 @@ export default defineConfig({
 	},
 	vite: {
 		plugins: [tailwindcss()],
+		optimizeDeps: {
+			exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/core"],
+		},
 		build: {
 			// 静态资源处理优化
 			assetsInlineLimit: 4096,
