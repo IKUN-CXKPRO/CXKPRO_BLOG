@@ -46,7 +46,7 @@ export const friendsData: FriendItem[] = [
 	},
 ];
 
-// 获取所有友情链接数据
+// 获取友情链接数据
 export function getFriendsList(): FriendItem[] {
 	return friendsData;
 }
