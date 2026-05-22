@@ -36,6 +36,14 @@ export const friendsData: FriendItem[] = [
 		siteurl: "https://wylnb.mirrorx.ltd/",
 		tags: ["blog"],
 	},
+	{
+		id: 3,
+		title: "小改学习志",
+		imgurl: "https://www.haoyu233.com/wp-content/uploads/2026/05/ed359270804902f29523d6d381920ce3.webp",
+		desc: "莫听穿林打叶声，何妨吟啸且徐行。",
+		siteurl: "https://www.haoyu233.com",
+		tags: ["blog"],
+	},
 ];
 
 // 获取所有友情链接数据
