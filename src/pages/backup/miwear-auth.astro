@@ -178,6 +178,24 @@ import { Icon } from "astro-icon/components";
       let currentZip = null;
       let selectedLogFile = null;
       let fileType = null;
+
+      const DEVICE_PATTERNS = [
+        { name: '小米手环9 Pro', label: '小米手环9 Pro' },
+        { name: '小米手环9', label: '小米手环9' },
+        { name: '小米手环10 Pro', label: '小米手环10 Pro' },
+        { name: '小米手环10', label: '小米手环10' },
+        { name: 'Xiaomi Watch S4 41mm', label: 'Xiaomi Watch S4 41mm' },
+        { name: 'Xiaomi Watch S4 eSIM', label: 'Xiaomi Watch S4 eSIM' },
+        { name: 'Xiaomi Watch S4', label: 'Xiaomi Watch S4' },
+        { name: 'Xiaomi Watch S3 eSIM', label: 'Xiaomi Watch S3 eSIM' },
+        { name: 'Xiaomi Watch S3', label: 'Xiaomi Watch S3' },
+        { name: 'Xiaomi Watch S5 46mm eSIM', label: 'Xiaomi Watch S5 46mm eSIM' },
+        { name: 'Xiaomi Watch S5 46mm', label: 'Xiaomi Watch S5 46mm' },
+        { name: 'REDMI Watch 5 eSIM', label: 'REDMI Watch 5 eSIM' },
+        { name: 'REDMI Watch 5', label: 'REDMI Watch 5' },
+        { name: 'REDMI Watch 6', label: 'REDMI Watch 6' },
+        { name: 'Redmi Watch 3', label: 'REDMI Watch 3' }
+      ];
       
       // --- 优化开始：移动端兼容的文件触发逻辑 ---
       
@@ -468,10 +486,10 @@ import { Icon } from "astro-icon/components";
       async function loadAndExtract(file) {
         try {
           resultContainer.innerHTML = '<div class="text-center text-75 text-gray-500 py-4">正在加载 ZIP 文件...</div>';
-          
+
           const arrayBuffer = await file.arrayBuffer();
           currentZip = await JSZip.loadAsync(arrayBuffer);
-          
+
           let mainLogFile = null;
           for (const fileName in currentZip.files) {
             if (fileName.toLowerCase().includes('xiaomifit.main.log')) {
@@ -479,24 +497,26 @@ import { Icon } from "astro-icon/components";
               break;
             }
           }
-          
+
           if (mainLogFile) {
             selectedLogFile = mainLogFile;
             resultContainer.innerHTML = `<div class="text-center text-75 text-[var(--primary)] py-4">✓ 已找到日志文件，正在解析...</div>`;
             await extractData();
-          } else {
-            const logFiles = Object.keys(currentZip.files).filter(f => 
-              f.toLowerCase().endsWith('.log') && !currentZip.files[f].dir
-            );
-            
-            if (logFiles.length > 0) {
-              selectedLogFile = logFiles[0];
-              resultContainer.innerHTML = `<div class="text-center text-75 text-[var(--primary)] py-4">⚠ 未找到主日志，尝试使用: ${selectedLogFile}</div>`;
-              await extractData();
-            } else {
-              showError('ZIP 文件中未找到任何 .log 日志文件');
-            }
+            return;
           }
+
+          const logFiles = Object.keys(currentZip.files).filter(f =>
+            f.toLowerCase().endsWith('.log') && !currentZip.files[f].dir
+          );
+
+          if (logFiles.length > 0) {
+            selectedLogFile = logFiles[0];
+            resultContainer.innerHTML = `<div class="text-center text-75 text-[var(--primary)] py-4">⚠ 未找到主日志，尝试使用: ${selectedLogFile}</div>`;
+            await extractData();
+            return;
+          }
+
+          showError('ZIP 文件中未找到任何日志文件，请确保上传的是 Xiaomi Wearable 日志 ZIP');
         } catch (error) {
           console.error('ZIP 处理错误:', error);
           showError(`解析失败: ${error.message || error}`);
@@ -508,25 +528,20 @@ import { Icon } from "astro-icon/components";
           showError('请先选择一个日志文件');
           return;
         }
-        
+
         resultContainer.innerHTML = '<div class="text-center text-75 text-gray-500 py-4">正在处理日志文件...</div>';
-        
+
         try {
           const logFile = currentZip.file(selectedLogFile);
           if (!logFile) throw new Error(`无法找到文件: ${selectedLogFile}`);
-          
+
           const content = await logFile.async('text');
-          const results = parseLogContent(content);
-          
+          const results = parseAndroidFromContent(content);
+
           if (results.length > 0) {
             displayResult(results, selectedLogFile, 'Android Log');
           } else {
-            const altResults = parseAlternativeFormat(content);
-            if (altResults.length > 0) {
-              displayResult(altResults, selectedLogFile, 'Android Log');
-            } else {
-              showError(`在日志文件 "${selectedLogFile}" 中未找到 productName 或 token 信息`);
-            }
+            showError(`在日志文件 "${selectedLogFile}" 中未找到有效的 AuthKey 或 token 信息`);
           }
         } catch (error) {
           console.error('处理文件时出错:', error);
@@ -534,49 +549,61 @@ import { Icon } from "astro-icon/components";
         }
       }
       
-      function parseLogContent(content) {
+      function parseAndroidFromContent(content) {
         const results = [];
-        const jsonLineRegex = /({[^{}]*"productName"[^{}]*"token"[^{}]*})|({[^{}]*"token"[^{}]*"productName"[^{}]*})/g;
+        const seenTokens = new Set();
+
+        const tokenRegex = /"token"\s*[:=]\s*"([a-fA-F0-9]{32})"/gi;
         let match;
-        
-        while ((match = jsonLineRegex.exec(content)) !== null) {
-          try {
-            const jsonObj = JSON.parse(match[0]);
-            if (jsonObj.productName || jsonObj.token) {
-              const exists = results.some(item => 
-                item.productName === jsonObj.productName && 
-                item.token === jsonObj.token
-              );
-              if (!exists) {
-                results.push({
-                  productName: jsonObj.productName || null,
-                  token: jsonObj.token || null
-                });
+
+        while ((match = tokenRegex.exec(content)) !== null) {
+          const token = match[1];
+          if (seenTokens.has(token)) continue;
+
+          const contextStart = Math.max(0, match.index - 2000);
+          const contextEnd = Math.min(content.length, match.index + 500);
+          const context = content.substring(contextStart, contextEnd);
+
+          const nameRegex = /"(product[Nn]ame|device[Nn]ame|model[Nn]ame|name)"\s*[:=]\s*"([^"]+)"/gi;
+          let deviceName = '';
+          let nameMatch;
+          while ((nameMatch = nameRegex.exec(context)) !== null) {
+            deviceName = nameMatch[2];
+          }
+
+          if (!deviceName || deviceName.toLowerCase() === 'null') {
+            for (const pattern of DEVICE_PATTERNS) {
+              if (context.includes(pattern.name)) {
+                deviceName = pattern.label;
+                break;
               }
             }
-          } catch (e) {}
+          }
+
+          const macMatch = context.match(/([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}/);
+          results.push({
+            productName: deviceName || 'Android 设备',
+            token,
+            mac: macMatch ? macMatch[0] : null,
+            source: 'Android Log'
+          });
+          seenTokens.add(token);
         }
-        return results;
-      }
-      
-      function parseAlternativeFormat(content) {
-        const results = [];
-        const productNameRegex = /["']?productName["']?\s*[=:]\s*["']([^"']+)["']/g;
-        const tokenRegex = /["']?token["']?\s*[=:]\s*["']([^"']+)["']/g;
-        
-        const productNames = [], tokens = [];
-        let m;
-        productNameRegex.lastIndex = 0;
-        while ((m = productNameRegex.exec(content)) !== null) productNames.push(m[1]);
-        tokenRegex.lastIndex = 0;
-        while ((m = tokenRegex.exec(content)) !== null) tokens.push(m[1]);
-        
-        const maxLen = Math.max(productNames.length, tokens.length);
-        for (let i = 0; i < maxLen; i++) {
-          const pn = productNames[i] || null, tk = tokens[i] || null;
-          const exists = results.some(r => r.productName === pn && r.token === tk);
-          if (!exists && (pn || tk)) results.push({ productName: pn, token: tk });
+
+        if (results.length === 0) {
+          const fallbackRegex = /(?:encrypt_key|auth_key|authkey|token)\s*[:=]\s*['"]?([a-fA-F0-9]{32})['"]?/gi;
+          while ((match = fallbackRegex.exec(content)) !== null) {
+            const token = match[1];
+            if (seenTokens.has(token)) continue;
+            seenTokens.add(token);
+            results.push({
+              productName: 'Android 设备',
+              token,
+              source: 'Android Log'
+            });
+          }
         }
+
         return results;
       }
       
