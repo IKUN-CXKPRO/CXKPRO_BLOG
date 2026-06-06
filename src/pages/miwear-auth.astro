@@ -441,48 +441,111 @@ import { Icon } from "astro-icon/components";
       byId<HTMLDivElement>('resultBox')?.scrollIntoView({ behavior: 'smooth' });
     };
 
-    const parseAndroidFromContent = (content: string): AuthResult[] => {
-      terminal(`扫描 Android 字节序列 (流长度: ${content.length})`, 'FS');
-      const results: AuthResult[] = [];
-      const seen = new Set<string>();
-      const tokenRegex = /"token"\s*[:=]\s*"([a-fA-F0-9]{32})"/gi;
-      let match: RegExpExecArray | null;
+    const getZipBaseName = (path: string): string => path.replace(/\\/g, '/').split('/').pop()?.toLowerCase() ?? '';
 
-      while ((match = tokenRegex.exec(content)) !== null) {
-        const token = match[1];
-        if (seen.has(token)) continue;
+    const isXiaomiFitMainLog = (path: string): boolean => getZipBaseName(path) === 'xiaomifit.main.log';
 
-        const context = content.substring(Math.max(0, match.index - 2000), Math.min(content.length, match.index + 500));
-        const nameRegex = /"(product[Nn]ame|device[Nn]ame|model[Nn]ame|name)"\s*[:=]\s*"([^"]+)"/gi;
-        let deviceName = '';
-        let nameMatch: RegExpExecArray | null;
+    const normalizeAndroidLogResult = (productName: string | null, token: string | null, context = ''): AuthResult | null => {
+      const safeToken = token?.trim();
+      if (!safeToken) return null;
 
-        while ((nameMatch = nameRegex.exec(context)) !== null) {
-          deviceName = nameMatch[2];
-        }
-
-        const macMatch = context.match(/([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}/);
-        if (!deviceName || deviceName.toLowerCase() === 'null') {
-          for (const pattern of DEVICE_PATTERNS) {
-            if (context.includes(pattern.name)) {
-              deviceName = pattern.label;
-              break;
-            }
+      let deviceName = productName?.trim() ?? '';
+      if (!deviceName || deviceName.toLowerCase() === 'null') {
+        for (const pattern of DEVICE_PATTERNS) {
+          if (context.includes(pattern.name)) {
+            deviceName = pattern.label;
+            break;
           }
         }
+      }
 
-        results.push({
-          name: deviceName || 'Android设备',
-          key: token,
-          mac: macMatch?.[0],
-          platform: 'Android'
-        });
+      const macMatch = context.match(/([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}/);
+      return {
+        name: deviceName || 'Android设备',
+        key: safeToken,
+        mac: macMatch?.[0],
+        platform: 'Android'
+      };
+    };
 
-        terminal(`识别设备：${deviceName || '通用型号'} | MAC: ${macMatch?.[0] ?? '未知'}`, 'DEVICE', 'device');
-        seen.add(token);
+    const pushUniqueAndroidResult = (results: AuthResult[], seen: Set<string>, item: AuthResult | null) => {
+      if (!item) return;
+      const uniqueKey = `${item.name}::${item.key}`;
+      if (seen.has(uniqueKey)) return;
+      seen.add(uniqueKey);
+      results.push(item);
+      terminal(`识别设备：${item.name} | MAC: ${item.mac ?? '未知'}`, 'DEVICE', 'device');
+    };
+
+    const parseAndroidLogJsonBlocks = (content: string): AuthResult[] => {
+      const results: AuthResult[] = [];
+      const seen = new Set<string>();
+      const jsonLineRegex = /({[^{}]*"productName"[^{}]*"token"[^{}]*})|({[^{}]*"token"[^{}]*"productName"[^{}]*})/g;
+      let match: RegExpExecArray | null;
+
+      while ((match = jsonLineRegex.exec(content)) !== null) {
+        try {
+          const jsonObj = JSON.parse(match[0]) as { productName?: unknown; token?: unknown };
+          const productName = typeof jsonObj.productName === 'string' ? jsonObj.productName : null;
+          const token = typeof jsonObj.token === 'string' ? jsonObj.token : null;
+          const context = content.substring(Math.max(0, match.index - 1000), Math.min(content.length, match.index + match[0].length + 1000));
+          pushUniqueAndroidResult(results, seen, normalizeAndroidLogResult(productName, token, context));
+        } catch {
+          // 保持与原始 HTML 一致：无法 JSON.parse 的片段直接忽略，交给备用格式扫描。
+        }
       }
 
       return results;
+    };
+
+    const parseAndroidLogAlternativeFormat = (content: string): AuthResult[] => {
+      const results: AuthResult[] = [];
+      const seen = new Set<string>();
+      const productNameRegex = /["']?productName["']?\s*[=:]\s*["']([^"']+)["']/g;
+      const tokenRegex = /["']?token["']?\s*[=:]\s*["']([^"']+)["']/g;
+      const productNames: Array<{ value: string; index: number }> = [];
+      const tokens: Array<{ value: string; index: number }> = [];
+      let productNameMatch: RegExpExecArray | null;
+      let tokenMatch: RegExpExecArray | null;
+
+      while ((productNameMatch = productNameRegex.exec(content)) !== null) {
+        productNames.push({ value: productNameMatch[1], index: productNameMatch.index });
+      }
+
+      while ((tokenMatch = tokenRegex.exec(content)) !== null) {
+        tokens.push({ value: tokenMatch[1], index: tokenMatch.index });
+      }
+
+      const maxLen = Math.max(productNames.length, tokens.length);
+      for (let i = 0; i < maxLen; i += 1) {
+        const productName = productNames[i]?.value ?? null;
+        const token = tokens[i]?.value ?? null;
+        const center = tokens[i]?.index ?? productNames[i]?.index ?? 0;
+        const context = content.substring(Math.max(0, center - 1000), Math.min(content.length, center + 1000));
+        pushUniqueAndroidResult(results, seen, normalizeAndroidLogResult(productName, token, context));
+      }
+
+      return results;
+    };
+
+    const parseAndroidFromContent = (content: string): AuthResult[] => {
+      terminal(`严格扫描 Android 目标日志 XiaomiFit.main.log (流长度: ${content.length})`, 'FS');
+
+      const primaryResults = parseAndroidLogJsonBlocks(content);
+      if (primaryResults.length > 0) {
+        terminal(`Android JSON 结构解析命中 ${primaryResults.length} 条记录。`, 'SUCCESS');
+        return primaryResults;
+      }
+
+      terminal('Android JSON 结构未命中，切换到原 HTML 备用格式解析。', 'NETWORK');
+      const fallbackResults = parseAndroidLogAlternativeFormat(content);
+      if (fallbackResults.length > 0) {
+        terminal(`Android 备用格式解析命中 ${fallbackResults.length} 条记录。`, 'SUCCESS');
+        return fallbackResults;
+      }
+
+      terminal('XiaomiFit.main.log 中未找到 productName/token 组合。', 'ERROR');
+      return [];
     };
 
     const processSQL = (u8: Uint8Array, isWal = false): { results: AuthResult[]; log: string } => {
@@ -607,11 +670,13 @@ ${Array.from(blob).join(',')}
 
       terminal(`遍历压缩包第 ${depth} 层 (${files.length} 个文件)`, 'FS');
 
-      const logKey = files.find((f) => f.toLowerCase().includes('main.log') || f.toLowerCase().endsWith('.log'));
+      const logKey = files.find((f) => !zip.files[f].dir && isXiaomiFitMainLog(f));
       if (logKey) {
-        terminal(`发现 Android 目标：[${logKey}]`, 'FS');
+        terminal(`严格发现 Android 目标：[${logKey}]`, 'FS');
         const content = await zip.file(logKey)!.async('text');
         results.push(...parseAndroidFromContent(content));
+      } else {
+        terminal('未找到 XiaomiFit.main.log，已跳过 Android 日志解析，避免误读其他 .log 文件。', 'NETWORK');
       }
 
       const sqlKey = files.find((f) => f.toLowerCase().endsWith('manifest.sqlite'));
