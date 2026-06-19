@@ -2,12 +2,12 @@ name: Deploy Astro Site to dist Branch
 
 on:
   push:
-    branches: [main]
-  workflow_dispatch: # 允许手动触发
+    branches:
+      - main
+  workflow_dispatch:
 
 permissions:
   contents: write
-  id-token: write
 
 concurrency:
   group: pages
@@ -16,49 +16,48 @@ concurrency:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      # 1. 检出代码
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # 获取完整历史，方便脚本获取 git 信息
+          fetch-depth: 0
 
-      # 2. 安装系统依赖 (预防 sharp 或 fontmin 报错)
       - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libvips-dev fonts-noto-cjk
 
-      # 3. 设置 pnpm (严格匹配项目要求的版本)
-      - uses: pnpm/action-setup@v3
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
         with:
-          version: 10 # 对应 package.json 中的 pnpm@10.x.x
+          version: 10
 
-      # 4. 设置 Node.js
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'pnpm'
+          cache: pnpm
 
-      # 5. 安装依赖
-      # --frozen-lockfile 确保与 pnpm-lock.yaml 完全一致
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # 6. 执行构建
-      # 这将依次运行：update-anime -> astro build -> pagefind -> compress-fonts
       - name: Build
         run: pnpm run build
 
-      # 7. 部署到 dist 分支
+      - name: Verify build output
+        run: |
+          test -f dist/index.html
+          echo "Build output verified"
+
       - name: Deploy to dist branch
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
+          publish_branch: dist
           destination_dir: .
           keep_files: false
-          branch: dist
           force_orphan: true
-          commit_message: 'Deploy: ${{ github.sha }}'
+          cname: ikun-cxkpro.top
+          full_commit_message: 'Deploy: ${{ github.sha }}'
