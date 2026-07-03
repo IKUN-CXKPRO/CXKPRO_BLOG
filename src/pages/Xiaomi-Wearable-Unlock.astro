@@ -3,114 +3,236 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { Icon } from "astro-icon/components";
 ---
 
-<MainGridLayout title="小米穿戴设备解锁" description="使用 MAC 地址和序列号 (SN) 生成解锁码。">
-  <div class="onload-animation">
-    <div class="card-base rounded-[var(--radius-large)] p-8 mb-6">
-      <div class="text-center">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-[var(--primary)] rounded-2xl mb-4">
-          <Icon name="material-symbols:lock-open" class="text-90 text-3xl" />
+<MainGridLayout
+  title="小米穿戴设备解锁"
+  description="使用 MAC 地址和序列号生成解锁码"
+>
+  <div class="onload-animation space-y-6">
+    <section class="card-base rounded-[var(--radius-large)] p-8">
+      <div class="flex items-center gap-4">
+        <div
+          class="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-500/10"
+        >
+          <Icon
+            name="material-symbols:lock-open"
+            class="text-3xl text-purple-500"
+          />
         </div>
-        <h1 class="text-3xl font-bold text-[var(--primary)] mb-3">Xiaomi-Wearable-Unlock</h1>
-        <p class="text-75 max-w-2xl mx-auto">解锁你的小米穿戴设备。</p>
-      </div>
-    </div>
-
-    <div class="card-base rounded-[var(--radius-large)] p-8 mb-6">
-      <div class="text-center">
-        <h2 class="text-xl font-bold text-90 mb-4 flex items-center">
-        <Icon name="material-symbols:help" class="mr-2 text-[var(--primary)]" />
-        如何使用
-      </h2>
-        <p class="text-75 max-w-2xl mx-auto">在忘记密码的说明页点击上下上下上上下下进入</p>
-      </div>
-    </div>
-    
-    <div class="card-base rounded-[var(--radius-large)] p-6 mb-6">
-      <h2 class="text-xl font-bold text-90 mb-4 flex items-center">
-        <Icon name="material-symbols:info" class="mr-2 text-[var(--primary)]" />
-        设备信息
-      </h2>
-      <div class="space-y-4">
         <div>
-          <label for="mac" class="block text-sm font-medium text-90 mb-1">
-            MAC 地址
-          </label>
+          <h1 class="text-3xl font-bold text-[var(--primary)]">
+            小米穿戴设备解锁
+          </h1>
+          <p class="mt-2 text-75">
+            输入 MAC 与 SN，在本地浏览器生成 10 位解锁码。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card-base rounded-[var(--radius-large)] p-6 space-y-5">
+      <div class="grid gap-4 md:grid-cols-2">
+        <label class="block">
+          <span class="mb-2 block text-sm font-medium text-90">MAC 地址</span>
           <input
             id="mac"
             type="text"
-            placeholder="eg：AA:BB:CC:DD:EE:FF"
-            class="w-full px-4 py-2 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg text-90 focus:outline-none focus:border-[var(--primary)] transition-colors"
+            placeholder="AA:BB:CC:DD:EE:FF"
+            autocomplete="off"
+            class="unlock-input w-full rounded-lg border border-[var(--line-divider)] bg-[var(--card-bg)] px-4 py-3 font-mono transition-colors focus:border-[var(--primary)] focus:outline-none"
           />
-        </div>
-        <div>
-          <label for="sn" class="block text-sm font-medium text-90 mb-1">
-            序列号 (SN)
-          </label>
+        </label>
+
+        <label class="block">
+          <span class="mb-2 block text-sm font-medium text-90">序列号 SN</span>
           <input
             id="sn"
             type="text"
-            placeholder="eg：ABC123456789"
-            class="w-full px-4 py-2 bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg text-90 focus:outline-none focus:border-[var(--primary)] transition-colors"
+            placeholder="ABC123456789"
+            autocomplete="off"
+            class="unlock-input w-full rounded-lg border border-[var(--line-divider)] bg-[var(--card-bg)] px-4 py-3 font-mono transition-colors focus:border-[var(--primary)] focus:outline-none"
           />
-        </div>
-        <button
-          id="generate-btn"
-          class="px-5 py-2.5 bg-[var(--primary)] text-90 rounded-lg hover:opacity-80 transition-all duration-200 font-medium text-sm whitespace-nowrap"
-        >
-          生成解锁码
-        </button>
+        </label>
       </div>
-    </div>
 
-    <div class="card-base rounded-[var(--radius-large)] p-6">
-      <h2 class="text-xl font-bold text-90 mb-4 flex items-center">
-        <Icon name="material-symbols:password" class="mr-2 text-[var(--primary)]" />
-        解锁码
-      </h2>
-      <div class="bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-lg p-4 min-h-[120px]">
-        <pre
-          id="output-area"
-          class="text-75 text-lg font-mono whitespace-pre-wrap break-words"
-        ></pre>
+      <div
+        class="rounded-lg border border-[var(--line-divider)] bg-[var(--card-bg)] p-4"
+      >
+        <p class="mb-3 text-sm font-medium text-90">算法</p>
+        <div class="grid gap-3 md:grid-cols-2">
+          <label
+            class="flex cursor-pointer items-start gap-3 rounded-lg border border-[var(--line-divider)] p-3 transition hover:border-[var(--primary)]"
+          >
+            <input
+              type="radio"
+              name="algorithm"
+              value="old"
+              checked
+              class="mt-1 h-4 w-4 accent-[var(--primary)]"
+            />
+            <span>
+              <span class="block text-sm font-medium text-90">旧算法</span>
+              <span class="block text-xs text-50">vela4设备</span>
+            </span>
+          </label>
+
+          <label
+            class="flex cursor-pointer items-start gap-3 rounded-lg border border-[var(--line-divider)] p-3 transition hover:border-[var(--primary)]"
+          >
+            <input
+              type="radio"
+              name="algorithm"
+              value="new"
+              class="mt-1 h-4 w-4 accent-[var(--primary)]"
+            />
+            <span>
+              <span class="block text-sm font-medium text-90">新算法</span>
+              <span class="block text-xs text-50"
+                >vela5设备,(s5,10pro等)</span
+              >
+            </span>
+          </label>
+        </div>
       </div>
-    </div>
+
+      <div
+        class="rounded-lg border border-[var(--line-divider)] bg-[var(--card-bg)] p-4"
+      >
+        <p class="mb-3 text-sm font-medium text-90">生成</p>
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <button
+            id="generate-btn"
+            class="unlock-button rounded-lg px-5 py-2.5 text-sm font-medium"
+          >
+            生成解锁码
+          </button>
+          <p class="text-xs text-50">
+            MAC 会自动去除常见分隔符，SN 会自动转为大写。
+          </p>
+        </div>
+      </div>
+
+      <div
+        class="rounded-lg border border-[var(--line-divider)] bg-[var(--card-bg)] p-4"
+      >
+        <p class="mb-3 text-sm font-medium text-90">结果</p>
+        <output
+          id="output-area"
+          class="unlock-output block min-h-16 rounded-lg border border-[var(--line-divider)] p-4 font-mono text-2xl font-semibold"
+        >
+          等待输入
+        </output>
+      </div>
+    </section>
   </div>
 
+  <style>
+    .unlock-input {
+      color: rgb(0 0 0 / 0.9);
+    }
+
+    .unlock-input::placeholder {
+      color: rgb(0 0 0 / 0.5);
+    }
+
+    :global(:root.dark) .unlock-input {
+      color: rgb(255 255 255 / 0.9);
+    }
+
+    :global(:root.dark) .unlock-input::placeholder {
+      color: rgb(255 255 255 / 0.5);
+    }
+
+    .unlock-button {
+      background: var(--primary);
+      color: var(--card-bg);
+      border: 1px solid color-mix(in srgb, var(--primary), transparent 30%);
+      box-shadow: 0 10px 24px
+        color-mix(in srgb, var(--primary), transparent 82%);
+      transition:
+        opacity 150ms ease,
+        transform 150ms ease,
+        box-shadow 150ms ease;
+    }
+
+    .unlock-button:hover {
+      opacity: 0.9;
+      box-shadow: 0 12px 28px
+        color-mix(in srgb, var(--primary), transparent 76%);
+    }
+
+    .unlock-button:active {
+      transform: translateY(1px);
+    }
+
+    .unlock-output {
+      background: color-mix(in srgb, var(--primary), transparent 94%);
+      border-color: color-mix(in srgb, var(--primary), transparent 76%);
+      color: var(--primary);
+    }
+
+    .unlock-output.is-error {
+      background: color-mix(in srgb, #ef4444, transparent 94%);
+      border-color: color-mix(in srgb, #ef4444, transparent 70%);
+      color: #ef4444;
+    }
+  </style>
+
   <script>
-    document.getElementById('generate-btn')?.addEventListener('click', async () => {
-      const macInput = document.getElementById('mac');
-      const snInput = document.getElementById('sn');
-      const outputArea = document.getElementById('output-area');
+    const macInput = document.getElementById("mac");
+    const snInput = document.getElementById("sn");
+    const outputArea = document.getElementById("output-area");
+    const generateButton = document.getElementById("generate-btn");
 
-      let mac = macInput?.value || '';
-      let sn = snInput?.value || '';
+    const normalizeMac = (value: string) =>
+      value.toUpperCase().replace(/[：:\-\s.]/g, "");
 
-      let cleanMac = mac.replace(/:/g, '').trim().toUpperCase();
-      let cleanSn = sn.trim();
+    const normalizeSn = (value: string) => value.trim().toUpperCase();
 
-      if (!cleanMac || !cleanSn) {
-        outputArea.textContent = '请输入有效的 MAC 地址和SN。';
+    const getAlgorithm = () => {
+      const selectedAlgorithm = document.querySelector(
+        'input[name="algorithm"]:checked',
+      );
+      return selectedAlgorithm instanceof HTMLInputElement &&
+        selectedAlgorithm.value === "new"
+        ? "new"
+        : "old";
+    };
+
+    const setOutput = (text: string, isError = false) => {
+      if (!outputArea) return;
+      outputArea.textContent = text;
+      outputArea.classList.toggle("is-error", isError);
+    };
+
+    const generateUnlockCode = async () => {
+      const macValue =
+        macInput instanceof HTMLInputElement ? macInput.value : "";
+      const snValue = snInput instanceof HTMLInputElement ? snInput.value : "";
+      const mac = normalizeMac(macValue);
+      const sn = normalizeSn(snValue);
+
+      if (!mac || !sn) {
+        setOutput("请输入有效的 MAC 地址和 SN。", true);
         return;
       }
 
-      let input = cleanMac + cleanSn + "XIAOMI";
+      const payload =
+        getAlgorithm() === "new" ? `${sn}${mac}XIAOMI` : `${mac}${sn}XIAOMI`;
 
       try {
-        const enc = new TextEncoder();
-        const data = enc.encode(input);
-        const hashBuf = await crypto.subtle.digest('SHA-256', data);
-        const hash = new Uint8Array(hashBuf);
-
-        let code = '';
-        for (let i = 0; i < 10; i++) {
-          code += (hash[i] % 10).toString();
-        }
-
-        outputArea.textContent = code;
-      } catch (err) {
-        console.error('Error generating code:', err);
-        outputArea.textContent = '计算失败，请重试。';
+        const data = new TextEncoder().encode(payload);
+        const digest = await crypto.subtle.digest("SHA-256", data);
+        const hash = new Uint8Array(digest);
+        const code = Array.from(hash.slice(0, 10), (byte) => byte % 10).join(
+          "",
+        );
+        setOutput(code);
+      } catch (error) {
+        console.error("Error generating unlock code:", error);
+        setOutput("计算失败，请重试。", true);
       }
-    });
+    };
+
+    generateButton?.addEventListener("click", generateUnlockCode);
   </script>
 </MainGridLayout>
